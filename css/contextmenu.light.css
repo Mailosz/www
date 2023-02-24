@@ -1,0 +1,21 @@
+
+.context-menu {
+    background-color: #eee;
+    border: 1px solid #888;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    color: black;
+}
+    .context-menu .context-menu-element:hover:not(.disabled) {
+        background-color: #f8f8f8;
+    }
+    .context-menu .context-menu-element:active:not(.disabled) {
+        background-color: #ddd;
+    }
+
+        .context-menu .context-menu-shortcut {
+            color: #555;
+        }
+
+        .context-menu .context-menu-separator {
+            border-top: 1px #888 solid;
+        }

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/main.css">
+    <script type="module">
+        import {LoremIpsum} from "./js/ui/LoremIpsum.js";
+        import {DocumentOutline} from "./js/ui/DocumentOutline.js";
+        import {CodeBox} from "./js/codeBox/CodeBox.js";
+        import {MakeSamples} from "./js/sampleMaker/SampleMaker.js";
+
+        MakeSamples();
+
+        LoremIpsum.registerCustomElement();
+        CodeBox.registerCustomElement();
+
+
+        document.body.onload = (event) => {
+            new DocumentOutline(document.getElementById("the-document"), document.getElementById("the-outline"));
+        };
+    </script>
+</head>
+<body>
+    <div id="the-outline">
+
+    </div>
+    <main id="the-document">
+        <section>
+        <h1>Title of the document</h1>
+        <p>Quick introduction to the theme of the document.</p>
+        <h2>Code</h2>
+        <code class="sample" contenteditable="true">
+            &lt;!DOCTYPE html&gt;<br>
+            &lt;html lang="en"&gt;
+            &lt;head&gt;
+                &lt;meta charset="UTF-8"&gt;
+                &lt;meta http-equiv="X-UA-Compatible" content="IE=edge"&gt;
+                &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+                &lt;title&gt;Document&lt;/title&gt;
+            &lt;/head&gt;
+            &lt;body&gt;
+                
+            &lt;/body&gt;
+            &lt;/html&gt;
+        </code>
+        <h2>A lot of lists</h2>
+        <ul>
+            <li>This is an option</li>
+            <li>This is an option</li>
+            <li>This is an option
+                <ul>
+                    <li>This is a suboption</li>
+                    <li>This is a suboption</li>
+                </ul>
+            </li>
+            <li>This is an option
+                <ul>
+                    <li>This is a suboption</li>
+                    <li>This is a suboption
+                        <ul>
+                            <li>This is a suboption</li>
+                            <li>This is a suboption</li>
+                            <li>This is a suboption</li>
+                            <li>This is a suboption</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li>This is an option</li>
+        </ul>
+
+        <ol>
+            <li>This is an option</li>
+            <li>This is an option</li>
+            <li>This is an option
+                <ol>
+                    <li>This is a suboption</li>
+                    <li>This is a suboption</li>
+                </ol>
+            </li>
+            <li>This is an option
+                <ol>
+                    <li>This is a suboption</li>
+                    <li>This is a suboption
+                        <ol>
+                            <li>This is a suboption</li>
+                            <li>This is a suboption</li>
+                            <li>This is a suboption</li>
+                            <li>This is a suboption</li>
+                        </ol>
+                    </li>
+                </ol>
+            </li>
+            <li>This is an option</li>
+        </ol>
+        <dl>
+            <dt>definition</dt>
+            <dd>An explanation of a definition containing any information deemed needed to have about it.</dd>
+            <dt>definition</dt>
+            <dd>An explanation of a definition containing any information deemed needed to have about it.</dd>
+            <dt>definition</dt>
+            <dd>An explanation of a definition containing any information deemed needed to have about it.</dd>
+        </dl>
+        <div class="info">Hello, im an important info</div>
+        <div class="alert">This is an alert. It has to draw attention.</div>
+        <div class="warning">This is a waring against something very fishy</div>
+        <p><lorem-ipsum></p>
+        <div class="mark">Test</div>  
+        <h2>First important point</h2>
+        <p><lorem-ipsum></p>
+            <h3>An important subpoint</h3>
+            <code class="sample">Just code</code>
+            <p><lorem-ipsum></p>
+            <h4>Even tinier subpoint</h4>
+            <div class="sample" data-code="true">
+                <input type="text">
+            </div>
+            <h4>Even tinier subpoint 2</h4>
+            <h4>Even tinier subpoint 3</h4>
+            <p>Thats all</p>
+        <h2>Second important point</h2>
+        <p><lorem-ipsum></p>
+            <p><lorem-ipsum></p>
+                <code class="sample" data-viewer="true">
+                    This is the code
+                </code>
+        <p><lorem-ipsum></p>
+        <h2>Third important point</h2>
+        <p><lorem-ipsum></p><p><lorem-ipsum></p>
+        <h2>Fourth important point</h2>
+    </section>
+    <section>
+        <h1>This shall be the next article</h1>
+        <p>Albeit a short one</p>
+    </section>
+    <section>
+        <h1>Another article in the series</h1>
+        <p><lorem-ipsum></lorem-ipsum></p>
+    </section>
+    </main>
+</body>
+</html>

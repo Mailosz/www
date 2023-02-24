@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/main.css">
+    <script type="module">
+        import {LoremIpsum} from "./js/ui/LoremIpsum.js";
+        import {DocumentOutline} from "./js/ui/DocumentOutline.js";
+        import {CodeBox} from "./js/codeBox/CodeBox.js";
+        import {MakeSamples} from "./js/sampleMaker/SampleMaker.js";
+
+        MakeSamples();
+
+        LoremIpsum.registerCustomElement();
+        CodeBox.registerCustomElement();
+
+
+        document.body.onload = (event) => {
+            new DocumentOutline(document.getElementById("the-document"), document.getElementById("the-outline"));
+        };
+    </script>
+</head>
+<body>
+    <div id="the-outline">
+
+    </div>
+    <main id="the-document">
+        <h1>Title of the document</h1>
+        <p>Quick introduction to the theme of the document.</p>
+        <p>Some text <input type="text" value="Test"> some other text</p>
+        <p>Some text <input type="number"> some other text</p>
+        <p>Some text <input type="password"> some other text</p>
+        <p>Some text <input type="button" value="TEST"> some other text</p>
+        <p>Some text <label><input type="checkbox">Some option</label> some other text</p>
+        <p>Some text <input type="color"> some other text</p>
+        <p>Some text <input type="date"> some other text</p>
+        <p>Some text <input type="datetime"> some other text</p>
+        <p>Some text <input type="range"> some other text</p>
+        <p>
+            <label><input type="radio" name="opt">Option 1</label><br>
+            <label><input type="radio" name="opt">Option 2</label><br>
+            <label><input type="radio" name="opt">Option 3</label>
+        </p>
+        <p>Some text <label><input type="file" multiple>Please input file</label> some other text</p>
+    </main>
+</body>
+</html>

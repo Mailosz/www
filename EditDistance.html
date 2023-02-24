@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+
+	<script>
+
+		function editDistance(strA, strB) {
+
+			// debugger;
+			const deletionCost = 1;
+			const insertionCost = 1;
+			const substitutionCost = 1;
+
+			let row = new Array(strB.length);
+
+			for (let i = 0; i < row.length; ) {
+				row[i] = ++i;
+			}
+
+			let leftVal; // the value left to current
+			for (let a = 0; a < strA.length; a++){
+				let diagVal = a; // the value in the upper row to current
+				leftVal = a+1;
+				for (let b = 0; b < strB.length; b++) {
+					
+					let cost;
+					if (strA.charAt(a) == strB.charAt(b)) {
+						cost = 0;
+					} else {
+						cost = substitutionCost;
+					}
+
+					leftVal = Math.min(leftVal + deletionCost, row[b] + insertionCost, diagVal + cost);
+					diagVal = row[b];
+					row[b] = leftVal;
+				}
+			}
+
+			return leftVal;
+
+		}
+
+		function showEditDistance(a, b) {
+			let before = Date.now();
+			let res = editDistance(a,b);
+			let time = Date.now() - before;
+			document.writeln(a + ", " + b + " = " + res + "<br>");
+			document.writeln(time + "ms<br>");
+		}
+		
+
+	</script>
+</head>
+<body>
+	<script>
+		showEditDistance("sitting", "kitten");
+		showEditDistance("saturday", "sunday");
+		showEditDistance("cześć", "część");
+		showEditDistance("a", "b");
+		showEditDistance("a", "batuta");
+		showEditDistance("batuta", "a");
+		showEditDistance("telegrafistów", "Telegrafistów");
+		showEditDistance("Thelongestwordthaticouldhavethoughtof", "Najdłuższesłowojakiebyłemwstaniewymyśleć");
+	</script>
+
+</body>
+</html>

@@ -1,0 +1,258 @@
+{
+	"default":{
+		"begin": [{
+			"on": ["tagEnd","htmlCommentEnd", "specialCharEnd", "closingTagEnd"],
+			"by": ""
+		},{
+			"on": ["specialCharStart","specialCharContent"],
+			"by": [" "],
+			"data": {
+				"error": true
+			}
+		}],
+		"default": true,
+		"set": {
+			"html": true,
+			"css": false,
+			"js": false,
+			"quoted": null
+		}
+	},
+	"tagStart": {
+		"begin": [{
+			"on": "default",
+			"by": "<"
+		},{
+			"on": ["specialCharStart","specialCharContent"],
+			"by": ["<"],
+			"data": {
+				"error": true
+			}
+		}],
+		"data": {
+			"color": "maroon"
+		}
+	},
+	"tagName": {
+		"begin": {
+			"on": "tagStart"
+		},
+		"data": {
+			"color": "blue"
+		}
+	},
+		"tagAttrSpace": {
+			"begin": {
+				"on": ["tagName", "tagAttrName", "tagAttrValue"],
+				"by": " "
+			}
+		},
+		"tagAttrName": {
+			"begin": {
+				"on": "tagAttrSpace" 
+			},
+			"data": {
+				"color": "darkblue"
+			}
+		},
+		"tagAttrEqSign": {
+			"begin": {
+				"on": "tagAttrName",
+				"by": "="
+			},
+			"data": {
+				"color": "goldenrod"
+			}
+		},
+		"tagAttrValue": {
+			"begin": {
+				"on": ["tagAttrEqSign", "quoteEnd"]
+			},
+			"data": {
+				"color": "slateblue"
+			}
+		},
+		"quotedValue": {
+			"data": {
+				"color": "slateblue"
+			}
+		},
+			"quoteEnd": {
+
+			},
+			"doublyQuotedValueStart": {
+				"group": "quotedValue",
+				"begin": {
+					"on": "tagAttrValue",
+					"by": "\""
+				},
+				"set":{
+					"quoted": "double"
+				},
+				"data": {
+					"color": "goldenrod"
+				}
+			},
+				"doublyQuotedValueContent": {
+					"group": "quotedValue",
+					"begin": [{
+						"on": "doublyQuotedValueStart"
+					},{
+						"on": "specialChar",
+						"when": {"quoted": "double"}
+					}]
+				},
+				"doublyQuotedValueEnd": {
+					"group": ["quotedValue", "quoteEnd"],
+					"begin": {
+						"on": "doublyQuotedValueContent",
+						"by": "\""
+					},
+					"data": {
+						"color": "goldenrod"
+					}
+				},
+			"singlyQuotedValueStart": {
+				"group": "quotedValue",
+				"begin": {
+					"on": "tagAttrValue",
+					"by": "'"
+				},
+				"set":{
+					"quoted": "single"
+				},
+				"data": {
+					"color": "goldenrod"
+				}
+			},
+				"singlyQuotedValueContent": {
+					"group": "quotedValue",
+					"begin": [{
+						"on": "singlyQuotedValueStart"
+					},{
+						"on": "specialChar",
+						"when": {"quoted": "single"}
+					}]
+				},
+				"singlyQuotedValueEnd": {
+					"group": ["quotedValue", "quoteEnd"],
+					"begin": {
+						"on": "singlyQuotedValueContent",
+						"by": "'"
+					},
+					"data": {
+						"color": "goldenrod"
+					}
+				},
+				"specialChar": {
+					"begin": {
+						"on": "quotedValue",
+						"by": ["\\a","\\c","\\d","\\e","\\f","\\g","\\h","\\i","\\j","\\k","\\l","\\m","\\n","\\o","\\p","\\r","\\s","\\t","\\u","\\w","\\v","\\q","\\x","\\y","\\z","\\'","\\\"","\\\\","\\@","\\#","\\;","\\*","\\&","\\^","\\%"]
+					},
+					"data": {
+						"color": "pink"
+					}
+				},
+
+	"tagEnd": {
+		"begin": [{
+			"on": ["tagStart", "tagName", "tagAttrSpace", "tagAttrName", "tagAttrValue"],
+			"by": ["/>",">"]
+		},{
+			"on": ["tagAttrEqSign"],
+			"by": ["/>",">"],
+			"data": {
+				"error": true
+			}
+		}],
+		"data": {
+			"color": "maroon"
+		}
+	},
+	"closingTagStart": {
+		"begin": [{
+			"on": "default",
+			"by": "</"
+		},{
+			"on": ["specialCharStart","specialCharContent"],
+			"by": ["</"],
+			"data": {
+				"error": true
+			}
+		}],
+		"data": {
+			"color": "maroon"
+		}
+	},
+		"closingTagName": {
+			"begin": {
+				"on": "closingTagStart"
+			},
+			"data": {
+				"color": "blue"
+			}
+		},
+		"closingTagEnd": {
+			"begin": {
+				"on": "closingTagName",
+				"by": ">"
+			},
+			"data": {
+				"color": "maroon"
+			}
+		},
+	"htmlCommentStart": {
+		"begin": {
+			"on": "default",
+			"by": "<!--"
+		},
+		"data": {
+			"color": "green"
+		}
+	},
+		"htmlCommentContent": {
+			"begin": {
+				"on": "htmlCommentStart",
+				"by": ""
+			},
+			"data": {
+				"color": "green"
+			}
+		},
+		"htmlCommentEnd": {
+			"begin": {
+				"on": "htmlCommentContent",
+				"by": "-->"
+			},
+			"data": {
+				"color": "green"
+			}
+		},
+	"specialCharStart": {
+			"begin": {
+				"on": "default",
+				"by": "&"
+			},
+			"data": {
+				"color": "violet"
+			}
+		},
+		"specialCharContent": {
+			"begin": {
+				"on": "specialCharStart",
+				"by": ""
+			},
+			"data": {
+				"color": "violet"
+			}
+		},
+		"specialCharEnd": {
+			"begin": [{
+				"on": "specialCharContent",
+				"by": ";"
+			}],
+			"data": {
+				"color": "violet"
+			}
+		}
+}

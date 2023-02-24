@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/contextmenu.css">
+</head>
+<body>
+    <canvas id="view-canvas" width="500" height="500">
+
+    </canvas>
+
+
+    <script type="module">
+        import {CanvasManager} from "./js/canvas/main.js";
+        import {GraphiesDrawingManager} from "./js/graphies/GraphiesDrawingManager.js";
+        import {GraphiesInputManager} from "./js/graphies/GraphiesInputManager.js";
+
+        export function initialize() {
+            let canvas = document.getElementById('view-canvas');
+            let cm = new CanvasManager(canvas, new GraphiesDrawingManager(canvas.width, canvas.height));
+            cm.setInputManager(new GraphiesInputManager());
+        }
+
+        initialize();
+    </script>
+</body>
+</html>

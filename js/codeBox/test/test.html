@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .codebox {
+            display: grid;
+            grid-template-columns: min-content auto;
+            grid-auto-rows: auto;
+            font-family: monospace;
+        }
+
+        .codebox>div {
+            grid-column: 1 2;
+        }
+
+        .codebox>div::content {
+            grid-column: 2;
+            outline: 1px solid black;
+        }
+
+        .codebox>span {
+            display: block;
+            background: lime;
+            grid-column: 1;
+        }
+
+        .codebox>div::before {
+            grid-column: 1;
+            position: sticky;
+            left: 0px;
+            content: "xxx";
+            background: red;
+        }
+
+
+    </style>
+</head>
+<body>
+    
+    <div class="codebox">
+        <div>linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1linia nr 1</div>
+        <div>linia nr 2</div>
+        <div>linia nr 3</div>
+        <div>linia nr 4</div>
+        <div>linia nr 5</div>
+    </div>
+</body>
+</html>

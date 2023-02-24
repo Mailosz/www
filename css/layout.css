@@ -1,0 +1,117 @@
+html {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    min-height: 100vh;
+}
+
+@media (min-width: 1200px) {
+    html {
+        background-color: #f8f8f8;
+    }
+    main {
+        box-shadow: 0px 0px 20px rgba(0,0,0,0.2);
+        max-width: 1024px;
+        --main-padding: 40px;
+    }
+} 
+
+@media not (min-width: 1200px) {
+    main{
+        --main-padding: max(calc(10vw - 20px), 10px);
+    }
+}
+
+main {
+    
+    /* --main-padding: min(5vw, 24px); */
+
+    background-color: #ffffff;
+    margin: auto;
+    box-sizing: border-box;
+    padding: 40px var(--main-padding);
+    
+}
+
+
+/* markboxes */
+.fullrow {
+    margin-left: calc(var(--main-padding) * -1);
+    margin-right: calc(var(--main-padding) * -1);
+}
+
+.sample:not(.fullscreen) {
+    margin-left: calc(var(--main-padding) * -1);
+    margin-right: calc(var(--main-padding) * -1);
+
+    padding: 4px;
+}
+
+.warning,.info,.alert,.mark {
+    margin-left: calc(var(--main-padding) * -1);
+    margin-right: calc(var(--main-padding) * -1);
+    padding-left: var(--main-padding);
+    padding-right: var(--main-padding);
+
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+    .warning {
+        background-color: #ffaf92;
+    }
+
+    .alert {
+        background-color: #ffff65;
+    }
+
+    .info {
+        background-color: #dff6fe;
+    }
+
+    .mark {
+        background-color: lightgray;
+    }
+
+
+/* headers */
+h1 {
+    font-size: 54px;
+    font-weight: 100;
+    margin: 0.5 0 0.25em 0;
+    line-height: 1.2;
+}
+h2 {
+    font-size: 36px;
+    font-weight: 200;
+    margin: 1em 0 0.5em 0;
+}
+h3 {
+    font-size: 24px;
+    font-weight: 400;
+    margin: 1.5em 0 0.75em 0;
+}
+h4 {
+    font-size: 18px;
+    font-weight: 500;
+    margin: 2.00em 0 1.00em 0;
+}
+h5 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 2.50em 0 1.25em 0;
+}
+h6 {
+    font-size: 16px;
+    font-weight: 800;
+    margin: 3em 0 1.5em 0;
+}
+

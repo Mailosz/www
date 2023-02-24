@@ -1,0 +1,22 @@
+
+.context-menu {
+    background-color: #333;
+    border: 1px solid #aaa;
+    /* box-shadow: 0 0 10px rgba(0,0,0,0.75); */
+    box-shadow: 0 0 40px rgba(255,255,255,0.08);
+    color: white;
+}
+    .context-menu .context-menu-element:hover:not(.disabled) {
+        background-color: #444;
+    }
+    .context-menu .context-menu-element:active:not(.disabled) {
+        background-color: #555;
+    }
+
+        .context-menu .context-menu-shortcut {
+            color: #aaa;
+        }
+
+        .context-menu .context-menu-separator {
+            border-top: 1px #444 solid;
+        }

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/main.css">
+    <title>CSS units overview</title>
+</head>
+<body>
+    <main>
+        <h1>CSS units overview</h1>
+        <p>Units are these funny symbols attached to numbers that change their meanings.</p>
+        <p>CSS has loads of them, and every new version adds more. They are generally really useful supposing you know they exist, remember how to spell them, and understand how to use them.</p>
+        <p>So i gathered here some useful information about hem for my and your benefit.</p>
+        <p>Enjoy.</p>
+        
+        <h2>Units table</h2>
+        <p>First, a quick cheatsheet enumerating availible units:</p>
+        <table>
+            <tbody>
+                <!-- Absolute units -->
+                <tr>
+                    <th>cm</th>
+                    <td rowspan="7">Absolute units</td>
+                    <td>centimeters</td>
+                </tr>
+                <tr>
+                    <th>mm</th>
+                    <td>milimeters</td>
+                </tr>
+                <tr>
+                    <th>Q</th>
+                    <td>1/40 of a centimeter</td>
+                </tr>
+                <tr>
+                    <th>in</th>
+                    <td>inches</td>
+                </tr>
+                <tr>
+                    <th>pt</th>
+                    <td>points (1 point = 1/72 of an inch)</td>
+                </tr>
+                <tr>
+                    <th>pc</th>
+                    <td>picas (1 pica = 1/6 of an inch)</td>
+                </tr>
+                <tr>
+                    <th>px</th>
+                    <td>pixels</td>
+                </tr>
+                <!-- Relative units -->
+                <tr>
+                    <th>%</th>
+                    <td rowspan="1"><a href="percentage">Depends on a variable</a></td>
+                    <td>Percentage </td>
+                </tr>
+                <!-- Viewport units -->
+                <tr>
+                    <th>vh</th>
+                    <td rowspan="4">Viewport (browser window)</td>
+                    <td>1/100 of viewport's <strong>height</strong></td>
+                </tr>
+                <tr>
+                    <th>vw</th>
+                    <td>1/100 of viewport's <strong>width</strong></td>
+                </tr>
+                <tr>
+                    <th>vmax</th>
+                    <td>1/100 of viewport's longer dimension</td>
+                </tr>
+                <tr>
+                    <th>vmin</th>
+                    <td>1/100 of viewport's shorter dimension</td>
+                </tr>
+                <!-- font units -->
+                <tr>
+                    <th>em</th>
+                    <td rowspan="4"><a href="#font-units">Font size</a></td>
+                    <td>Height of the uppercase charater</td>
+                </tr>
+                <tr>
+                    <th>ex</th>
+                    <td>Height of a lowercase character x</td>
+                </tr>
+                <tr>
+                    <th>ch</th>
+                    <td>Width of a "0" character</td>
+                </tr>
+                <tr>
+                    <th>lh</th>
+                    <td>Line height</td>
+                </tr>
+                <tr>
+                    <th>rem</th>
+                    <td rowspan="2">Root element's font size</td>
+                    <td>Height of the uppercase charater of the root element</td>
+                </tr>
+                <tr>
+                    <th>rlh</th>
+                    <td>Line height the root element</td>
+                </tr>
+                <!-- query containers -->
+                <tr>
+                    <th>qw</th>
+                    <td rowspan="6"><a href="#query-containers">Query container</a></td>
+                    <td>Container's width</td>
+                </tr>
+                <tr>
+                    <th>qh</th>
+                    <td>Container's height</td>
+                </tr>
+                <tr>
+                    <th>qi</th>
+                    <td>Container's inline size</td>
+                </tr>
+                <tr>
+                    <th>qb</th>
+                    <td>Container's block size</td>
+                </tr>
+                <tr>
+                    <th>qmin</th>
+                    <td>Container's shorter dimension</td>
+                </tr>
+                <tr>
+                    <th>qmax</th>
+                    <td>Container's longer dimension</td>
+                </tr>
+            </tbody>
+            <thead>
+                <tr>
+                    <th>Unit</th>
+                    <th>Relativity</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+        </table>
+        <h2 id="percentage">What does percentage refer to?</h2>
+        <p>To many things. Turns out thet it depends entirely on a property. So here is a (probably incomplete) list:</p>
+        <table>
+            <tr>
+                <td>
+                    outline<br>
+                    border
+                </td>
+                <td>The styled element's border box</td>
+            </tr>
+            <tr>
+                <td>
+                    content-zoom-limit-max<br>
+                    content-zoom-limit-min
+                </td>
+                <td>The largest and smallest allowed zoom factor respectively</td>
+            </tr>
+            <tr>
+                <td>
+                    background-position
+                </td>
+                <td>Size of the element minus size of the background</td>
+            </tr>
+            <tr>
+                <td>
+                    background-size
+                </td>
+                <td>Size of the element</td>
+            </tr>
+            <tr>
+                <td>
+                    left, top, right, bottom<br>
+                    margin, padding<br>
+                    height, width<br>
+                    max-height, max-width<br>
+                    min-height, min-width
+                </td>
+                <td>Size of a container (styled element's parent)</td>
+            </tr>
+            <tr>
+                <td>
+                    line-height
+                </td>
+                <td>Font size of the element</td>
+            </tr>
+            <tr>
+                <td>
+                    vertical-align
+                </td>
+                <td>Element's line-geight</td>
+            </tr>
+            <tr>
+                <td>
+                    object-position
+                </td>
+                <td>Size of the element</td>
+            </tr>
+            <tr>
+                <td>
+                    word-spacing
+                </td>
+                <td>Size of the affected glyph (letter)</td>
+            </tr>
+        </table>
+        <h2 id="font-units">Font related units</h2>
+        <p>Some units allow to specify size depending on a contextual font dimensions.</p>
+        <p>Font dimensions depend on a text size, but also on the font family used.</p>
+        <p>Here is a quick demo:</p>
+        <div style="padding: 32px; --font-size: 108px; --font-family: Arial;">
+            <label>Font size:<select id="font-size-select">
+                <option>72px</option>
+                <option>96px</option>
+                <option>108px</option>
+                <option>128px</option>
+            </select></label>
+            <div style="display: flex; flex-direction: row; ">
+                <div style="position: relative;"><span style="font-size: var(--font-size); font-family: var(--font-family);">A</span>
+                    <div style="position: absolute; left: 0px; top: 0px; border: 2px solid green; font-size: var(--font-size); font-family: var(--font-family); width: 1em; text-align: center; transform: rotate(-90deg);"><span style="font-size: 16px">1em</span></div>
+                </div>
+                <div>b</div>
+                <div>x</div>
+                <div>0
+
+                </div>
+                <div>1</div>
+                <div>2</div>
+            </div>
+        </div>
+
+        <h2 id="query-containers">Query container units</h2>
+        <p></p>
+        
+        <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    </main>
+</body>
+</html>

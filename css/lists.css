@@ -1,0 +1,30 @@
+ol {
+    padding-left: 1.5em;
+    counter-reset: list-counter;
+    line-height: 1.5;
+}
+
+ol>li {
+    counter-increment: list-counter;
+}
+
+ol ol>li::marker {
+    content: counters(list-counter, ".") ". ";
+}
+
+ul {
+    padding-left: 1.5em;
+    line-height: 1.5;
+}
+
+dl {
+
+}
+
+dt {
+    margin: 20px 0px 4px 0px;
+    font-weight: 600;
+}
+dd {
+    margin: 4px 0px 20px 0px;
+}

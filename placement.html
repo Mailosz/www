@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/contextmenu.css">
+    <style>
+        .elem{
+            flex: 1;
+        }
+
+
+        body {
+            background: lightgray;
+            
+            color: lightgray;
+        }
+
+        .container {
+            display: flex;
+            justify-content: stretch;
+            justify-items: stretch;
+            height: 100px;
+            flex-wrap: wrap;
+            position: relative;
+        }
+
+        .elem {
+            min-width: 100px;
+            min-height: 100px;
+        }
+        .elem.selected {
+            outline: 2px black solid;
+            outline-offset: 2px;
+            z-index: 1;
+        }
+
+        #popup-home {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: none;
+            outline: 1px white solid;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #popup {
+            color: black;
+            position: absolute;
+            border: 1px black solid;
+            padding: 10px;
+            background-color: white;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
+            max-width: 256px;
+        }
+
+        #parent{
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: stretch;
+            justify-items: stretch;
+        }
+    </style>
+</head>
+<body>
+    <div id="parent">
+        
+    </div>
+    <div id="popup-home">
+        <div id="popup">Right click on a rectangle to select a new position for this popup</div>
+    </div>
+    <script type="module">
+        import {Popup} from './js/ui/Popup.js';
+        import {PlacementHelper} from './js/ui/PlacementHelper.js';
+        import {ContextMenu} from './js/ui/ContextMenu.js';
+
+
+        let parent = document.getElementById("parent");
+
+        let backgrounds = ["green", "violet", "darkslateblue", "goldenrod", "darkgreen", "darkorchid", "brown", "darkgreen", "darkorange", "gray"];
+
+        for (let i = 0; i < 50; i++) {
+            let elem = document.createElement("div");
+            elem.classList.add("elem");
+
+            elem.style.flex = 3 + Math.ceil(Math.random() * 5);
+            elem.style.backgroundColor = backgrounds[i % backgrounds.length];
+
+            
+            parent.appendChild(elem);
+            if (i % 6 == 5) {
+                let nl = document.createElement("div");
+                nl.style.width = "100%";
+                parent.appendChild(nl);
+            }
+        }
+
+
+        let elems = document.getElementsByClassName("elem");
+        let popup = document.getElementById("popup");
+        let popupHome = document.getElementById("popup-home");
+
+        let options = {relativeTo: popupHome, keepInside: popupHome}
+
+        for (let elem of elems) {
+            elem.addEventListener("contextmenu", (event) => {
+
+                let selection = document.getElementsByClassName("selected");
+                for (let selel of selection) {
+                    selel.classList.remove("selected");
+                }
+                event.target.classList.add("selected");
+                
+                let menu = [
+                    {
+                        "label": "Open here",
+                        "command": () => {PlacementHelper.computePosition(popup, {x: event.pageX, y: event.pageY}, "left top", options); }
+                    },{
+                        "label": "Open here centered",
+                        "command": () => {PlacementHelper.computePosition(popup, {x: event.pageX, y: event.pageY}, "center", options); }
+                    },
+                    "separator",
+                    {
+                        "label": "Open on the left",
+                        "command": () => {PlacementHelper.computePosition(popup, elem, "left center", options); }
+                    },{
+                        "label": "Open on the top",
+                        "command": () => {PlacementHelper.computePosition(popup, elem, "center top", options); }
+                    },{
+                        "label": "Open on the right",
+                        "command": () => {PlacementHelper.computePosition(popup, elem, "right center", options);}
+                    },{
+                        "label": "Open on the bottom",
+                        "command": () => {PlacementHelper.computePosition(popup, elem, "center bottom", options);}
+                    },
+                    "separator",
+                    {
+                        "label": "Open centered",
+                        "command": () => {PlacementHelper.computePosition(popup, elem, "center", options); }
+                    },
+                    "separator",
+                    {
+                        "label": "Left top corner",
+                        "command": () => {PlacementHelper.computePosition(popup, elem, "left top", options); }
+                    },{
+                        "label": "Right top corner",
+                        "command": () => {PlacementHelper.computePosition(popup, elem, "right top", options); }
+                    },{
+                        "label": "Left bottom corner",
+                        "command": () => {PlacementHelper.computePosition(popup, elem, "left bottom", options);}
+                    },{
+                        "label": "Right bottom corner",
+                        "command": () => {PlacementHelper.computePosition(popup, elem, "right bottom", options);}
+                    },
+                    "separator",
+                    {
+                        "label": "Open inside",
+                        "submenu": [
+                            {
+                                "label": "Open on the left",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "leftIn center", options); }
+                            },{
+                                "label": "Open on the top",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "center topIn", options); }
+                            },{
+                                "label": "Open on the right",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "rightIn center", options);}
+                            },{
+                                "label": "Open on the bottom",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "center bottomIn", options);}
+                            },
+                            "separator",
+                            {
+                                "label": "Left top corner",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "leftIn topIn", options); }
+                            },{
+                                "label": "Right top corner",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "rightIn topIn", options); }
+                            },{
+                                "label": "Left bottom corner",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "leftIn bottomIn", options);}
+                            },{
+                                "label": "Right bottom corner",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "rightIn bottomIn", options);}
+                            },
+                        ]
+                    },{
+                        "label": "Open outside",
+                        "submenu": [
+                            {
+                                "label": "Open on the left",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "leftOut center", options); }
+                            },{
+                                "label": "Open on the top",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "center topOut", options); }
+                            },{
+                                "label": "Open on the right",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "rightOut center", options);}
+                            },{
+                                "label": "Open on the bottom",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "center bottomOut", options);}
+                            },
+                            "separator",
+                            {
+                                "label": "Left top corner",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "leftOut topOut", options); }
+                            },{
+                                "label": "Right top corner",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "rightOut topOut", options); }
+                            },{
+                                "label": "Left bottom corner",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "leftOut bottomOut", options);}
+                            },{
+                                "label": "Right bottom corner",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "rightOut bottomOut", options);}
+                            }
+                        ]
+                    },{
+                        "label": "Open between",
+                        "submenu": [
+                            {
+                                "label": "Open on the left",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "leftMid center", options); }
+                            },{
+                                "label": "Open on the top",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "center topMid", options); }
+                            },{
+                                "label": "Open on the right",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "rightMid center", options);}
+                            },{
+                                "label": "Open on the bottom",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "center bottomMid", options);}
+                            },
+                            "separator",
+                            {
+                                "label": "Left top corner",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "leftMid topMid", options); }
+                            },{
+                                "label": "Right top corner",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "rightMid topMid", options); }
+                            },{
+                                "label": "Left bottom corner",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "leftMid bottomMid", options);}
+                            },{
+                                "label": "Right bottom corner",
+                                "command": () => {PlacementHelper.computePosition(popup, elem, "rightMid bottomMid", options);}
+                            }
+                        ]
+                    }
+                ];
+
+                let cm = new ContextMenu(menu);
+                cm.show(event);
+                event.preventDefault();
+
+            });
+        }
+
+    </script>
+</body>
+</html>

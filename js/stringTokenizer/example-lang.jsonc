@@ -1,0 +1,84 @@
+{
+	/* State name */
+	"default-state":{ 
+		/* defines when state begins */
+		"begin": {
+			/* on which state this rule works */
+			"on": "second-state",
+			/* when this token is encountered this state is chosen */
+			"by": "goto default"
+		},
+		/* this state is the default one (there can only be one; if no state has "default": true, then the first one is default) */
+		"default": true,
+		/* when the state is chosen these variables are set*/
+		"set": {
+			"variable-one": false,
+			"variable-two": "string-value"
+		},
+		/* "data" is not used by the tokenizing engine, but the values here are present for other code */
+		"data": {
+			"description": "this value can be anything"
+		}
+	},
+	/* this is other state's definition  */
+	"other-state": {
+		/* array means that there are many rules on when to start this state */
+		"begin": [{
+			/* array means this rule works on multiple states */
+			"on": ["default-state", "second-state"],
+			/* array means that when any of these tokens is encountered then this state is chosen (longer tokens are checked first) */
+			"by": ["goto 1", "goto one"],
+			/* "set"" inside a begin rule means, that these variables will be set only if this particular rule is used to start the state */
+			"set": {
+				"number": true
+			}
+		},{
+			"on": "default-state",
+			"by": ["goto other"],
+			/* "data" inside a begin rule means, that these variables will be set only if this particular rule is used to start the state */
+			"data": {
+				"other": true
+			}
+		}]
+	},
+	"second-state": {
+		"begin": [{
+				/* longer tokens are evaluated first, so this will have precedence over "goto-1" */
+				"on": "other-state",
+				"by": "goto 1+1"
+			},{
+				/* no "by" value means that this state immediately follows the other-state (unless token belonging to other rule is found) */
+				"on": "default-state",
+				/* this overrides the prcedence of longest-tokens-first - rule with highest importance is checked first (defaults to 0, when not present)*/
+				"importance": 5
+			},{
+				"on": "other-state",
+				/* when checks variables set by "set" and only changes state if their values coresponds to these */
+				"when": {
+					/* only when number = true */
+					"number": true,
+					/* this is AND so both checks must be fullfilled */
+					"variable-one": false
+				},
+				"set": {
+					"number": false
+				}
+			}
+		],
+		/* state-parent is parent of this state - this means that it inherits all its "data", and "set" */
+		"parent": "state-parent",
+		
+		"data": {
+			"color": "blue"
+		}
+	},
+	"state-parent": {
+		"after": {
+			"func": "console.log('state changed');"
+		}
+	},
+	"state-group": {
+		/* this state groups "other-state" and "default-state" - this means that every rule with "on": "state-group" will work on these states */
+		"group": ["other-state", "default-state"]
+	}
+}

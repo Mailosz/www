@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Koloryzowanie składni</title>
+        <meta charset="UTF-8">
+
+        <style>
+            .token:hover{
+                background-color: rgba(127,127,127,0.3);
+            }
+        </style>
+        <script src="./js/StringTokenizer/stringTokenizer.js"></script>
+        <script>
+
+            function prepareLanguage(name){
+                var langRequest = new Request('./js/StringTokenizer/html.json');
+
+                var opts = { 
+                    method: 'GET',
+                    mode: 'same-origin',
+                    cache: 'default' 
+                    };
+
+                return fetch(langRequest, opts).then(function(response) {
+                    return response.json();
+                }).then(function(response) {
+                    return response;
+                });
+            }
+
+
+            async function colorizeAll() {
+
+                let lang = await prepareLanguage("html.json");
+
+                let language = new StringTokenizerLanguage(lang);
+
+                //let tokenizer = new StringTokenizer(language);
+
+                let elems = document.getElementsByClassName("script");
+
+                for (let el of elems){
+
+                    let tokenizer = new StringTokenizer(language, el.innerText);
+                    el.innerHTML = "";
+
+                    while (!tokenizer.isFinished()) {
+                        let token = tokenizer.getNextToken();
+
+                        let span = document.createElement("span");
+                        span.innerText = token.text;
+                        span.classList.add("token");
+                        if (token.data && token.data.color) {
+                            span.style.color = token.data.color;
+                        }
+                        if (token.startData && token.startData.error) {
+                            span.style.textDecoration = "1px wavy red underline";
+                        }
+                        span.title = token.state;
+
+                        el.appendChild(span);
+                    }
+
+                }
+            }
+        </script>
+    </head>
+    <body onload="colorizeAll();">
+        <!-- contenteditable="true" onkeyup="change(this);" -->
+        <code class="script" >
+            &lt;!DOCTYPE html&gt;<br>
+            &lt;html&gt;<br>
+            &lt;!-- To jest komentarz --&gt;<br>
+                &lt;head&gt;<br>
+                    &lt;title>Koloryzowanie składni&lt;/title&gt;<br>
+                    &lt;meta charset="UTF-8"/&gt;<br>
+                    &lt;style&gt;<br>
+                    html,body {height: 100%; content: "&lt;br&gt;"} <br>
+                    &lt;/style&gt;<br>
+                &lt;/head&gt;<br>
+                &lt;body style="background-color: rgba(255,255,255,0.5); color: black"&gt;<br>
+                    &lt;input abc=&gt;
+                    &lt;input type=text autocomplete value="New \"hope \""&gt;<br>
+                    &lt;span id='identyf\'ikator'&gt; &amp;amp &amp;lt&lt;/span&gt;
+                    &lt;code&gt;<br>
+                        To jest napis &amp;copy;Miłosz.O<br>
+                    &lt;/code&gt;<br>
+                    &lt;input&gt;&lt;input&gt;&lt;input&gt;&lt;input&gt;
+                &lt;/body&gt;<br>
+                &lt;/html&gt;<br>
+        </code>
+    </body>
+</html>

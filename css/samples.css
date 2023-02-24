@@ -1,0 +1,123 @@
+.sample {
+    background-color: lightgreen;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: stretch;
+}
+
+    .sample.horizontal {
+        flex-direction: row;
+    }
+
+    .sample.horizontal:not(.fullscreen) {
+        height: 50vh;
+    }
+
+    .sample.fullscreen {
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        right: 0px;
+        bottom: 0px;
+
+        z-index: 1000;
+    }
+
+
+.sample>code-box {
+    display: block;
+    box-sizing: border-box;
+    font-size: 16px;
+    background-color: white;
+    border: 2px #777 solid;
+    overflow: auto;
+}
+    .sample.fullscreen>code-box {
+        height: 50%;
+        flex: 1;
+    }  
+    .sample.horizontal>code-box {
+        width: 50%;
+        height: 100%;
+        flex: 1;
+    }  
+
+
+.sample>.sample-viewer {
+    box-sizing: border-box;
+    width: 100%;
+    border: 2px #777 solid;
+    background-color: white;
+}
+    .sample.fullscreen>.sample-viewer {
+        height: 50%;
+        flex: 1;
+    }  
+    .sample.horizontal>.sample-viewer {
+        width: 50%;
+        height: 100%;
+        flex: 1;
+    }  
+
+
+
+.sample>.sample-menu {
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+    font-size: 16px;
+    background-color: #e0e0e0;
+    border-left: 2px #777 solid;
+    border-right: 2px #777 solid;
+
+    min-height: 32px;
+    min-width: 32px;
+}
+    .sample.horizontal>.sample-menu {
+        flex-direction: column;
+
+        border-left: none;
+        border-right: none;
+        border-top: 2px #777 solid;
+        border-bottom: 2px #777 solid;
+    }
+
+    .sample>.sample-menu>button {
+        background-color: #ddd;
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
+
+        padding: 2px 8px;
+
+        border: none;
+        height: 32px;
+        width: 48px;
+    }
+
+        .sample>.sample-menu>button:hover {
+            background-color: #eee;
+            border: none;
+        }
+        .sample>.sample-menu>button:active {
+            background-color: #aaa;
+            border: none;
+        }
+
+.sample>.sample-menu>.spacer {
+    flex: 10;
+}
+
+.sample>.sample-menu>button.sample-run-button {
+    background-image: url(../res/img/play.png);
+}
+
+.sample:not(.fullscreen)>.sample-menu>button.sample-fullscreen-button {
+    background-image: url(../res/img/fullscreen.png);
+}
+
+.sample.fullscreen>.sample-menu>button.sample-fullscreen-button {
+    background-image: url(../res/img/small.png);
+}

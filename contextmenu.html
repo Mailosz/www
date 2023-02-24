@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/contextmenu.css">
+    <link rel="stylesheet" href="css/contextmenu.light.css">
+
+</head>
+<body>
+    Right click anywhere to test the context menu.
+
+
+    <script type="module">
+        import {ContextMenu} from "./js/ui/ContextMenu.js";
+
+        document.addEventListener("contextmenu", (event) => {
+
+            let items = [[
+            {
+                "icon": "res/img/a.png",
+                "label": "a",
+            },{
+                "icon": "res/img/b.png",
+                "content": "b",
+            },{
+                "icon": "res/img/c.png",
+                "content": "c",
+                "disabled": true
+            },{
+                "icon": "res/img/d.png",
+                "content": "d",
+            }
+        ],{
+            "type":"item",
+            "icon": "res/img/settings.png",
+            "label": "Option 1",
+            "tooltip": "This is an item numero uno",
+            "shortcut": "Alt+A"
+        },{
+            "type":"item",
+            "label": "Option 2",
+            "disabled": true,
+            "shortcut": "Alt+B"
+        }, 
+        "separator",
+        {
+            "label": "Selected or not",
+            "keepOpen": true,
+            "checked": true
+        },{
+            "label": "Selected or not",
+            "keepOpen": true,
+            "checked": false
+        },
+        "separator",
+        {
+            "label": "Selected or not",
+            "keepOpen": true,
+            "checked": false,
+            "radiogroup": "g1"
+        },{
+            "label": "Selected or not",
+            "keepOpen": true,
+            "checked": true,
+            "radiogroup": "g1"
+        },{
+            "label": "Selected or not",
+            "keepOpen": true,
+            "checked": false,
+            "radiogroup": "g1"
+        },
+        "separator",
+        {
+            "type": "item",
+            "label": "More...",
+            "submenu": [
+                {
+                    "type":"item",
+                    "label": "Suboption 1",
+                    "shortcut": "Alt+C"
+                },
+                {
+                    "type":"item",
+                    "label": "Suboption 2",
+                    "shortcut": "Alt+O",
+                    "submenu": [[
+                        {
+                            "content": "1",
+                        },{
+                            "content": "2",
+                        },{
+                            "content": "3",
+                        },{
+                            "content": "4",
+                        },{
+                            "content": "5",
+                        },{
+                            "content": "6",
+                        },{
+                            "content": "7",
+                        },{
+                            "content": "8",
+                        },{
+                            "content": "9",
+                        },{
+                            "content": "10",
+                        },{
+                            "content": "11",
+                        },{
+                            "content": "12",
+                        },{
+                            "content": "13",
+                        },{
+                            "content": "14",
+                        },{
+                            "content": "15",
+                        },{
+                            "content": "16",
+                        },{
+                            "content": "17",
+                        },{
+                            "content": "18",
+                        },{
+                            "content": "19",
+                        },{
+                            "content": "20",
+                        }
+                    ],
+                        {
+                            "type": "item",
+                            "label": "Abracadabra",
+                        },
+                        {
+                            "type": "item",
+                            "label": "Superduper",
+                        },
+                        {
+                            "type": "item",
+                            "label": "Camomile",
+                        }, "separator",{
+                            "label": "Test"
+                        }
+                    ]
+                }
+            ]
+        },{
+            "type": "item",
+            "label": "even more of that things here",
+            "submenu": [
+                {
+                    "type":"item",
+                    "label": "Moreover",
+                    "shortcut": "Alt+W"
+                },
+                {
+                    "type":"item",
+                    "label": "Moravia",
+                    "shortcut": "Alt+M"
+                },
+                {
+                    "type":"item",
+                    "label": "Test"
+                },
+                {
+                    "type":"item",
+                    "label": "Test 2",
+                    "shortcut": "Alt+T"
+                }
+            ]
+        }, {
+            "content": "<input type=range>",
+            "keepOpen": true
+        }]
+        let cm = new ContextMenu(items);
+        cm.show(event.pageX,event.pageY);
+
+            event.preventDefault();
+        });
+    </script>
+</body>
+</html>

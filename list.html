@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .list-view {
+            border: 1px solid black;
+            overflow: auto;
+            display: flex;
+            flex-wrap: nowrap;
+            position: relative;
+        }
+
+        .list-view>.item {
+            flex: 0;
+            padding: 4px;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            cursor: pointer;
+        }
+            .list-view>.item:hover {
+                background-color: #eee;
+            }
+            .list-view>.item:active {
+                background-color: #ddd;
+            }
+            .list-view>.item.selected {
+                background-color: rgb(128, 96, 255);
+            }
+                .list-view>.item.selected:hover {
+                    background-color: rgb(104, 80, 224);
+                }
+                .list-view>.item.selected:active {
+                    background-color: rgb(64, 48, 128);
+                }
+
+        .list-view>.item>.preview {
+            border: 1px solid gray;
+            overflow: hidden;
+            margin: 2px;
+            padding: 2px;
+            user-select: none;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .list-view>.item>.label {
+            text-align: center;
+            max-height: 2em;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+        .list-view .opener {
+            background: white;
+            position: sticky;
+            right: 0px;
+            top: 0px;
+            bottom: 0px;
+            width: 24px;
+        }
+            .list-view .opener:hover {
+                background: #eee;
+
+            }
+            .list-view .opener:active {
+                background: #ddd;
+            }
+    </style>
+    <script type="module">
+        import {ListView} from "./js/ui/ListView.js";
+
+        ListView.registerCustomElement();
+    </script>
+    <scrip>
+
+    </scrip>
+</head>
+<body>
+    <list-view>
+        <div>Opcja 1</div>
+        <div>Opcja 2</div>
+        <div>Opcja 3</div>
+        <div>Opcja 4</div>
+        <div>Opcja 5</div>
+    </list-view>
+
+    <div id="list-view" class="list-view">
+        <div class="item"><div class="preview"><img src="res/img/a.png"></div><div class="label">Option 1</div></div>
+        <div class="item"><div class="preview"><img src="res/img/b.png"></div><div class="label">Option 2</div></div>
+        <div class="item"><div class="preview"><img src="res/img/c.png"></div><div class="label">Option 3</div></div>
+        <div class="item"><div class="preview"><img src="res/img/d.png"></div><div class="label">Option 4</div></div>
+        <div class="item selected"><div class="preview"><img src="res/img/a.png"></div><div class="label">Option 5</div></div>
+        <div class="item"><div class="preview"><img src="res/img/b.png"></div><div class="label">Option 6</div></div>
+        <div class="item"><div class="preview"><img src="res/img/c.png"></div><div class="label">Quite too long of a description honestly 7</div></div>
+        <div class="item"><div class="preview"><img src="res/img/d.png"></div><div class="label">Option 8</div></div>
+        <div class="item"><div class="preview"><img src="res/img/a.png"></div><div class="label">Option 9</div></div>
+        <div class="item"><div class="preview"><img src="res/img/c.png"></div><div class="label">Opt 10</div></div>
+        <div class="item"><div class="preview"><img src="res/img/d.png"></div><div class="label">Opt 11</div></div>
+        <div class="item"><div class="preview"><img src="res/img/a.png"></div><div class="label">Opt 12</div></div>
+        <div class="opener" onclick="openerClick(event)"></div>
+    </div>
+    <script>
+        let items = document.getElementsByClassName("item");
+
+        for (let item of items) {
+            item.addEventListener("click", (event) => {
+                for (let it of items) {
+                    it.classList.remove("selected");
+                }
+                item.classList.add("selected");
+            });
+
+        }
+
+        function openerClick(event) {
+            let listView = document.getElementById("list-view");
+
+            if (listView.style.flexWrap != "wrap") {
+                listView.style.flexWrap = "wrap";
+            } else {
+                listView.style.flexWrap = "nowrap";
+            }
+        }
+    </script>
+</body>
+</html>
