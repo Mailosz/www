@@ -3,8 +3,6 @@
  * @typedef {{x: number, y: number}} Point
  * @typedef {{w: number, h: number}} Size
  * @typedef {string|{horizontal: string, vertical: string}} PlacementOpts 
- * @description PlacementOpts Placement options 23
- * - asasa
  */
 
 export class PlacementHelper {
@@ -37,7 +35,7 @@ export class PlacementHelper {
      * @param {HTMLElement|Point} options.relativeTo - Element or point to which compute the raltive placement
      * @param {Object} options.keepInside - An area to which constrain computed placement (a true value constrains to the document size)
      * 
-     * @returns {Point} - Computed position of an element
+     * @returns {Point} Computed position of an element
      */
     static computePosition(element, anchor, placement, options) {
 

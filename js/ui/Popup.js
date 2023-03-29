@@ -86,6 +86,7 @@ export class Popup {
 
 
         const shadowRoot = this.popup.attachShadow({mode: "open", delegatesFocus: true});
+        shadowRoot.parentPopup = this;
 
 
         let contentContainer = document.createElement("div");
@@ -128,7 +129,7 @@ export class Popup {
 
         // when dismissing popup through pointer input, we wait before the end of a current interaction before stoppping receiving inputs 
         // (or else events such as click will fire underneath the popup)
-        if (pointerId) {
+        if (Number.isFinite(pointerId)) {
             this.backdrop.setPointerCapture(pointerId);
             this.backdrop.addEventListener("pointerup", (event) => backdrop.style.pointerEvents = "none");
         } else {
@@ -149,7 +150,11 @@ export class Popup {
         }
     }
 
-    static getCurrentPopup() {
-        //TODO: do
+    /**
+     * 
+     * @param {HTMLElement} element 
+     */
+    static getPopupOfElement(element) {
+        return element.getRootNode().parentPopup;
     }
 }

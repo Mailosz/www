@@ -84,7 +84,14 @@
             button.innerText = "Open sub-popup";
             button.onclick = (event) => {
 
-                let subcontent = document.createTextNode("This is a subpopup");
+                let subcontent = document.createElement("div");
+                subcontent.appendChild(document.createTextNode("This is a subpopup"));
+                subcontent.appendChild(document.createElement("br"));
+                
+                let b =  document.createElement("button");
+                b.innerText = "Close";
+                b.onclick = (event) => Popup.getPopupOfElement(event.target).hide();
+                subcontent.appendChild(b);
 
                 let subpopup = new Popup(subcontent, {keyboardDismissable: ["Enter", "Escape"], blocksInput: false, pointerDismissable: false});
                 subpopup.show(event.target, "center bottomOut");
