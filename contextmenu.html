@@ -4,17 +4,81 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="css/contextmenu.css">
-    <link rel="stylesheet" href="css/contextmenu.light.css">
+    <title>Contextmenu test</title>
+    <link rel="stylesheet" href="css/popupmenu.css">
+    <link rel="stylesheet" href="css/popupmenu.light.css">
 
 </head>
 <body>
-    Right click anywhere to test the context menu.
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
+    <p>Right click anywhere to test the context menu.</p>
 
 
     <script type="module">
-        import {ContextMenu} from "./js/ui/ContextMenu.js";
+        import {PopupMenu} from "./js/ui/PopupMenu.js";
 
         document.addEventListener("contextmenu", (event) => {
 
@@ -174,8 +238,8 @@
             "content": "<input type=range>",
             "keepOpen": true
         }]
-        let cm = new ContextMenu(items);
-        cm.show(event.pageX,event.pageY);
+        let cm = new PopupMenu(items);
+            cm.show(event.pageX - window.scrollX, event.pageY - window.scrollY);
 
             event.preventDefault();
         });

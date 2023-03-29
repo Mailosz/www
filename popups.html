@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/popup.css">
+
+</head>
+<body>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <!-- <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p> -->
+
+
+    <script type="module">
+        import {Popup} from "./js/ui/Popup.js";
+
+        document.addEventListener("click", (event) => {
+
+            let content = document.createElement("div");
+            content.innerText = "This is a popup's content";
+            
+            let popup = new Popup(content, {});
+            popup.show({x: event.pageX, y: event.pageY});
+
+            event.preventDefault();
+        });
+    </script>
+</body>
+</html>

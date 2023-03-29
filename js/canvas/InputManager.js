@@ -1,5 +1,5 @@
 import { CanvasManager } from "./CanvasManager.js";
-import { ContextMenu } from "./../ui/ContextMenu.js";
+import { PopupMenu } from "../ui/PopupMenu.js";
 
 export class InputManager {
 

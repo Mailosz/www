@@ -1,4 +1,4 @@
-export class ContextMenu {
+export class PopupMenu {
     #pointerOverTimeout = null;
     /**
      * 
@@ -9,14 +9,14 @@ export class ContextMenu {
         this.items = items;
 
         let defaultOptions = {
-            menuClassName: "context-menu",
-            backdropClassName: "context-menu-backdrop",
+            menuClassName: "popup-menu",
+            backdropClassName: "popup-menu-backdrop",
             pointerOverTimeout: 500
         }
 
         // no need to check for nulls
         this.options = {...defaultOptions, ...options};
-        this.aa = 0; //debug
+        // this.aa = 0; //debug
         this.fosuoutDismissAllowed = true;
         this.radiogroups = {}
     }
@@ -81,7 +81,7 @@ export class ContextMenu {
 
     #updateCheckedIndicator(element, checked) {
 
-        const icons = element.getElementsByClassName("context-menu-icon");
+        const icons = element.getElementsByClassName("popup-menu-icon");
         for (const icon of icons) {
             if (checked) {
                 icon.classList.add("checked");
@@ -162,7 +162,7 @@ export class ContextMenu {
         let cm = document.createElement("div");
         cm.tabIndex = 0;
         cm.classList.add(this.options.menuClassName);
-        cm.aaa = this.aa++;
+        // cm.aaa = this.aa++;
 
         let readIcon = (item) => {
 
@@ -178,19 +178,19 @@ export class ContextMenu {
         for (let item of items) {
             if (item === "separator" || item.type == "separator") {
                 let separator = document.createElement("div");
-                separator.classList.add("context-menu-separator");
+                separator.classList.add("popup-menu-separator");
                 cm.appendChild(separator);
             } else if (Array.isArray(item)) { 
                 // list
                 let list = document.createElement("div");
-                list.classList.add("context-menu-list");
+                list.classList.add("popup-menu-list");
                 list.item = item; //binding
                 list.tabIndex = 0;
                 list.addEventListener('pointerover', (event) => this.#pointerOverElement(list, item, cm, event));
 
                 for (let listitem of item) {
                     let element = document.createElement("div");
-                    element.classList.add("context-menu-element");
+                    element.classList.add("popup-menu-element");
                     element.item = listitem; //binding
                     element.tabIndex = 0;
                     
@@ -219,14 +219,14 @@ export class ContextMenu {
 
             } else { // menuitem
                 let element = document.createElement("div");
-                element.classList.add("context-menu-element");
+                element.classList.add("popup-menu-element");
                 element.item = item; //binding
                 element.tabIndex = 0;
                 element.addEventListener('pointerover', (event) => this.#pointerOverElement(element, item, cm, event));
                 
                 
                 let icon = document.createElement("div");
-                icon.classList.add("context-menu-icon");
+                icon.classList.add("popup-menu-icon");
 
                 let img = readIcon(item);
                 if (img != null) {
@@ -237,7 +237,7 @@ export class ContextMenu {
                 if (item.checked != null || item.type == "checkbox") {
                     item.type = "checkbox"; // if "checked" parameter is present the element automatically is considered checkbox
                     //let checkbox = document.createElement("div");
-                    //checkbox.classList.add("context-menu-icon");
+                    //checkbox.classList.add("popup-menu-icon");
                     if (item.checked) {
                         icon.classList.add("checked")
                     } 
@@ -254,19 +254,19 @@ export class ContextMenu {
 
                 if (item.content) {
                     let content = document.createElement("div");
-                    content.classList.add("context-menu-content");
+                    content.classList.add("popup-menu-content");
                     content.innerHTML = item.content;
                     element.appendChild(content);
                 } else {
                     let content = document.createElement("div");
-                    content.classList.add("context-menu-content");
+                    content.classList.add("popup-menu-content");
                     if (item.label) content.innerText = item.label;
                     element.appendChild(content);
                 }
 
                 if (item.shortcut) {
                     let shortcut = document.createElement("div");
-                    shortcut.classList.add("context-menu-shortcut");
+                    shortcut.classList.add("popup-menu-shortcut");
                     shortcut.innerText = item.shortcut;
                     element.appendChild(shortcut);
                 }
@@ -282,7 +282,7 @@ export class ContextMenu {
 
                 if (item.submenu && item.submenu.length > 0) { // submenu
                     let chevron = document.createElement("div");
-                    chevron.classList.add("context-menu-submenu");
+                    chevron.classList.add("popup-menu-submenu");
 
                     element.addEventListener("click", (event) => {
 
@@ -337,7 +337,7 @@ export class ContextMenu {
         let activeElement = document.activeElement;
 
         if (activeElement == null) {
-            activeElement = this.contextMenu;
+            activeElement = this.popupMenu;
         } else { //checking if activeElement is out of the context menu scope
             let parent = activeElement.parentElement;
             while (true) {
@@ -345,7 +345,7 @@ export class ContextMenu {
                     break;
                 } 
                 if (parent == null) {
-                    activeElement = this.contextMenu;
+                    activeElement = this.popupMenu;
                 }
                 parent = parent.parentElement;
             }
@@ -355,9 +355,9 @@ export class ContextMenu {
             case "ArrowDown":
                 event.preventDefault();
                 if (activeElement.classList.contains(this.options.menuClassName)) {
-                    activeElement = activeElement.querySelector(".context-menu-element");
+                    activeElement = activeElement.querySelector(".popup-menu-element");
                 } else {
-                    if (activeElement.parentElement.classList.contains("context-menu-list")) {
+                    if (activeElement.parentElement.classList.contains("popup-menu-list")) {
                         activeElement = activeElement.parentElement;
                     } else {
                         activeElement = activeElement;
@@ -369,11 +369,11 @@ export class ContextMenu {
                         if (next == null) {
                             next = activeElement.parentElement.firstElementChild;
                         }
-                        if (next.classList.contains("context-menu-list")) { // this is a list - select first element
-                            next = next.querySelector(".context-menu-element")
+                        if (next.classList.contains("popup-menu-list")) { // this is a list - select first element
+                            next = next.querySelector(".popup-menu-element")
                             break;
                         }
-                    } while ((counter--) > 0 && (!next.classList.contains("context-menu-element") || next.classList.contains("disabled")));
+                    } while ((counter--) > 0 && (!next.classList.contains("popup-menu-element") || next.classList.contains("disabled")));
                     activeElement = next;
                 }
                 if (activeElement != null) activeElement.focus();
@@ -381,10 +381,10 @@ export class ContextMenu {
             case "ArrowUp":
                 event.preventDefault();
                 if (activeElement.classList.contains(this.options.menuClassName)) {
-                    activeElement = activeElement.querySelector(".context-menu-element");
+                    activeElement = activeElement.querySelector(".popup-menu-element");
                 } 
                 // no else here to overflow
-                if (activeElement.parentElement.classList.contains("context-menu-list")) {
+                if (activeElement.parentElement.classList.contains("popup-menu-list")) {
                     activeElement = activeElement.parentElement;
                 } else {
                     activeElement = activeElement;
@@ -396,11 +396,11 @@ export class ContextMenu {
                     if (prev == null) {
                         prev = activeElement.parentElement.lastElementChild;
                     }
-                    if (prev.classList.contains("context-menu-list")) { // this is a list - select first element
-                        prev = prev.querySelector(".context-menu-element")
+                    if (prev.classList.contains("popup-menu-list")) { // this is a list - select first element
+                        prev = prev.querySelector(".popup-menu-element")
                         break;
                     }
-                } while ((counter--) > 0 && (!prev.classList.contains("context-menu-element") || prev.classList.contains("disabled")));
+                } while ((counter--) > 0 && (!prev.classList.contains("popup-menu-element") || prev.classList.contains("disabled")));
                 activeElement = prev;
 
                 if (activeElement != null) activeElement.focus();
@@ -408,9 +408,9 @@ export class ContextMenu {
             case "ArrowLeft":
                 event.preventDefault();
                 if (activeElement.classList.contains(this.options.menuClassName)) {
-                    activeElement = activeElement.querySelector(".context-menu-element");
+                    activeElement = activeElement.querySelector(".popup-menu-element");
                 }
-                if (activeElement.parentElement.classList.contains("context-menu-list")) {
+                if (activeElement.parentElement.classList.contains("popup-menu-list")) {
                     let prev = activeElement;
                     let counter = activeElement.parentElement.childElementCount;
                     do {
@@ -424,7 +424,7 @@ export class ContextMenu {
                                 prev = activeElement.parentElement.lastElementChild;
                             }
                         }
-                    } while ((counter--) > 0 && (!prev.classList.contains("context-menu-element") || prev.classList.contains("disabled")));
+                    } while ((counter--) > 0 && (!prev.classList.contains("popup-menu-element") || prev.classList.contains("disabled")));
                     activeElement = prev;
                     if (activeElement != null) activeElement.focus();
                 } else if (activeElement.parentElement.parentMenu != null) {
@@ -435,10 +435,10 @@ export class ContextMenu {
             case "ArrowRight":
                 event.preventDefault();
                 if (activeElement.classList.contains(this.options.menuClassName)) {
-                    activeElement = activeElement.querySelector(".context-menu-element");
+                    activeElement = activeElement.querySelector(".popup-menu-element");
                     activeElement.focus();
                 } else {
-                    if (activeElement.parentElement.classList.contains("context-menu-list")) {
+                    if (activeElement.parentElement.classList.contains("popup-menu-list")) {
                         let next = activeElement;
                         let counter = activeElement.parentElement.childElementCount;
                         do {
@@ -446,7 +446,7 @@ export class ContextMenu {
                             if (next == null) {
                                 next = activeElement.parentElement.firstElementChild;
                             }
-                        } while ((counter--) > 0 && (!next.classList.contains("context-menu-element") || next.classList.contains("disabled")));
+                        } while ((counter--) > 0 && (!next.classList.contains("popup-menu-element") || next.classList.contains("disabled")));
                         activeElement = next;
                         activeElement.focus();
 
@@ -459,7 +459,7 @@ export class ContextMenu {
                 }
                 break;
             case "Escape":
-                if (this.#elementOrAnyParent(activeElement, (el) => el == this.contextMenu)) {
+                if (this.#elementOrAnyParent(activeElement, (el) => el == this.popupMenu)) {
                     this.hide();
                 } else {
                     this.#elementOrAnyParent(activeElement, (el) => {
@@ -479,21 +479,22 @@ export class ContextMenu {
                 break;
             case "F9":
                 this.fosuoutDismissAllowed = !this.fosuoutDismissAllowed;
+                console.log("fosuoutDismissAllowed: " + this.fosuoutDismissAllowed);
             default:
                 // search
                 /*if (this.searchinput == null) {
                     this.searchinput = document.createElement("input");
                     this.searchinput.type = "text";
-                    this.searchinput.classList.add("context-menu-search");
-                    if (this.contextMenu.firstChild == null) {
-                        this.contextMenu.appendChild(this.searchinput);
+                    this.searchinput.classList.add("popup-menu-search");
+                    if (this.popupMenu.firstChild == null) {
+                        this.popupMenu.appendChild(this.searchinput);
                     } else {
-                        this.contextMenu.insertBefore(this.searchinput, this.contextMenu.firstChild);
+                        this.popupMenu.insertBefore(this.searchinput, this.popupMenu.firstChild);
                     }
                     
                     this.searchinput.oninput = (event) => {
                         if (this.searchinput.value == "") {
-                            this.contextMenu.removeChild(this.searchinput);
+                            this.popupMenu.removeChild(this.searchinput);
                             this.searchinput = null;
                         }
                     }
@@ -507,7 +508,7 @@ export class ContextMenu {
 
 
     /**
-     * Opens the contextmenu at specified location
+     * Opens the popupmenu at specified location
      * @param {MouseEvent|Number} x Horizontal position or a MouseEvent
      * @param {Number} [y] Vertical position
      */
@@ -539,20 +540,20 @@ export class ContextMenu {
 
 
         //create the menu with items
-        this.contextMenu = this.#constructMenu(this.items);
+        this.popupMenu = this.#constructMenu(this.items);
 
-        this.contextMenu.style.position = "fixed";
-        this.contextMenu.style.top = y + "px";
-        this.contextMenu.style.left = x + "px";
+        this.popupMenu.style.position = "fixed";
+        this.popupMenu.style.top = y + "px";
+        this.popupMenu.style.left = x + "px";
 
 
         
-        this.backdrop.appendChild(this.contextMenu);
+        this.backdrop.appendChild(this.popupMenu);
         document.body.appendChild(this.backdrop);
-        this.contextMenu.focus({"focusVisible": false});
+        this.popupMenu.focus({"focusVisible": false});
 
         // repositioning if exceeds space
-        this.#repositionIfOverflows(this.contextMenu, x, y)
+        this.#repositionIfOverflows(this.popupMenu, x, y)
     }
 
     hide() {

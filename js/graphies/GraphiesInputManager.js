@@ -1,5 +1,5 @@
 import { CanvasManager } from "../canvas/CanvasManager.js";
-import { ContextMenu } from "./../ui/ContextMenu.js";
+import { PopupMenu } from "./../ui/PopupMenu.js";
 import { InputManager, Manipulation } from "../canvas/InputManager.js";
 import { Node, Edge } from "./GraphiesDrawingManager.js";
 

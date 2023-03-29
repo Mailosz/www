@@ -1,0 +1,60 @@
+.data-grid {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 2px;
+    background-color: #aaa;
+}
+
+.data-grid>* {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 2px;
+}
+
+.data-grid>.columns-header:first-child>* {
+    background-color: #eee;
+    position: relative;
+}
+
+    .data-grid>.columns-header:first-child>*>.resizer {
+        position: absolute;
+        top: 0px;
+        right: -4px;
+        width: 8px;
+        height: 100%;
+        cursor: col-resize;
+    }
+
+.data-grid>*>.row-header:first-child {
+    width: 40px;
+    background-color: #eee;
+}
+/* .data-grid>*>.row-header:empty::before {
+    content: counter(row-counter);
+} */
+
+
+.data-grid>*>* {
+    width: 64px;
+    background-color: white;
+    padding: 2px;
+}
+
+/* .data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 40px);
+    grid-template-rows: repeat(auto-fill, 50px);
+    grid-auto-flow: row;
+    gap: 2px;
+    background-color: red;
+}
+
+.data-grid>* {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 2px;
+    background-color: white;
+} */

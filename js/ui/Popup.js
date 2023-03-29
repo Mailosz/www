@@ -1,13 +1,21 @@
-
+import {PlacementHelper} from './PlacementHelper.js';
 
 
 export class Popup {
 
-    constructor(data) {
+    constructor(content, options) {
 
-        this.data = data;
+        let defaultOptions = {
+            dismissable: true,
+            blocksInput: true,
+            seeTroughElement: null,
+            popupClassName: "popup",
+            backdropClassName: "popup-backdrop"
+        }
 
-
+        // no need to check for nulls
+        this.options = {...defaultOptions, ...options};
+        this.content = content;
     }
 
     /**
@@ -18,49 +26,29 @@ export class Popup {
     show(anchor, placement) {
 
         this.backdrop = document.createElement("div");
-        this.backdrop.classList.add("popup-backdrop");
+        this.backdrop.classList.add(this.options.backdropClassName);
 
         this.popup = document.createElement("div");
-        this.popup.classList.add("popup-root");
+        this.popup.classList.add(this.options.popupClassName);
 
         let contentContainer = document.createElement("div");
         contentContainer.classList.add("popup-content-container");
         this.popup.appendChild(contentContainer);
 
-        if (this.data.content) {
-            if (typeof this.data.content == "HTMLElement") {
-                contentContainer.appendChild(this.data.content)
-            } else {
-                contentContainer.innerHTML = this.data.content;
-            }
+        let content;
+        if (this.content instanceof Function) {
+            content = this.content();
+        } else {
+            content = this.content;
         }
 
-        if (this.data.header || this.data.closable) {
-            let header = document.createElement("div");
-            header.classList.add("popup-header");
-
-            if (this.data.header) {
-                let headerContainer = document.createElement("div");
-                headerContainer.classList.add("popup-header-container")
-                header.appendChild(headerContainer);
-
-                if (typeof this.data.header == "HTMLElement") {
-                    headerContainer.appendChild(this.data.header)
-                } else {
-                    headerContainer.innerText = this.data.header;
-                }
-            }
-
-            if (this.data.closable) {
-                let closeButton = document.createElement("div");
-                closeButton.classList.add("popup-close-button");
-                header.appendChild(closeButton);
-            }
-        }
+        contentContainer.appendChild(content);
 
 
         this.backdrop.appendChild(this.popup);
-        document.appendChild(this.backdrop);
+        document.body.appendChild(this.backdrop);
+
+        PlacementHelper.placeElement(this.popup, anchor, placement, {keepInside: this.backdrop});
     }
 
     hide() {
