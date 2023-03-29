@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Popups test</title>
     <link rel="stylesheet" href="css/popup.css">
 
 </head>
@@ -13,13 +13,7 @@
     <p>Click anywhere to open the popup.</p>
     <p>Click anywhere to open the popup.</p>
     <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <!-- <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
+    <p><input autofocus></p>
     <p>Click anywhere to open the popup.</p>
     <p>Click anywhere to open the popup.</p>
     <p>Click anywhere to open the popup.</p>
@@ -60,19 +54,45 @@
     <p>Click anywhere to open the popup.</p>
     <p>Click anywhere to open the popup.</p>
     <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p> -->
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
+    <p>Click anywhere to open the popup.</p>
 
 
     <script type="module">
         import {Popup} from "./js/ui/Popup.js";
 
-        document.addEventListener("click", (event) => {
-
+        document.body.addEventListener("click", (event) => {
+            console.log("BODY");
             let content = document.createElement("div");
-            content.innerText = "This is a popup's content";
+            content.appendChild(document.createTextNode("This is a popup's content"));
+
+            content.appendChild(document.createElement("br"));
+
+            let input = document.createElement("input");
+            content.appendChild(input);
+
+
+            content.appendChild(document.createElement("br"));
+
+            let button = document.createElement("button");
+            button.innerText = "Open sub-popup";
+            button.onclick = (event) => {
+
+                let subcontent = document.createTextNode("This is a subpopup");
+
+                let subpopup = new Popup(subcontent, {keyboardDismissable: ["Enter", "Escape"], blocksInput: false, pointerDismissable: false});
+                subpopup.show(event.target, "center bottomOut");
+            }
+            content.appendChild(button);
             
             let popup = new Popup(content, {});
-            popup.show({x: event.pageX, y: event.pageY});
+            popup.show({x: event.pageX - window.scrollX, y: event.pageY - window.scrollY});
 
             event.preventDefault();
         });

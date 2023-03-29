@@ -46,7 +46,7 @@ export class PlacementHelper {
         let verticalPlacement = "center";
 
         if (placement != null) {
-            if (myVar instanceof String) {
+            if (Object.prototype.toString.call(placement) === "[object String]") {
                 let args = placement.split(" ");
                 if (args.length == 1) {
                     horizontalPlacement = args[0];

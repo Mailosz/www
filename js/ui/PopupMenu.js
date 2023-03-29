@@ -1,3 +1,5 @@
+import { UsefulUtils } from '../UsefulUtils.js';
+
 export class PopupMenu {
     #pointerOverTimeout = null;
     /**
@@ -515,8 +517,8 @@ export class PopupMenu {
     show(x,y) {
 
         if (x instanceof MouseEvent) { /** autoplacement */
-            y = x.pageY;
-            x = x.pageX;
+            y = x.pageY - window.scrollY;
+            x = x.pageX - window.scrollX;
         }
 
         this.backdrop = document.createElement("div");
@@ -557,11 +559,11 @@ export class PopupMenu {
     }
 
     hide() {
+        //do not receive any pointerevents during the hiding animation
         this.backdrop.style.pointerEvents = "none";
-
-        this.backdrop.onanimationend = (event) => {
-            document.body.removeChild(this.backdrop);
-        }
+        //apply hiding class
         this.backdrop.classList.add("hiding");
+        //remove popup after animation finished
+        UsefulUtils.removeElementAfterAllAnimations(this.backdrop);
     }
 }
