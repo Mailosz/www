@@ -1,0 +1,15 @@
+.wait {
+    position: relative;
+}
+
+.wait::after {
+    content: ' ';
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    backdrop-filter: blur(1.5px);
+    clip-path: path(evenodd, "M10,0 A10,10 360 1 0 10.1,0 M10,2 A8,8 360 1 0 10.1,2 Z");
+
+}

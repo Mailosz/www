@@ -9,9 +9,10 @@ export class DrawingManager {
 
         this.zoom = 1;
 
-        this.prepare();
         /** @type {CanvasManager} */
         this.canvas = null;
+        /** @type {CanvasRenderingContext2D} */
+        this.ctx = null;
     }
 
     /**
@@ -23,7 +24,8 @@ export class DrawingManager {
     }
 
     prepare() {
-
+        /** @type {CanvasRenderingContext2D} */
+        this.ctx = this.canvas.canvas.getContext("2d");
     }
 
     zoomBy(factor, origin) {
@@ -34,15 +36,24 @@ export class DrawingManager {
 
     /**
      * Drawing viewport has been changed
-     * @param {Number} w 
-     * @param {Number} h 
+     * @param {Number} w width of the viewport
+     * @param {Number} h height of the viewport
      */
-    resize(width, height, ratio) {
+    resize(width, height) {
         this.width = width;
         this.height = height;
 
-        console.log(`width: ${width}, height: ${height}, ratio: ${ratio}`);
-        this.canvas.redraw();
+        this.ctx.canvas.width = width;
+        this.ctx.canvas.height = height;
+        
+        this.redraw();
+    }
+
+    redraw() {
+        if (this.ctx == null) {
+            this.prepare();
+        }
+        this.draw(this.ctx);
     }
 
     /** 

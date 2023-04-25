@@ -61,6 +61,8 @@ export class PlacementHelper {
             }
         }
 
+
+
         // read anchor
         let anchorX, anchorY, anchorW, anchorH;
         if (anchor instanceof HTMLElement) {
@@ -71,11 +73,16 @@ export class PlacementHelper {
             anchorY = rect.y;
             anchorW = rect.width;
             anchorH = rect.height;
-        } else {
+        } else if (anchor != null) {
             anchorX = anchor.x;
             anchorY = anchor.y;
             anchorW = anchor.w ? anchor.w : 0;
             anchorH = anchor.h ? anchor.w : 0;
+        } else { // anchor == null means we are placing relativeTo a window
+            anchorX = 0;
+            anchorY = 0;
+            anchorW = window.innerWidth;
+            anchorH = window.innerHeight;
         }
 
         let boundingBox = null;

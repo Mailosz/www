@@ -1,16 +1,19 @@
-import {PlacementHelper} from './PlacementHelper.js';
-import { UsefulUtils } from '../UsefulUtils.js';
+import {PlacementHelper} from '../utils/PlacementHelper.js';
+import { UsefulUtils } from '../utils/UsefulUtils.js';
 
 
 export class Popup {
 
     #focusStolen = null;
+    static #currentFocusTrap;
+    #lastFocusTrap;
 
     constructor(content, options) {
 
         let defaultOptions = {
             pointerDismissable: true,
             keyboardDismissable: true,
+            blurDismissable: true,
             blocksInput: true,
             seeTroughElement: null,
             popupClassName: "popup",
@@ -33,6 +36,7 @@ export class Popup {
 
         this.backdrop = document.createElement("div");
         this.backdrop.classList.add(this.options.backdropClassName);
+        this.backdrop.tabIndex = -1;
 
         UsefulUtils.stopPointerEventsBubbling(this.backdrop);
 
@@ -49,16 +53,27 @@ export class Popup {
 
         this.popup = document.createElement("div");
         this.popup.classList.add(this.options.popupClassName);
+        this.popup.parentPopup = this;
+        
 
         if (!this.options.blocksInput) {
             this.backdrop.style.pointerEvents = "none";
             this.popup.style.pointerEvents = "all";
         }
 
+        if (this.options.blurDismissable) {
+            this.backdrop.addEventListener("focusout", (event) => {
+                
+                if (!this.backdrop.contains(event.relatedTarget)) {
+                    this.hide();
+                }
+            });
+        }
+
         if (this.options.keyboardDismissable) {
             
             if (this.options.keyboardDismissable === true) { // use default keyboard dismission key
-                this.popup.addEventListener("keydown", (event)=> {
+                this.backdrop.addEventListener("keydown", (event)=> {
                     if (event.key == "Escape"){
                         event.preventDefault();
                         this.hide();
@@ -66,14 +81,14 @@ export class Popup {
                 });
             } else {
                 if (Array.isArray(this.options.keyboardDismissable)) {
-                    this.popup.addEventListener("keydown", (event)=> {
+                    this.backdrop.addEventListener("keydown", (event)=> {
                         if (this.options.keyboardDismissable.findIndex((element) => element == event.key) >= 0){
                             event.preventDefault();
                             this.hide();
                         }
                     });
                 } else { // treat as string
-                    this.popup.addEventListener("keydown", (event)=> {
+                    this.backdrop.addEventListener("keydown", (event)=> {
 
                         if (this.options.keyboardDismissable == event.key){
                             event.preventDefault();
@@ -85,14 +100,15 @@ export class Popup {
         }
 
 
-        const shadowRoot = this.popup.attachShadow({mode: "open", delegatesFocus: true});
-        shadowRoot.parentPopup = this;
+        //const shadowRoot = this.popup.attachShadow({mode: "open", delegatesFocus: true});
+        //shadowRoot.parentPopup = this;
+        //shadowRoot.styleSheets = document.styleSheets;
 
 
         let contentContainer = document.createElement("div");
         contentContainer.classList.add("popup-content-container");
         
-        shadowRoot.appendChild(contentContainer);
+        this.popup.appendChild(contentContainer);
 
         let content;
         if (this.content instanceof Function) {
@@ -111,12 +127,7 @@ export class Popup {
         PlacementHelper.placeElement(this.popup, anchor, placement, {keepInside: this.backdrop});
 
         //delegating focus
-        this.popup.focus();
-        if (document.activeElement != this.popup) { // this means there is no focusable element
-            // so we are going to make container focusable
-            contentContainer.tabIndex = -1;
-            this.popup.focus();
-        }
+        this.backdrop.focus();
     }
 
     /**
@@ -155,6 +166,14 @@ export class Popup {
      * @param {HTMLElement} element 
      */
     static getPopupOfElement(element) {
-        return element.getRootNode().parentPopup;
+        let parent = element.parentNode;
+        while (parent != null) {
+            if (parent.parentPopup != null) {
+                return parent.parentPopup;
+            }
+
+            parent = parent.parentNode;
+        }
+        throw "No popup";
     }
 }

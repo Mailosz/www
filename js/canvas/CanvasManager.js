@@ -9,8 +9,6 @@ export class CanvasManager {
      */
     constructor(canvasElement, drawing) {
         this.canvas = canvasElement;
-        /** @type {CanvasRenderingContext2D} */
-        this.ctx = canvasElement.getContext("2d");
 
         /** @type {DrawingManager} */
         this.drawing = drawing;
@@ -41,20 +39,41 @@ export class CanvasManager {
             if (entries.length > 0) {
                 const entry = entries[entries.length - 1];
 
-                let ratio = window.devicePixelRatio;
+                let w, h;
+                if (entry.devicePixelContentBoxSize) {
+                    w = entry.devicePixelContentBoxSize[0].inlineSize;
+                    h = entry.devicePixelContentBoxSize[0].blockSize;
+                } else {
+                    if (entry.contentBoxSize) {
+                        if (entry.contentBoxSize[0]) {
+                            w = entry.contentBoxSize[0].inlineSize;
+                            h = entry.contentBoxSize[0].blockSize;
+                        } else {
+                            w = entry.contentBoxSize.inlineSize;
+                            h = entry.contentBoxSize.blockSize;
+                        }
+                    } else {
+                        w = entry.contentRect.width;
+                        h = entry.contentRect.height;
+                    }
+                    w *= window.devicePixelRatio;
+                    h *= window.devicePixelRatio;
+                }
 
-                const w = entry.contentRect.width;
-                const h = entry.contentRect.height;
+                console.log(`width: ${w}, height: ${h}, ratio: ${window.devicePixelRatio}`);
 
-                this.ctx.canvas.width = w;
-                this.ctx.canvas.height = h;
-
-                drawing.resize(w, h, ratio);
+                this.drawing.resize(w, h);
             }
         });
-        this.#canvasResizeObserver.observe(this.canvas);
 
+        try {
+            this.#canvasResizeObserver.observe(this.canvas, {box: 'device-pixel-content-box'});
+        } catch (ex) {
+          // device-pixel-content-box not supported, fallback to content-box
+          this.#canvasResizeObserver.observe(this.canvas, {box: 'content-box'});
+        }
         
+
     }
 
     /**
@@ -75,8 +94,7 @@ export class CanvasManager {
      */
     redraw() {
         if (this.drawing != null) {
-            let ds = this.ctx;
-            this.drawing.draw(ds);
+            this.drawing.redraw();
         }
     }
 
@@ -89,7 +107,10 @@ export class CanvasManager {
         let by = Math.sign(event.deltaY);
         if (Settings.invertMouseWheel) {by *= -1;}
         let factor = (10 + by) / 10;
-        this.drawing.zoomBy(factor, {x: event.offsetX, y: event.offsetY});
+        const dpr = window.devicePixelRatio;
+        const x = event.offsetX * dpr;
+        const y = event.offsetY * dpr;
+        this.drawing.zoomBy(factor, {x: x, y: y});
     }
 
     /**
@@ -105,10 +126,12 @@ export class CanvasManager {
             this.pointers[event.pointerId] = pointer;
         }
 
-        pointer.x = event.offsetX;
-        pointer.y = event.offsetY;
-        pointer.pressX = event.offsetX;
-        pointer.pressY = event.offsetY;
+        const dpr = window.devicePixelRatio;
+
+        pointer.x = event.offsetX * dpr;
+        pointer.y = event.offsetY * dpr;
+        pointer.pressX = event.offsetX * dpr;
+        pointer.pressY = event.offsetY * dpr;
         pointer.pressed = true;
         pointer.pressTime = Date.now();
         pointer.moving = false;
@@ -144,10 +167,12 @@ export class CanvasManager {
             this.pointers[event.pointerId] = pointer;
         }
 
+        const dpr = window.devicePixelRatio;
+
         pointer.lastX = pointer.x;
         pointer.lastY = pointer.y;
-        pointer.x = event.offsetX;
-        pointer.y = event.offsetY;
+        pointer.x = event.offsetX * dpr;
+        pointer.y = event.offsetY * dpr;
         pointer.lastTime = Date.now();
 
         if (pointer.pressed) {
@@ -208,10 +233,11 @@ export class CanvasManager {
             this.pointers[event.pointerId] = pointer;
         }
 
+        const dpr = window.devicePixelRatio;
         pointer.lastX = pointer.x;
         pointer.lastY = pointer.y;
-        pointer.x = event.offsetX;
-        pointer.y = event.offsetY;
+        pointer.x = event.offsetX * dpr;
+        pointer.y = event.offsetY * dpr;
 
         pointer.releaseTime = Date.now();
 
