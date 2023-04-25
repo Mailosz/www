@@ -8,7 +8,10 @@ export class CanvasManager {
      * @param {DrawingManager} drawing
      */
     constructor(canvasElement, drawing) {
-        this.canvas = canvasElement;
+        if (canvasElement == null) {
+            throw "No canvasElement";
+        }
+        this.canvasElement = canvasElement;
 
         /** @type {DrawingManager} */
         this.drawing = drawing;
@@ -22,17 +25,17 @@ export class CanvasManager {
 
         this.redraw();
 
-        this.canvas.selectedIndex = null;
+        this.canvasElement.selectedIndex = null;
 
         //pointer events
-        this.canvas.addEventListener("pointerdown", this.#pointerdown.bind(this));
-        this.canvas.addEventListener("pointermove", this.#pointermove.bind(this));
-        this.canvas.addEventListener("pointerup", this.#pointerup.bind(this));
-        this.canvas.addEventListener("pointercancel", this.#pointercancel.bind(this));
-        this.canvas.addEventListener("wheel", this.#pointerwheel.bind(this));
+        this.canvasElement.addEventListener("pointerdown", this.#pointerdown.bind(this));
+        this.canvasElement.addEventListener("pointermove", this.#pointermove.bind(this));
+        this.canvasElement.addEventListener("pointerup", this.#pointerup.bind(this));
+        this.canvasElement.addEventListener("pointercancel", this.#pointercancel.bind(this));
+        this.canvasElement.addEventListener("wheel", this.#pointerwheel.bind(this));
 
         // disable default contextmenu
-        this.canvas.addEventListener("contextmenu", (event) => event.preventDefault());
+        this.canvasElement.addEventListener("contextmenu", (event) => event.preventDefault());
 
         //size changes
         this.#canvasResizeObserver = new ResizeObserver((entries) => {
@@ -67,10 +70,10 @@ export class CanvasManager {
         });
 
         try {
-            this.#canvasResizeObserver.observe(this.canvas, {box: 'device-pixel-content-box'});
+            this.#canvasResizeObserver.observe(this.canvasElement, {box: 'device-pixel-content-box'});
         } catch (ex) {
           // device-pixel-content-box not supported, fallback to content-box
-          this.#canvasResizeObserver.observe(this.canvas, {box: 'content-box'});
+          this.#canvasResizeObserver.observe(this.canvasElement, {box: 'content-box'});
         }
         
 
@@ -137,7 +140,7 @@ export class CanvasManager {
         pointer.moving = false;
 
 
-        this.canvas.setPointerCapture(event.pointerId);
+        this.canvasElement.setPointerCapture(event.pointerId);
     }
 
     #makePointerData(pointer, id) {
@@ -202,9 +205,11 @@ export class CanvasManager {
                     pointer.startY = pointer.y;
 
                     let data = this.#makePointerData(pointer, event.pointerId);
-                    let manipulation = this.inputManager.beginManipulation(data);
-                    if (manipulation != null) {
-                        this.currentManipulation = manipulation;
+                    if (this.inputManager != null) {
+                        let manipulation = this.inputManager.beginManipulation(data);
+                        if (manipulation != null) {
+                            this.currentManipulation = manipulation;
+                        }
                     }
                 }
             }
@@ -293,7 +298,7 @@ export class CanvasManager {
         pointer.pressed = false;
         
 
-        this.canvas.releasePointerCapture(event.pointerId);
+        this.canvasElement.releasePointerCapture(event.pointerId);
     }
 
     #pointercancel(event) {
@@ -305,7 +310,7 @@ export class CanvasManager {
             this.pointers[event.pointerId] = pointer;
         }
 
-        this.canvas.releasePointerCapture(event.pointerId);
+        this.canvasElement.releasePointerCapture(event.pointerId);
 
         pointer.pressed = false;
         pointer.releaseTime = Date.now();

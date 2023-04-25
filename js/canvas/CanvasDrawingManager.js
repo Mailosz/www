@@ -1,16 +1,16 @@
 //draw
 
-export class CanvasDrawingManager {
+import { DrawingManager } from "./DrawingManager.js";
 
-    constructor (width, height) {
+export class CanvasDrawingManager extends DrawingManager {
 
-        this.width = width;
-        this.height = height;
+    constructor () {
+        super();
 
         this.zoom = 1;
 
         /** @type {CanvasManager} */
-        this.canvas = null;
+        this.cm = null;
         /** @type {CanvasRenderingContext2D} */
         this.ctx = null;
     }
@@ -20,12 +20,16 @@ export class CanvasDrawingManager {
      * @param {CanvasManager} canvasManager 
      */
     setCanvasManager(canvas) {
-        this.canvas = canvas;
+        this.cm = canvas;
     }
 
     prepare() {
+
+        this.width = this.cm.canvasElement.width;
+        this.height = this.cm.canvasElement.height;
+
         /** @type {CanvasRenderingContext2D} */
-        this.ctx = this.canvas.canvas.getContext("2d");
+        this.ctx = this.cm.canvasElement.getContext("2d");
     }
 
     zoomBy(factor, origin) {
@@ -43,8 +47,8 @@ export class CanvasDrawingManager {
         this.width = width;
         this.height = height;
 
-        this.ctx.canvas.width = width;
-        this.ctx.canvas.height = height;
+        this.cm.canvasElement.width = width;
+        this.cm.canvasElement.height = height;
         
         this.redraw();
     }

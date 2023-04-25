@@ -26,9 +26,9 @@
     <script type="module">
         import {CanvasManager, CanvasDrawingManager, TestInputManager} from "./js/canvas/main.js";
 
-        export function initialize() {
+        function initialize() {
             let canvas = document.getElementById('view-canvas');
-            let cm = new CanvasManager(canvas, new CanvasDrawingManager(canvas.width, canvas.height));
+            let cm = new CanvasManager(canvas, new CanvasDrawingManager());
             cm.setInputManager(new TestInputManager());
         }
 
