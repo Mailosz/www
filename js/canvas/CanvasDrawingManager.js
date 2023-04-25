@@ -15,10 +15,6 @@ export class CanvasDrawingManager {
         this.ctx = null;
     }
 
-    resize(width, height) {
-        throw "resize not implemented";
-    }
-
     /**
      * Canvas manager sets itself as context once the InputManager is set
      * @param {CanvasManager} canvasManager 

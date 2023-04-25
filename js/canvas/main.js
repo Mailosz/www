@@ -1,5 +1,5 @@
 import { CanvasManager } from "./CanvasManager.js";
-import { DrawingManager } from "./DrawingManager.js"; 
+import { CanvasDrawingManager } from "./CanvasDrawingManager.js"; 
 import { InputManager, TestInputManager } from "./InputManager.js";
 
-export { CanvasManager, DrawingManager, InputManager, TestInputManager };
+export { CanvasManager, CanvasDrawingManager, InputManager, TestInputManager };
