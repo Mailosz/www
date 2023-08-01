@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code edit</title>
+</head>
+<body>
+    <form>
+        <label>Language definition: <input id="lang-input" name="lang-input" type="file"></label>
+    </form>
+    <script src="./js/StringTokenizer/stringTokenizer.js"></script>
+    <code class="script" contenteditable="true" style="outline: none;" onbeforeinput="console.log(event.getTargetRanges());debugger;">
+        &lt;!DOCTYPE html&gt;<br>
+        &lt;html&gt;<br>
+        &lt;!-- To jest komentarz --&gt;<br>
+            &lt;head&gt;<br>
+                &lt;title>Koloryzowanie składni&lt;/title&gt;<br>
+                &lt;meta charset="UTF-8"/&gt;<br>
+                &lt;style&gt;<br>
+                html,body {height: 100%; content: "&lt;br&gt;"} <br>
+                &lt;/style&gt;<br>
+            &lt;/head&gt;<br>
+            &lt;body style="background-color: rgba(255,255,255,0.5); color: black"&gt;<br>
+                &lt;input abc=&gt;
+                &lt;input type=text autocomplete value="New \"hope \""&gt;<br>
+                &lt;span id='identyf\'ikator'&gt; &amp;amp &amp;lt&lt;/span&gt;
+                &lt;code&gt;<br>
+                    To jest napis &amp;copy;Miłosz.O<br>
+                &lt;/code&gt;<br>
+                &lt;input&gt;&lt;input&gt;&lt;input&gt;&lt;input&gt;
+            &lt;/body&gt;<br>
+            &lt;/html&gt;<br>
+    </code>
+
+    <script>
+
+        function prepareLanguage(name){
+            var langRequest = new Request('./js/StringTokenizer/html.json');
+
+            var opts = { 
+                method: 'GET',
+                mode: 'same-origin',
+                cache: 'default' 
+                };
+
+            return fetch(langRequest, opts).then(function(response) {
+                return response.json();
+            }).then(function(response) {
+                return response;
+            });
+        }
+
+
+        async function colorizeAll() {
+
+            let lang = await prepareLanguage("html.json");
+
+            let language = new StringTokenizerLanguage(lang);
+
+            //let tokenizer = new StringTokenizer(language);
+
+            let elems = document.getElementsByClassName("script");
+
+            for (let el of elems){
+
+                let tokenizer = new StringTokenizer(language, el.innerText);
+                el.innerHTML = "";
+
+                while (!tokenizer.isFinished()) {
+                    let token = tokenizer.getNextToken();
+
+                    let span = document.createElement("span");
+                    span.innerText = token.text;
+                    span.classList.add("token");
+                    if (token.data && token.data.color) {
+                        span.style.color = token.data.color;
+                    }
+                    if (token.startData && token.startData.error) {
+                        span.style.textDecoration = "1px wavy red underline";
+                    }
+                    span.title = token.state;
+
+                    el.appendChild(span);
+                }
+
+            }
+        }
+
+        colorize(container, startElement, language) {
+
+            let code = startElement.innerText;
+            let state = startElement.title;
+
+            let tokenizer = new StringTokenizer(language, code);
+            tokenizer.setState(state);
+
+
+            el.innerHTML = "";
+
+            while (!tokenizer.isFinished()) {
+                let token = tokenizer.getNextToken();
+
+                let span = document.createElement("span");
+                span.innerText = token.text;
+                span.classList.add("token");
+                if (token.data && token.data.color) {
+                    span.style.color = token.data.color;
+                }
+                if (token.startData && token.startData.error) {
+                    span.style.textDecoration = "1px wavy red underline";
+                }
+                span.title = token.state;
+
+                el.appendChild(span);
+            }
+        }
+
+        colorizeAll();
+    </script>
+</body>
+</html>

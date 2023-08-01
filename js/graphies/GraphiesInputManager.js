@@ -55,6 +55,7 @@ export class GraphiesInputManager extends InputManager {
         }
 
         this.canvas.drawing.selectedIndex = sel;
+        if (sel >= 0) console.log(sel + 1)
 
         this.canvas.redraw();
     }

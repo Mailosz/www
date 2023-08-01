@@ -1,0 +1,64 @@
+{
+    "default": {
+        "begin": {
+            "on": "declarationEnd"
+        }
+    },
+    "selector": {
+        "begin": {
+            "on": "default"
+        }
+    },
+    "declarationStart": {
+        "begin": {
+            "on": "selector",
+            "by": "{"
+        },
+		"data": {
+			"color": "maroon"
+		}
+    },
+    "declaration": {
+
+    },
+    "declarationEnd": {
+        "begin": {
+            "on": "declaration",
+            "by": "}"
+        },
+		"data": {
+			"color": "maroon"
+		}
+    },
+    "property": {
+        "group": "declaration",
+        "begin": [{
+            "on": "declarationStart"
+        },{
+            "on": "value",
+            "by": ";"
+        }],
+		"data": {
+			"color": "green"
+		}
+    },
+    "propertyValueSeparator": {
+        "group": "declaration",
+        "begin": [{
+            "on": "property",
+            "by": ":"
+        }],
+		"data": {
+			"color": "black"
+		}
+    },
+    "value": {
+        "group": "declaration",
+        "begin": [{
+            "on": "propertyValueSeparator"
+        }],
+		"data": {
+			"color": "blue"
+		}
+    }
+}

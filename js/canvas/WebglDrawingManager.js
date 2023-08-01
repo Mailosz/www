@@ -1,6 +1,7 @@
 //draw
 
 import { DrawingManager } from "./DrawingManager.js";
+import { WebglEngine } from "./webgl/WebglEngine.js";
 
 export class WebglDrawingManager extends DrawingManager {
 
@@ -13,6 +14,8 @@ export class WebglDrawingManager extends DrawingManager {
         this.cm = null;
         /** @type {WebGLRenderingContext} */
         this.gl = null;
+        /** @type {WebglEngine} */
+        this.engine = null;
     }
 
     /**
@@ -32,56 +35,16 @@ export class WebglDrawingManager extends DrawingManager {
         ///
         ///
         /** @type {WebGLRenderingContext} */
-        let gl = this.cm.canvasElement.getContext("webgl");
+        let gl = this.cm.canvasElement.getContext("webgl2");
         if (!gl) {
             console.error("WebGL error");
         }
         this.gl = gl;
+
+
+        this.engine = new WebglEngine(gl);
         
-        //var vertexShaderSource = document.querySelector("#vertex-shader-2d").text;
-        //var fragmentShaderSource = document.querySelector("#fragment-shader-2d").text;
-        
-        var vertexShader = createShader(gl, gl.VERTEX_SHADER, vertex_shader_2d);
-        var fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragment_shader_2d);
-        
-        this.program = createProgram(gl, vertexShader, fragmentShader);
-        
-        //set attributes position
-        this.positionAttributeLocation = gl.getAttribLocation(this.program, "a_pos");
-        this.positionBuffer = gl.createBuffer();
-        gl.enableVertexAttribArray(this.positionAttributeLocation);
 
-        this.resolutionUniformLocation = gl.getUniformLocation(this.program, "u_res");
-
-        this.colorUniformLocation = gl.getUniformLocation(this.program, "u_color");
-
-
-        function createShader(gl, type, source) {
-            var shader = gl.createShader(type);
-            gl.shaderSource(shader, source);
-            gl.compileShader(shader);
-            var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
-            if (success) {
-                return shader;
-            }
-            
-            console.log(gl.getShaderInfoLog(shader));
-            gl.deleteShader(shader);
-        }
-
-        function createProgram(gl, vertexShader, fragmentShader) {
-            var program = gl.createProgram();
-            gl.attachShader(program, vertexShader);
-            gl.attachShader(program, fragmentShader);
-            gl.linkProgram(program);
-            var success = gl.getProgramParameter(program, gl.LINK_STATUS);
-            if (success) {
-                return program;
-            }
-            
-            console.log(gl.getProgramInfoLog(program));
-            gl.deleteProgram(program);
-        }
 
         ///
         ///
@@ -134,14 +97,12 @@ export class WebglDrawingManager extends DrawingManager {
         gl.clear(gl.COLOR_BUFFER_BIT);
     
         // Tell it to use our program (pair of shaders)
-        gl.useProgram(this.program);
-        gl.uniform2f(this.resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
-        gl.uniform4f(this.colorUniformLocation, 1.0,0,1.0,1.0);
+        gl.useProgram(this.engine.simpleProgram.program);
+        this.engine.simpleProgram.u_res(gl.canvas.width, gl.canvas.height);
+        this.engine.simpleProgram.u_color(0.1, 0.3, 0.7, 1);
+        
 
 
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
-        // three 2d points
         var positions = [
             50,20,
             200, 50,
@@ -151,11 +112,10 @@ export class WebglDrawingManager extends DrawingManager {
             350, 350,
             200, 100
         ];
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+        this.engine.simpleProgram.a_pos(positions);
 
 
-        // Bind the position buffer.
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
+        
         
         // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
         var size = 2;          // 2 components per iteration
@@ -169,44 +129,22 @@ export class WebglDrawingManager extends DrawingManager {
         var offset = 0;
         var count = 7;
         gl.drawArrays(primitiveType, offset, count);
+
+        
+        // gl.drawArrays(gl.TRIANGLE_STRIP /* type */, 0 /* offset */, 7 /* count */);
+
+
+        // var positions2 = [
+        //     250, 120,
+        //     300, 150,
+        //     350, 200,
+        //     400, 300,
+        //     400, 400,
+        //     350, 550,
+        //     500, 100
+        // ];
+        // this.engine.simpleProgram.a_pos(positions2);
+        // this.engine.simpleProgram.u_color(0.7, 0.3, 0.2, 1);
+        // gl.drawArrays(gl.TRIANGLE_STRIP /* type */, 0 /* offset */, 7 /* count */);
     }
 }
-
-
-
-
-const vertex_shader_2d = /*glsl*/`
-    // an attribute will receive data from a buffer
-    attribute vec2 a_pos;
-    uniform vec2 u_res;
-
-    // all shaders have a main function
-    void main() {
-
-        // convert the position from pixels to 0.0 to 1.0
-        vec2 zeroToOne = a_pos / u_res;
-    
-        // convert from 0->1 to 0->2
-        vec2 zeroToTwo = zeroToOne * 2.0;
-    
-        // convert from 0->2 to -1->+1 (clip space)
-        vec2 clipSpace = zeroToTwo - 1.0;
-    
-        gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
-    }
-    `;
-
-
-const fragment_shader_2d = /*glsl*/`
-    // fragment shaders don't have a default precision so we need
-    // to pick one. mediump is a good default
-    precision mediump float;
-
-    uniform vec4 u_color;
-
-    void main() {
-        // gl_FragColor is a special variable a fragment shader
-        // is responsible for setting
-        gl_FragColor = u_color;
-    }
-    `;

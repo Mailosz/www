@@ -3,6 +3,26 @@
  * @typedef {{x: number, y: number}} Point
  * @typedef {{w: number, h: number}} Size
  * @typedef {string|{horizontal: string, vertical: string}} PlacementOpts 
+ * - Horizontal values:
+ * - left - left edge of the anchor, inside
+ * - leftOut - left edge of the anchor, outside
+ * - leftMid - left edge of the anchor, centered
+ * - leftIn - left edge of the anchor, inside
+ * - center - center of the anchor element
+ * - right - right edge of the anchor, outside
+ * - rightOut - right edge of the anchor, outside
+ * - rightMid - right edge of the anchor, centered
+ * - rightIn - right edge of the anchor, inside
+ * - Vertical values:
+ * - top - top edge of the anchor, inside
+ * - topOut - top edge of the anchor, outside
+ * - topMid - top edge of the anchor, centered
+ * - topIn - top edge of the anchor, inside
+ * - center - center of the anchor element
+ * - bottom - bottom edge of the anchor, outside
+ * - bottomOut - bottom edge of the anchor, outside
+ * - bottomMid - bottom edge of the anchor, centered
+ * - bottomIn - bottom edge of the anchor, inside
  */
 
 export class PlacementHelper {
@@ -11,27 +31,7 @@ export class PlacementHelper {
      * @param {HTMLElement|Size} element - An element to be placed  or its dimensions
      * @param {HTMLElement|Point} anchor - An object or rectangle to place popup relative to
      * @param {PlacementOpts} placement - "horizontal vertical" placement values
-     * - Horizontal values:
-     * - left - left edge of the anchor, inside
-     * - leftOut - left edge of the anchor, outside
-     * - leftMid - left edge of the anchor, centered
-     * - leftIn - left edge of the anchor, inside
-     * - center - center of the anchor element
-     * - right - right edge of the anchor, outside
-     * - rightOut - right edge of the anchor, outside
-     * - rightMid - right edge of the anchor, centered
-     * - rightIn - right edge of the anchor, inside
-     * - Vertical values:
-     * - top - top edge of the anchor, inside
-     * - topOut - top edge of the anchor, outside
-     * - topMid - top edge of the anchor, centered
-     * - topIn - top edge of the anchor, inside
-     * - center - center of the anchor element
-     * - bottom - bottom edge of the anchor, outside
-     * - bottomOut - bottom edge of the anchor, outside
-     * - bottomMid - bottom edge of the anchor, centered
-     * - bottomIn - bottom edge of the anchor, inside
-     * @param {HTMLElement} box - Container in which placemnt takes place
+     * @param {Object} options 
      * @param {HTMLElement|Point} options.relativeTo - Element or point to which compute the raltive placement
      * @param {Object} options.keepInside - An area to which constrain computed placement (a true value constrains to the document size)
      * 
@@ -223,10 +223,10 @@ export class PlacementHelper {
 
     /**
      * Computes position using PlacementHelper.computePosition and places element accordingly
-     * @param {*} element 
-     * @param {*} anchor 
-     * @param {*} placement 
-     * @param {*} options 
+     * @param {HTMLElement|Size} element - An element to be placed  or its dimensions
+     * @param {HTMLElement|Point} anchor - An object or rectangle to place popup relative to
+     * @param {PlacementOpts} placement - "horizontal vertical" placement values
+     * @param {Object} options 
      * 
      * @returns {Point} - Computed position of an element
      */

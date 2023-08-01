@@ -34,8 +34,12 @@ export class CanvasManager {
         this.canvasElement.addEventListener("pointercancel", this.#pointercancel.bind(this));
         this.canvasElement.addEventListener("wheel", this.#pointerwheel.bind(this));
 
+
         // disable default contextmenu
         this.canvasElement.addEventListener("contextmenu", (event) => event.preventDefault());
+        //disable mouse events, because they are handled internally
+        this.canvasElement.addEventListener("dblclick", (event) => { event.preventDefault(); event.stopPropagation();}, true);
+        this.canvasElement.addEventListener("mousedown", (event) => { event.preventDefault(); event.stopPropagation();}, true);
 
         //size changes
         this.#canvasResizeObserver = new ResizeObserver((entries) => {

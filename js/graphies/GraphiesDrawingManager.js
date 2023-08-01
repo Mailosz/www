@@ -1,9 +1,9 @@
 //draw
 
-import { DrawingManager } from "../canvas/DrawingManager.js";
+import { CanvasDrawingManager } from "../canvas/CanvasDrawingManager.js";
 
 
-export class GraphiesDrawingManager extends DrawingManager {
+export class GraphiesDrawingManager extends CanvasDrawingManager {
 
     constructor (width, height) {
         super(width, height);
@@ -19,29 +19,20 @@ export class GraphiesDrawingManager extends DrawingManager {
 
         this.zoom = 1;
         this.selectedIndex = -1;
-
-        this.prepare();
     }
 
     prepare() {
+        super.prepare();
+
         this.nodes = [];
         this.edges = [];
-        for (let a = 0; a < 10; a++) {
-            let x = Math.random() * this.width;
-            let y = Math.random() * this.height;
 
-            this.nodes.push(new Node(x,y));
-
-            for (let b = a % 4; b < a; b+= 2+a%3) {
-                this.edges.push(new Edge(this.nodes[b], this.nodes[a]));
-            }
-        }
     }
 
-    zoomBy(factor, origin) {
-        this.zoom = Math.max(0.0001,Math.min(this.zoom * factor, 10000));
-        console.log("zoom: " + this.zoom * 100 + "%");
-    }
+    // zoomBy(factor, origin) {
+    //     this.zoom = Math.max(0.0001,Math.min(this.zoom * factor, 10000));
+    //     console.log("zoom: " + this.zoom * 100 + "%");
+    // }
 
     /** 
      * @param {CanvasRenderingContext2D} ds
@@ -107,6 +98,7 @@ export class GraphiesDrawingManager extends DrawingManager {
 }
 
 export class Node {
+    id;
     x;
     y;
     /** 
@@ -114,11 +106,14 @@ export class Node {
      */
     edges;
     constructor(x,y) {
+        this.id = ++Node.num;
         this.x = x;
         this.y = y;
 
         this.edges = [];
     }
+
+    static num = 0;
 }
 
 export class Edge {
@@ -129,6 +124,7 @@ export class Edge {
     constructor (n1, n2) {
         this.n1 = n1;
         this.n2 = n2;
+        this.final = false;
 
         this.n1.edges.push(this);
         this.n2.edges.push(this);

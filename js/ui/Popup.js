@@ -8,6 +8,18 @@ export class Popup {
     static #currentFocusTrap;
     #lastFocusTrap;
 
+    /**
+     * 
+     * @param {*} content 
+     * @param {Object} options 
+     * @param {boolean} options.pointerDismissable whether the popup should be closed by clicking outside of it
+     * @param {boolean|string|[string]} options.keyboardDismissable whether the popup should be closed by a default key, or a specific key, or a list of keys that should close the popup
+     * @param {boolean} options.blurDismissable whether the popup should be closed when losing focus
+     * @param {boolean} options.blocksInput whether the popup should block pointer interaction with the elements beneath it
+     * @param {boolean} options.seeTroughElement not yet available
+     * @param {string} options.popupClassName class name for a popup container element
+     * @param {string} options.backdropClassName class name for a popup's backdrop element
+     */
     constructor(content, options) {
 
         let defaultOptions = {
@@ -28,18 +40,21 @@ export class Popup {
     /**
      * Shows the popup
      * @param {(HTMLElement|{x,y})} anchor An object or location to place popup relative to
-     * @param {string} placement Placement options
+     * @param {PlacementOpts} placement Placement options
      */
     show(anchor, placement) {
 
+        // popup steals focus - remember where to return it once popup is closed
         this.#focusStolen = document.activeElement;
 
+        // every popup has its own backdrop element
         this.backdrop = document.createElement("div");
         this.backdrop.classList.add(this.options.backdropClassName);
         this.backdrop.tabIndex = -1;
 
         UsefulUtils.stopPointerEventsBubbling(this.backdrop);
 
+        // if a popup is pointerDismissable then clicking outside of it hides the popup
         if (this.options.pointerDismissable) {
             this.backdrop.addEventListener("pointerdown", (event)=> {
                 if (event.target == this.backdrop) {
@@ -51,14 +66,14 @@ export class Popup {
 
 
 
-        this.popup = document.createElement("div");
-        this.popup.classList.add(this.options.popupClassName);
-        this.popup.parentPopup = this;
+        this.popupContainer = document.createElement("div");
+        this.popupContainer.classList.add(this.options.popupClassName);
+        this.popupContainer.parentPopup = this;
         
 
         if (!this.options.blocksInput) {
             this.backdrop.style.pointerEvents = "none";
-            this.popup.style.pointerEvents = "all";
+            this.popupContainer.style.pointerEvents = "all";
         }
 
         if (this.options.blurDismissable) {
@@ -100,7 +115,7 @@ export class Popup {
         }
 
 
-        //const shadowRoot = this.popup.attachShadow({mode: "open", delegatesFocus: true});
+        //const shadowRoot = this.popupContainer.attachShadow({mode: "open", delegatesFocus: true});
         //shadowRoot.parentPopup = this;
         //shadowRoot.styleSheets = document.styleSheets;
 
@@ -108,7 +123,7 @@ export class Popup {
         let contentContainer = document.createElement("div");
         contentContainer.classList.add("popup-content-container");
         
-        this.popup.appendChild(contentContainer);
+        this.popupContainer.appendChild(contentContainer);
 
         let content;
         if (this.content instanceof Function) {
@@ -120,11 +135,11 @@ export class Popup {
         contentContainer.appendChild(content);
 
 
-        this.backdrop.appendChild(this.popup);
+        this.backdrop.appendChild(this.popupContainer);
         document.body.appendChild(this.backdrop);
 
         //placing popup
-        PlacementHelper.placeElement(this.popup, anchor, placement, {keepInside: this.backdrop});
+        PlacementHelper.placeElement(this.popupContainer, anchor, placement, {keepInside: this.backdrop});
 
         //delegating focus
         this.backdrop.focus();

@@ -5,15 +5,20 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="css/basic.css">
     <link rel="stylesheet" href="css/wait.css">
     
 </head>
-<body>
-
+<body style="">
+<br><br>
     <button onclick="document.getElementById('wait-div').classList.toggle('wait');">Toggle wait</button>
-    <div id="wait-div" class="wait" style="background-color: #ddd; width: 200px; height: 150px;">
+    <div id="wait-div" class="wait" style="background-color: #ddd; width: 80%; height: 80%; min-height: 100px;">
         This is a test of waiting for completion
     </div>
 
+    <script type="module">
+        import {WaitIndicator} from "./js/ui/WaitIndicator.js";
+        new WaitIndicator(document.getElementById("wait-div"));
+    </script>
 </body>
 </html>

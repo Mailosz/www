@@ -1,5 +1,9 @@
 export class UsefulUtils {
 
+    /**
+     * Removes the element after all its animations have completed
+     * @param {*} element 
+     */
     static removeElementAfterAllAnimations(element) {
 
         Promise.all(element.getAnimations().map((animation) => animation.finished)).then(()=>{

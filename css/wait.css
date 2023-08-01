@@ -1,3 +1,15 @@
+@keyframes wait-open-animation {
+    0% {transform: scale(0.1);}
+    50% {transform: scale(1.2);}
+    100% {transform: scale(1);}
+}
+
+@keyframes wait-rotate-animation {
+    0% {transform: rotate(0deg);}
+    100% {transform: rotate(360deg);}
+}
+
+
 .wait {
     position: relative;
 }
@@ -12,4 +24,22 @@
     backdrop-filter: blur(1.5px);
     clip-path: path(evenodd, "M10,0 A10,10 360 1 0 10.1,0 M10,2 A8,8 360 1 0 10.1,2 Z");
 
+}
+
+.wait-backdrop {
+    background: rgba(127,127,127, 0.5);
+    position: absolute;
+}
+
+.wait-indicator {
+    animation: wait-rotate-animation linear 1s infinite forwards,wait-open-animation 500ms 1 forwards;
+    animation-composition: accumulate;
+    width: 64px;
+    height: 64px;
+    background-color: red;
+    position: absolute;
+    clip-rule: evenodd;
+    border-radius: 50%;
+    clip-path: inset(50% 50% 0% 0%);
+    background: radial-gradient()
 }

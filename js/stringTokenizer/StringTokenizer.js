@@ -164,8 +164,8 @@ class StringTokenizerLanguage {
 			if (begin.by !== undefined) {
 				by = arrayize(begin.by);
 			} else {
-				if (begin.on === undefined && begin.to === undefined) {
-					throw "Cannot have begin without any of 'on', 'by' or 'to'  (state \"" + name + "\")";
+				if (begin.on === undefined) {
+					throw "Cannot have begin without any of 'on' or 'by'  (state \"" + name + "\")";
 				}
 				by = [""];
 			}
@@ -394,18 +394,19 @@ class StringTokenizer {
 					//this begin is too long
 					continue;
 				}
-				if (watch.when != null) {
-					for (const check in watch.when){
-						if (values[check] !== watch.when[check]){
-							continue outer; // one of values not set
-						}
-					}
-				}
 				//checking in-depth if string matches new token start
 				for (let i = 0; i < watch.start.length; i++){
 					// if characters don't match, then this is not the state you're looking for
 					if (watch.start.charAt(i) != text.charAt(pos + i)){
 						continue outer;
+					}
+				}
+				//now checking all required values if they are set
+				if (watch.when != null) {
+					for (const check in watch.when){
+						if (values[check] !== watch.when[check]){
+							continue outer; // one of values not set
+						}
 					}
 				}
 				//all characters same, found new state

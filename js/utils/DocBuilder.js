@@ -1,4 +1,3 @@
-
 export class DocBuilder {
 
     /**
@@ -10,8 +9,11 @@ export class DocBuilder {
      * 
      * @param {Document} document 
      */
-    constructor(document) {
-        this.#doc = document;
+    constructor(doc) {
+        if (doc == null) {
+            doc = window.document;
+        }
+        this.#doc = doc;
     }
 
     /**
@@ -29,6 +31,10 @@ export class DocBuilder {
 
     getBody() {
         return new TagBuilder(this.#doc.body);
+    }
+
+    getDocument() {
+        return this.#doc;
     }
 
 }

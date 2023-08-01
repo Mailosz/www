@@ -24,6 +24,9 @@ export class DrawingManager {
         this.cm = canvas;
     }
 
+    /**
+     * Called automatically before first draw
+     */
     prepare() {
         throw "prepare not implemented";
     }
