@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./css/popupmenu.css">
+
+    <style>
+        body {
+            display: flex;
+            justify-content: stretch;
+            flex-direction: column;
+            margin: 0;
+            height: 100vh;
+            max-height: 100vh;
+        }
+
+        #toolbox {
+            background: #eee;
+        }
+
+        #canvas-box {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="toolbox">
+        <button id="generate-points">Generuj punkty</button>
+        <button id="delete-points">Usuń wszystko</button>
+        <button id="delete-edges">Usuń połączenia</button>
+        &emsp;
+        <button id="connect-points">Połącz</button>
+        &emsp;
+        <button id="circle-points">W kółko</button>
+        &emsp;
+        <button id="save-button">Save</button>
+        <button id="download-button">Download</button>
+        <button id="restore-button">Restore</button>
+    </div>
+    <div id="canvas-box" style=" position: relative; height: calc(100% - 20px)">
+        <canvas id="view-canvas" style="width: 100%; height: 100%;">
+
+        </canvas>
+    </div>
+
+
+
+    <script type="module">
+        import {CanvasManager} from "./js/canvas/main.js";
+        import {GraphsCanvasManager, Graph} from "./graphs/GraphsCanvasManager.js";
+        import {GraphsInputManager} from "./graphs/GraphsInputManager.js";
+        import {connectAllNodes} from "./graphs/ConnectNodes.js";
+
+        /** @type {CanvasManager} */
+        let cm;
+
+        function initialize() {
+            let canvas = document.getElementById('view-canvas');
+            cm = new GraphsCanvasManager(canvas, new Graph());
+            cm.setInputManager(new GraphsInputManager());
+        }
+
+        initialize();
+
+        document.getElementById("save-button").addEventListener("click", (event) => {
+
+            localStorage.setItem("saved-nodes", JSON.stringify(cm.graph.save()));
+
+        });
+
+        document.getElementById("restore-button").addEventListener("click", (event) => {
+
+            let nodes = localStorage.getItem("saved-nodes");
+
+            if (nodes != null) {
+                nodes = JSON.parse(nodes);
+                cm.graph = new Graph(nodes);
+            }
+
+            cm.drawing.redraw();
+        });
+
+
+        document.getElementById("generate-points").addEventListener("click", (event) => {
+
+            for (let i = 0; i < 100; i++) {
+
+                let x = Math.random() * (cm.drawing.width - 20) + 10;
+                let y = Math.random() * (cm.drawing.height - 20) + 10;
+
+                cm.graph.createNode(x, y);
+                cm.drawing.redraw();
+
+            }
+        });
+
+        document.getElementById("delete-points").addEventListener("click", (event) => {
+            cm.graph.nodes = [];
+            cm.graph.edges = [];
+
+            cm.drawing.redraw();
+        });
+
+        document.getElementById("delete-edges").addEventListener("click", (event) => {removeAllEdges(); cm.drawing.redraw();});
+
+        function removeAllEdges() {
+            for (let node of cm.graph.nodes) {
+                node.edges = [];
+            }
+
+            cm.graph.edges = [];
+        }
+
+        document.getElementById("connect-points").addEventListener("click", (event) => {
+            console.time("connect-points");
+            connectAllNodes(cm.graph);
+            console.timeEnd("connect-points");
+
+            cm.drawing.redraw();
+
+        });
+
+        document.getElementById("circle-points").addEventListener("click", (event) => {
+            
+
+            let i = 0;
+            for (let node of cm.graph.nodes) {
+                let direction = (Math.PI * 2 / cm.graph.nodes.length) * i;
+                i++;
+
+                let size = Math.min(cm.drawing.width, cm.drawing.height) / 2 - 10;
+
+                let x = cm.drawing.width / 2 + Math.sin(direction) * size;
+                let y = cm.drawing.height / 2 + Math.cos(direction) * size
+
+                node.x = x;
+                node.y = y;
+            };
+
+            cm.drawing.redraw();
+
+        });
+
+        
+
+
+        function contestNearest(found, contestedEdge) {
+
+            
+
+            if (contestedFound.node == found.node) {
+                return true;
+            } else if (contestedFound.distance < found.distance) {
+                found.node = contestedFound.node;
+                found.distance = contestedFound.distance;
+                return true;
+            } else {
+                return false;
+            }
+
+        }
+
+
+
+        document.body.addEventListener("keyup", (event) => {
+            //console.log(event);
+            if (event.key == "p") {
+                console.time("connect-points");
+                connectAllNodes();
+                console.timeEnd("connect-points");
+
+                cm.drawing.redraw();
+            }
+            if (event.key == "n") {
+
+                cm.drawing.redraw();
+            }
+            if (event.key == "r") {
+                cm.drawing.redraw();
+            }
+        })
+    </script>
+</body>
+</html>

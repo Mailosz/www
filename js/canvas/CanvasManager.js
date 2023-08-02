@@ -252,20 +252,22 @@ export class CanvasManager {
 
         let primaryButton = (pointer, data) => {
             /** time between two clicks to be considered double click */
-            let dbClickTime = 500;
+            const dbClickTime = 500;
 
             if (pointer.lastClickTime != null && (pointer.releaseTime - pointer.lastClickTime) < dbClickTime) { // double click
                 let dis = Math.sqrt((pointer.pressX - pointer.lastClickX) ** 2 + (pointer.pressY - pointer.lastClickY) ** 2);
 
                 if (dis > 10) { // too far - this is a normal click
                     this.inputManager.click(data);
+                    pointer.lastClickTime = Date.now();
                 } else { // two consecutive clicks near each other - doubleclick
                     this.inputManager.doubleClick(data);
+                    pointer.lastClickTime = null; // to prevent consecutive "doubleclicks" by firing after every next quick single click
                 }
             } else { //single click
                 this.inputManager.click(data);
+                pointer.lastClickTime = Date.now();
             }
-            pointer.lastClickTime = Date.now();
             pointer.lastClickX = pointer.x;
             pointer.lastClickY = pointer.y;
         }
@@ -346,6 +348,8 @@ class PointerInstance {
         this.lastTime = null;
         /** @type {Date} */
         this.releaseTime = null;
+        /** @type {Date} */
+        this.lastClickTime = null;
     }
 }
 

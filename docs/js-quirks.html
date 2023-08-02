@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/main.css">
+    <title>CSS units overview</title>
+</head>
+<body>
+    <main>
+        <h1>Things you don't know about JavaScript</h1>
+        <p>Or the things you wish you didn't have to know</p>
+        <p>There is a saying that if you do not hate the language you are coding in (or an IDE, or framework etc.) then you don't know it well enough.</p>
+        <p>Below is alist of little quirks of the JS that has bitten me over the years. </p>
+        <p>Enjoy.</p>
+        
+        <h2>Object literals in lambda functions</h2>
+        <p>Both lambda function's body and object literals use curly brackets in JS, so it is only natural, that compiler gets confused (it is JS, after all, we would expect nothing less). Consider:</p>
+        <code>
+            // an object literal
+            let obj1 = {a: 1, b: 2}
+
+            // a simple identity lambda (returns value passed as its parameter)
+            let lamda1 = (a) => a;
+
+            // a fancier identity lambda (uses block statement to do the same thing)
+            let lambda2 = (a) => {
+                return a;
+            }
+
+            // doesn't work - compiler thinks that you are trying to use block statement and not an object literal
+            let obj_lambda3 = (a, b) => {
+                a: a,
+                b: b
+            }
+        </code>
+        <p>Of course you can enclose the object literal with another set of brackets, and add return statement to make yourself clear, but that is ugly, and unnecessary verbose. Fortunately you can also use round brackets to do the same. Much cleaner and you don't need the return keyword:</p>
+        <code>
+            //ugly method, but works
+            let lambda1 = (a, b) => {
+                return {a: a, b: b};
+            }
+
+            //nicer method, also works
+            let lambda1 = (a, b) => (return {a: a, b: b});
+        </code>
+        <h2>What does the <del>fox say</del> <i>this</i> point to</h2>
+        <p>JavaScript is a completely reasonable and well defined language. So if it sometimes doesn't work like you would expect it to - it's your fault (and common sense's) not its.</p>
+
+        <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    </main>
+</body>
+</html>

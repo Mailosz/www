@@ -99,15 +99,15 @@ export class Manipulation {
     
     /**
      * 
-     * @param {CanvasManager} canvas 
+     * @param {CanvasManager} cm 
      * @param {Number} index 
      */
-    constructor(canvas, index) {
-        this.canvas = canvas;
+    constructor(cm, index) {
+        this.cm = cm;
         //this.startX = canvas.drawing.nodes[index].x;
         //this.startY = canvas.drawing.nodes[index].y;
 
-        this.canvas.drawing.lines = [{}]
+        this.cm.drawing.lines = [{}]
     }
 
     /**
@@ -116,24 +116,24 @@ export class Manipulation {
      */
     update(data) {
         if (this.index !== null) {
-            let selNode = this.canvas.drawing.nodes[this.canvas.drawing.selectedIndex]; 
+            let selNode = this.cm.drawing.nodes[this.cm.drawing.selectedIndex]; 
             selNode.x = this.startX + data.lastX - data.pressX;
             selNode.y = this.startY + data.lastY - data.pressY;
         }
-        this.canvas.redraw();
+        this.cm.redraw();
     }
     
     complete() {
-        this.canvas.drawing.selectedIndex = null;
+        this.cm.drawing.selectedIndex = null;
     }
 
     cancel() {
         if (this.index !== null) {
-            let selNode = this.nodes[this.canvas.drawing.selectedIndex]; 
+            let selNode = this.nodes[this.cm.drawing.selectedIndex]; 
             selNode.x = this.startX;
             selNode.y = this.startY;
         }
-        this.canvas.redraw();
+        this.cm.redraw();
     }
 }
 
