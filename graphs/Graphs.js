@@ -22,8 +22,9 @@ export class Graph {
                 }
     
                 for (let edge of saved.edges) {
-                    let n1 = this.nodes.find((n) => n.id == edge.n1);
-                    let n2 = this.nodes.find((n) => n.id == edge.n1);
+                    let n1 = this.nodes.find((n) => n.id == edge.a);
+                    let n2 = this.nodes.find((n) => n.id == edge.b);
+
                     this.createEdge(n1, n2);
                 }
 
