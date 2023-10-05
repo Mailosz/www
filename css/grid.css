@@ -3,7 +3,7 @@
     flex-direction: column;
     flex-wrap: nowrap;
     gap: 2px;
-    background-color: #aaa;
+    background-color: #aaa; 
 }
 
 .data-grid>* {

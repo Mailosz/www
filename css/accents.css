@@ -1,0 +1,19 @@
+.warning {
+    background-color: #ffaf92;
+}
+
+.alert {
+    background-color: #ffff65;
+}
+
+.success {
+    background-color: #aaffaa;
+}
+
+.info {
+    background-color: #dff6fe;
+}
+
+.mark {
+    background-color: lightgray;
+}

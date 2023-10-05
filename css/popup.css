@@ -39,3 +39,22 @@
     box-shadow: 0px 0px 15px rgba(127,127,127,0.5);
     border: 1px #333 solid;
 }
+
+dialog {
+    box-shadow: 0 0 20px rgba(127,127,127,0.5);
+    border: 1px solid gray;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+dialog[open] {
+    animation: open-popup-menu 500ms;
+}
+
+dialog {
+    animation: hide-popup 5000ms;
+}
+
+dialog:modal::backdrop {
+    background-color: rgba(127, 127, 127, 0.1);
+}

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./css/main.css">
+    <title>Fetch test</title>
+    <style>
+        body {
+            padding: 10px;
+        }
+        #status {
+            padding: 10px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.7);
+            position: fixed;
+            right: 20px;
+            bottom: 50px;
+            border: 1px solid gray;
+        }
+
+        #status.wait {
+            background-color: #93d2f7;
+        }
+
+        data-field {
+            border: 1px solid gray;
+            border-radius: 4px;
+            box-shadow: 0 0 4px rgba(0,0,0,0.5);
+            padding: 4px;
+            display: block;
+        }
+        
+    </style>
+    <script type="module" src="./js/data/DataField.js"></script>
+</head>
+<body>
+    <data-field></data-field>
+
+    <data-field name="field1" onmodified="console.log('test')"></data-field>
+
+    <data-field value="test value" disabled></data-field>
+    <br><br>
+    <button id="fetch-1">Test</button>
+
+    <div id="status">Nothing happens</div>
+
+    <input id="counter">
+
+    <script type="module">
+        import {RequestManager} from './js/data/RequestManager.js';
+
+        // let es = new EventSource("http://localhost:8088/events");
+
+        // es.onmessage = (event) => {
+        //     let counter = document.getElementById("counter");
+        //     counter.value = event.data;
+        // };
+
+        let cm = new RequestManager("test");
+
+        let button = document.getElementById("fetch-1");
+
+        button.onclick = () => {
+            cm.send(new Request("http://localhost:8088/test"), () => console.log("success"), "test-uuid");
+        }
+
+        cm.onsuccess = () => { 
+            let status = document.getElementById("status");
+            status.style.backgroundColor = "lightgreen";
+
+            status.innerHTML = "Sending success!!!"
+        }
+        cm.onwait = () => { 
+            let status = document.getElementById("status");
+            status.style.backgroundColor = "lightblue";
+
+            status.innerHTML = "Please wait..."
+        }
+        cm.onfail = () => { 
+            let status = document.getElementById("status");
+            status.style.backgroundColor = "lightcoral";
+
+            status.innerHTML = "Sending data failed :("
+        }
+        cm.onerror = () => { 
+            let status = document.getElementById("status");
+            status.style.backgroundColor = "lightcoral";
+
+            status.innerHTML = "Error :/"
+        }
+
+    </script>
+</body>
+</html>

@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Popups test</title>
-    <link rel="stylesheet" href="css/popup.css">
+    <link rel="stylesheet" href="./css/main.css">
     <style>
 
         .popup-backdrop:focus-within>.popup {
@@ -19,62 +19,76 @@
             background-color: lightblue;
             padding: 4px 20px;
         }
+
+        button:hover {
+            background-color: lightskyblue;
+        }
     </style>
 </head>
 <body>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p><input autofocus></p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p style="position: absolute; left: 100px;"><button id="showPopup" style="position: absolute; left: 100px; top: 100px;">Show popup</button></p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
-    <p>Click anywhere to open the popup.</p>
+    <main>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p><input autofocus></p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p><button id="showPopupFlyout">Show flyout popup</button></p>
+        <p>Click anywhere to open the popup.</p>
+        <p><button id="showPopupfixed">Show fixed popup</button></p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p><button onclick="document.getElementById('dialog').show()">Pokaż</button></p>
+        <p><button onclick="document.getElementById('dialog').showModal()">Pokaż modalnie</button></p>
+        <dialog id="dialog" onclick="console.log('x')">
+            <p>To jest testowy dialog.</p>
+            <button onclick="document.getElementById('dialog').close();">Zamknij</button>
+        </dialog>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p>
+    </main>
+    
 
 
     <script type="module">
@@ -111,7 +125,8 @@
             event.preventDefault();
         }
 
-        document.getElementById("showPopup").addEventListener("click", showPopup);
+        document.getElementById("showPopupFlyout").addEventListener("click", showPopup);
+        document.getElementById("showPopupFixed").addEventListener("click", showPopup);
     </script>
 </body>
 </html>

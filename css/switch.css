@@ -3,6 +3,7 @@ input[type=checkbox].switch {
     font-size: medium;
     margin: 0px 4px 2px 0px;
     vertical-align: middle;
+    cursor: pointer;
 }
 
 .switch {
@@ -15,6 +16,7 @@ input[type=checkbox].switch {
     background-color: lightgray;
     transition: background-color 200ms, border-color 200ms;
     box-sizing: border-box;
+    cursor: pointer;
 }
     .switch.checked, .switch:checked {
         background-color: lightgreen;

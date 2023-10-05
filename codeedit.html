@@ -11,7 +11,7 @@
         <label>Language definition: <input id="lang-input" name="lang-input" type="file"></label>
     </form>
     <script src="./js/StringTokenizer/stringTokenizer.js"></script>
-    <code class="script" contenteditable="true" style="outline: none;" onbeforeinput="console.log(event.getTargetRanges());debugger;">
+    <code class="script" contenteditable="true" style="outline: none;" onbeforeinput="edit(event);" oninput="edit(event);">
         &lt;!DOCTYPE html&gt;<br>
         &lt;html&gt;<br>
         &lt;!-- To jest komentarz --&gt;<br>
@@ -29,7 +29,8 @@
                 &lt;code&gt;<br>
                     To jest napis &amp;copy;Miłosz.O<br>
                 &lt;/code&gt;<br>
-                &lt;input&gt;&lt;input&gt;&lt;input&gt;&lt;input&gt;
+                &lt;input&gt;&lt;input&gt;&lt;input&gt;&lt;input&gt;<br>
+                &lt;script&gt;//Some script &lt;br&gt; &lt;/script&gt;<br>
             &lt;/body&gt;<br>
             &lt;/html&gt;<br>
     </code>
@@ -88,7 +89,7 @@
             }
         }
 
-        colorize(container, startElement, language) {
+        function colorize(container, startElement, language) {
 
             let code = startElement.innerText;
             let state = startElement.title;
@@ -118,6 +119,22 @@
         }
 
         colorizeAll();
+
+        /**
+         * @param {Event} event
+         */
+        function edit(event) {
+
+            let editContainer = event.currentTarget;
+
+            let selection = window.getSelection();
+
+
+            // colorizeAll();
+
+            // window.getSelection().
+            // console.log(event.getTargetRanges());
+        }
     </script>
 </body>
 </html>

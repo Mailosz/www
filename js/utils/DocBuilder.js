@@ -17,13 +17,17 @@ export class DocBuilder {
     }
 
     /**
-     * 
+     * Creates new tag builder
      * @returns {TagBuilder}
      */
     tag(tagname, options) {
         return new TagBuilder(this.#doc.createElement(tagname, options));
     }
 
+    /**
+     * Creates new text node
+     * @returns {TagBuilder}
+     */
     text(text) {
         return this.#doc.createTextNode(text);
     }
@@ -171,6 +175,11 @@ class TagBuilder {
     }
 }
 
+/**
+ * Executes function for every tag; if tag is a tagbuilder then it builds it (executes getTag)
+ * @param {*} tags 
+ * @param {*} func 
+ */
 function forEveryTag(tags, func) {
     for (const tag of tags) {
         let elem = null;
