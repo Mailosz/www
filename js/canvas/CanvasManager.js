@@ -7,15 +7,16 @@ export class CanvasManager {
      * @param {HTMLCanvasElement} canvasElement
      * @param {DrawingManager} drawing
      */
-    constructor(canvasElement, drawing) {
+    constructor(canvasElement) {
         if (canvasElement == null) {
             throw "No canvasElement";
         }
         this.canvasElement = canvasElement;
 
-        /** @type {DrawingManager} */
-        this.drawing = drawing;
-        this.drawing.setCanvasManager(this);
+        // /** @type {DrawingManager} */
+        // this.drawing = drawing;
+        // this.drawing.setCanvasManager(this);
+        this.drawing = null;
 
         /** @type {InputManager} */
         this.inputManager = null;
@@ -69,7 +70,9 @@ export class CanvasManager {
 
                 console.log(`width: ${w}, height: ${h}, ratio: ${window.devicePixelRatio}`);
 
-                this.drawing.resize(w, h);
+                if (this.drawing != null) {
+                    this.drawing.resize(w, h);
+                }
             }
         });
 
@@ -84,7 +87,7 @@ export class CanvasManager {
     }
 
     /**
-     * 
+     * Sets the DrawingManager used to handle user input
      * @param {InputManager} inputManager 
      */
     setInputManager(inputManager) {
@@ -94,6 +97,19 @@ export class CanvasManager {
 
         this.inputManager = inputManager;
         this.inputManager.setCanvasManager(this);
+    }
+
+    /**
+     * Sets the DrawingManager used to draw contents
+     * @param {DrawingManager} drawingManager 
+     */
+    setDrawingManager(drawingManager) {
+        if (this.drawing != null) {
+            this.drawing.close();
+        }
+
+        this.drawing = drawingManager;
+        this.drawing.setCanvasManager(this);
     }
 
     /**
@@ -213,6 +229,7 @@ export class CanvasManager {
                         let manipulation = this.inputManager.beginManipulation(data);
                         if (manipulation != null) {
                             this.currentManipulation = manipulation;
+                            manipulation.setCanvasManager(this);
                         }
                     }
                 }

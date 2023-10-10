@@ -12,7 +12,7 @@ export class InputManager {
 
         this.interaction = null;
         /** @type {CanvasManager} */
-        this.canvas = null;
+        this.cm = null;
     }
 
     /**
@@ -20,7 +20,7 @@ export class InputManager {
      * @param {CanvasManager} canvasManager 
      */
     setCanvasManager(canvasManager) {
-        this.canvas = canvasManager;
+        this.cm = canvasManager;
     }
 
     /**
@@ -102,12 +102,16 @@ export class Manipulation {
      * @param {CanvasManager} cm 
      * @param {Number} index 
      */
-    constructor(cm, index) {
-        this.cm = cm;
-        //this.startX = canvas.drawing.nodes[index].x;
-        //this.startY = canvas.drawing.nodes[index].y;
+    constructor() {
 
-        this.cm.drawing.lines = [{}]
+    }
+
+    /**
+     * Canvas manager sets itself as context once the Manipulation is returned from beginManipulation in InputManager
+     * @param {CanvasManager} canvasManager 
+     */
+    setCanvasManager(canvasManager) {
+        this.cm = canvasManager;
     }
 
     /**
@@ -115,25 +119,15 @@ export class Manipulation {
      * @param {GestureData} data 
      */
     update(data) {
-        if (this.index !== null) {
-            let selNode = this.cm.drawing.nodes[this.cm.drawing.selectedIndex]; 
-            selNode.x = this.startX + data.lastX - data.pressX;
-            selNode.y = this.startY + data.lastY - data.pressY;
-        }
-        this.cm.redraw();
+        throw "Manipulation.update not implemented"
     }
     
     complete() {
-        this.cm.drawing.selectedIndex = null;
+        throw "Manipulation.complete not implemented"
     }
 
     cancel() {
-        if (this.index !== null) {
-            let selNode = this.nodes[this.cm.drawing.selectedIndex]; 
-            selNode.x = this.startX;
-            selNode.y = this.startY;
-        }
-        this.cm.redraw();
+        throw "Manipulation.cancel not implemented"
     }
 }
 
@@ -155,7 +149,7 @@ export class TestInputManager extends InputManager {
         super();
         this.interaction = null;
         /** @type {CanvasManager} */
-        this.canvas = null;
+        this.cm = null;
     }
 
 
@@ -164,8 +158,8 @@ export class TestInputManager extends InputManager {
      * @param {PointerData} pointer 
      */
     click(pointer) {
-        this.canvas.drawing.click = {x: pointer.x, y: pointer.y};
-        this.canvas.redraw();
+        this.cm.drawing.click = {x: pointer.x, y: pointer.y};
+        this.cm.redraw();
     }
 
     /**
@@ -173,8 +167,8 @@ export class TestInputManager extends InputManager {
      * @param {PointerData} pointer 
      */
     doubleClick(pointer) {
-        this.canvas.drawing.dbClick = {x: pointer.x, y: pointer.y};
-        this.canvas.redraw();
+        this.cm.drawing.dbClick = {x: pointer.x, y: pointer.y};
+        this.cm.redraw();
     }
 
     /**
@@ -182,8 +176,8 @@ export class TestInputManager extends InputManager {
      * @param {PointerData} pointer 
      */
     alternativeClick(pointer) {
-        this.canvas.drawing.altClick = {x: pointer.x, y: pointer.y};
-        this.canvas.redraw();
+        this.cm.drawing.altClick = {x: pointer.x, y: pointer.y};
+        this.cm.redraw();
     }
 
     /**
@@ -191,8 +185,8 @@ export class TestInputManager extends InputManager {
      * @param {PointerData} data 
      */;
     hover(pointer) {
-        this.canvas.drawing.mouse = {x: pointer.x, y: pointer.y};
-        this.canvas.redraw();
+        this.cm.drawing.mouse = {x: pointer.x, y: pointer.y};
+        this.cm.redraw();
     }
 
     /**
@@ -202,7 +196,7 @@ export class TestInputManager extends InputManager {
      */
     beginManipulation(pointer) {
 
-        return new TestManipulation(this.canvas, pointer);
+        return new TestManipulation(this.cm, pointer);
 
     }
 
@@ -222,10 +216,6 @@ export class TestManipulation extends Manipulation {
     constructor(canvas, pData) {
         super(canvas);
         this.canvas = canvas;
-
-        //this.startX = canvas.drawing.nodes[index].x;
-        //this.startY = canvas.drawing.nodes[index].y;
-
         this.canvas.drawing.lines = [{x: pData.pressX, y: pData.pressY}];
     }
 

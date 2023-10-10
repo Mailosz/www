@@ -4,12 +4,12 @@ export class MathUtils {
 
     /**
      * Computes distance between two points
-     * @param {*} a 
-     * @param {*} b 
+     * @param {Point} a 
+     * @param {Point} b 
      * @returns 
      */
     static pointsDistance(a, b) {
-        return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y));
+        return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
     }
 
     /**

@@ -8,8 +8,6 @@ export class DrawingManager {
 
         /** @type {CanvasManager} */
         this.cm = null;
-        /** @type {CanvasRenderingContext2D} */
-        this.ctx = null;
     }
 
     resize(width, height) {
@@ -17,7 +15,7 @@ export class DrawingManager {
     }
 
     /**
-     * Canvas manager sets itself as context once the InputManager is set
+     * Canvas manager sets itself as context once the DrawingManager is set
      * @param {CanvasManager} canvasManager 
      */
     setCanvasManager(canvas) {
@@ -40,6 +38,10 @@ export class DrawingManager {
         throw "redraw not implemented";
     }
 
+
+    close() {
+        console.log("DrawingManager closed")
+    }
 
 }
 

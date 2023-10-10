@@ -17,7 +17,8 @@
 
         function initialize() {
             let canvas = document.getElementById('view-canvas');
-            let cm = new CanvasManager(canvas, new WebglDrawingManager());
+            let cm = new CanvasManager(canvas);
+            cm.setDrawingManager(new WebglDrawingManager());
             //cm.setInputManager(new TestInputManager());
         }
 

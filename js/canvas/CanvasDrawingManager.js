@@ -6,11 +6,6 @@ export class CanvasDrawingManager extends DrawingManager {
 
     constructor () {
         super();
-
-        this.zoom = 1;
-
-        /** @type {CanvasManager} */
-        this.cm = null;
         /** @type {CanvasRenderingContext2D} */
         this.ctx = null;
     }
@@ -72,6 +67,12 @@ export class CanvasDrawingManager extends DrawingManager {
 
         
         ds.clearRect(0, 0, this.width, this.height);
+
+        ds.moveTo(0,0);
+        ds.lineTo(this.width, this.height);
+        ds.moveTo(this.width,0);
+        ds.lineTo(0, this.height);
+        ds.stroke();
 
         ds.strokeStyle = "black";
         ds.rect(1,1,this.width - 2, this.height - 2);

@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="../css/popupmenu.css">
-    <style>
+    <title>Curves test</title>
+    <link rel="stylesheet" href="../../css/main.css">
+    <!-- <style>
         html {
             height: 100%;
         }
@@ -15,7 +15,7 @@
             height: calc(100% - 16px);
 
         }
-    </style>
+    </style> -->
 </head>
 <body>
     <canvas id="view-canvas" style="width: 100%; height: 100%;">
@@ -24,13 +24,11 @@
 
 
     <script type="module">
-        import {CanvasManager, CanvasDrawingManager, TestInputManager} from "../js/canvas/main.js";
+        import {CurveCanvas} from "./scripts/CurveCanvas.js";
 
         function initialize() {
             let canvas = document.getElementById('view-canvas');
-            let cm = new CanvasManager(canvas);
-            cm.setDrawingManager(new CanvasDrawingManager());
-            cm.setInputManager(new TestInputManager());
+            let cm = new CurveCanvas(canvas);
         }
 
         initialize();
