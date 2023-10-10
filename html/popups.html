@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Popups test</title>
-    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="../css/main.css">
     <style>
 
         .popup-backdrop:focus-within>.popup {
@@ -36,18 +36,17 @@
         <p>Click anywhere to open the popup.</p>
         <p><button id="showPopupFlyout">Show flyout popup</button></p>
         <p>Click anywhere to open the popup.</p>
-        <p><button id="showPopupfixed">Show fixed popup</button></p>
+        <p><button id="showPopupFixed">Show fixed popup</button></p>
         <p>Click anywhere to open the popup.</p>
         <p>Click anywhere to open the popup.</p>
         <p>Click anywhere to open the popup.</p>
         <p>Click anywhere to open the popup.</p>
         <p>Click anywhere to open the popup.</p>
-        <p><button onclick="document.getElementById('dialog').show()">Pokaż</button></p>
-        <p><button onclick="document.getElementById('dialog').showModal()">Pokaż modalnie</button></p>
-        <dialog id="dialog" onclick="console.log('x')">
+        <p><button onclick="document.getElementById('ox-popup').open()">Pokaż</button></p>
+        <ox-popup id="ox-popup" modal="true" placement="left top">
             <p>To jest testowy dialog.</p>
-            <button onclick="document.getElementById('dialog').close();">Zamknij</button>
-        </dialog>
+            <button onclick="document.getElementById('ox-popup').close();">Zamknij</button>
+        </ox-popup>
         <p>Click anywhere to open the popup.</p>
         <p>Click anywhere to open the popup.</p>
         <p>Click anywhere to open the popup.</p>
@@ -92,8 +91,9 @@
 
 
     <script type="module">
-        import {Popup} from "./js/ui/Popup.js";
-        import {DocBuilder} from "./js/utils/DocBuilder.js";
+        import {Popup} from "../js/ui/Popup.js";
+        import {OxPopup} from "../js/ui/controls/OxPopup.js";
+        import {DocBuilder} from "../js/utils/DocBuilder.js";
 
         function showPopup(event) {
 

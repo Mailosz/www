@@ -1,4 +1,4 @@
-export class BaseElement extends HTMLElement {
+export class OxControl extends HTMLElement {
     constructor() {
       super();
     }

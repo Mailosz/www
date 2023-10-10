@@ -1,5 +1,5 @@
-import { UsefulUtils } from "../utils/UsefulUtils.js";
-import {BaseElement} from "./BaseElement.js";
+import { UsefulUtils } from "../../utils/UsefulUtils.js";
+import {OxControl} from "./OxControl.js";
 
 let style = /*CSS*/`
 #notification-wrapper {
@@ -74,7 +74,9 @@ let template = /*HTML*/`
 `;
 
 
-export class Notification extends BaseElement {
+export class OxNotification extends OxControl {
+
+    static observedAttributes = ["closeable"];
 
     constructor() {
         super();
@@ -141,4 +143,4 @@ export class Notification extends BaseElement {
 
 }
 
-customElements.define("ui-notification", Notification);
+customElements.define("ui-notification", OxNotification);
