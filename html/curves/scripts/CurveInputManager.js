@@ -1,6 +1,9 @@
 import { InputManager, Manipulation } from "../../../js/canvas/InputManager.js";
 import { PointerData, GestureData } from "../../../js/canvas/InputManager.js";
+import { GenericUserAction } from "../../../js/canvas/UserAction.js";
 import { CurvesData } from "./CurvesData.js";
+import { ClosednesChange } from "./changes/ClosednesChange.js";
+import { PointMoveManipulation } from "./manipulations/PointMoveManipulation.js";
 
 export class CurveInputManager extends InputManager {
 
@@ -11,6 +14,8 @@ export class CurveInputManager extends InputManager {
     constructor(data) {
         super();
         this.data = data;
+
+        this.actions.push(new GenericUserAction("Space", "Change closedness", "", (cm) => new ClosednesChange(this.isClosed, !this.isClosed)))
     }
 
 
@@ -74,35 +79,3 @@ export class CurveInputManager extends InputManager {
 
 }
 
-class PointMoveManipulation extends Manipulation {
-
-    constructor(point) {
-        super();
-        this.point = point;
-        this.startX = point.x;
-        this.startY = point.y;
-    }
-
-    /**
-     * 
-     * @param {GestureData} data 
-     */
-    update(data) {
-        
-        this.point.x = data.x;
-        this.point.y = data.y;
-
-        this.cm.redraw();
-    }
-    
-    complete() {
-        this.cm.redraw();
-    }
-
-    cancel() {
-        this.point.x = this.startX;
-        this.point.y = this.startY;
-
-        this.cm.redraw();
-    }
-}

@@ -1,5 +1,7 @@
 import { InputManager, PointerData } from "./InputManager.js";
 import { Settings } from "./Settings.js";
+import { GenericUserAction } from "./UserAction.js";
+import { UserChange } from "./UserChange.js";
 
 export class CanvasManager {
     #canvasResizeObserver
@@ -12,6 +14,7 @@ export class CanvasManager {
             throw "No canvasElement";
         }
         this.canvasElement = canvasElement;
+        this.canvasElement.tabIndex = "0"; // without tab index canvasElement wouldn't produce keyboard events
 
         // /** @type {DrawingManager} */
         // this.drawing = drawing;
@@ -22,11 +25,14 @@ export class CanvasManager {
         this.inputManager = null;
         this.currentManipulation = null;
 
+        this.userChanges = [];
+        this.commitedChangesCount = 0;
+
         this.pointers = {};
 
-        this.redraw();
-
-        this.canvasElement.selectedIndex = null;
+        //keyboard events
+        this.canvasElement.addEventListener("keydown", this.#keydown.bind(this));
+        this.canvasElement.addEventListener("keyup", this.#keyup.bind(this));
 
         //pointer events
         this.canvasElement.addEventListener("pointerdown", this.#pointerdown.bind(this));
@@ -122,6 +128,61 @@ export class CanvasManager {
     }
 
     /**
+     * Performs the change and adds it to the list of commited changes to allow to undo it
+     * @param {UserChange} change 
+     */
+    commitChange(change) {
+        try {
+            change.commit(this);
+            if (this.commitedChangesCount < this.userChanges.length) {
+                this.userChanges.splice(this.commitedChangesCount, this.userChanges.length - this.commitedChangesCount);
+            }
+            this.userChanges.push(change);
+            this.commitedChangesCount = this.userChanges.length;
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    /**
+     * Reverts last user change
+     * @param {UserChange|undefined} change 
+     */
+    revertChange() {
+        try {
+            if (this.commitedChangesCount > 0) {
+                this.commitedChangesCount -= 1;
+                const change = this.userChanges[this.commitedChangesCount];
+
+                if (change != null) {
+                    change.revert(this);
+                }
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    /**
+     * Reverts last user change
+     * @param {UserChange|undefined} change 
+     */
+    redoChange() {
+        try {
+            if (this.commitedChangesCount < this.userChanges.length) {
+                const change = this.userChanges[this.commitedChangesCount];
+                this.commitedChangesCount += 1;
+
+                if (change != null) {
+                    change.commit(this);
+                }
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    /**
      * 
      * @param {WheelEent} event 
      */
@@ -148,6 +209,9 @@ export class CanvasManager {
             pointer  = new PointerInstance();
             this.pointers[event.pointerId] = pointer;
         }
+
+        //this is to allow capturing for keyboard input
+        this.canvasElement.focus({focusVisible: false, preventScroll: true});
 
         const dpr = window.devicePixelRatio;
 
@@ -292,8 +356,11 @@ export class CanvasManager {
         if (pointer.pressed) {
             if (pointer.moving) { // end of manipulation
                 if (this.currentManipulation != null) {
-                    this.currentManipulation.complete();
+                    let change = this.currentManipulation.complete();
                     this.currentManipulation = null;
+                    if (change != null) {
+                        this.commitChange(change);
+                    }
                 }
             } else { // click
                 if (this.inputManager != null) { // if there is no input manager, there is no need to process thiss
@@ -344,6 +411,77 @@ export class CanvasManager {
         }
     }
 
+    pressedKeys = {};
+    #keydown(event) {
+
+        this.pressedKeys[event.code] = true;
+
+        let keyData = new KeyboardData();
+        keyData.pressedKeys = this.pressedKeys;
+        keyData.code = event.code;
+
+
+        let result;
+        if ( //check handleKey of manipulation, then inputmanager, then this CanvasManager
+            (this.currentManipulation != null && (result = this.currentManipulation.handleKey(keyData))) ||
+            (this.inputManager != null && (result = this.inputManager.handleKey(keyData))) ||
+            (result = this.handleKey(keyData))
+        ) {
+            if (result !== true) {
+                this.commitChange(result);
+            }
+        } 
+    }
+
+    #keyup(event) {
+        this.pressedKeys[event.code] = undefined;
+    }
+
+    /**
+     * Handle keyboard input.
+     * @param {*} keyData 
+     * @returns Return UserChange for CanvasManager to execute, or true to inform CM that input has been handled. Return null or false to make it try another input handler.
+     */
+    handleKey(keyData) {
+
+        for (let action of this.actions) {
+            if (this.checkKeyboardShortcut(action.keyboardShortcut, keyData.pressedKeys)) {
+                console.log(action.getName() + ": " + action.getDescription());
+                action.perform(this);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns true if all keys of this shortcut are curently pressed
+     * @param {string} shortcut 
+     * @param {*} pressedKeys 
+     */
+    checkKeyboardShortcut(shortcut, pressedKeys) {
+        let keys = shortcut.split("+");
+
+        for (let key of keys) {
+            if (!pressedKeys[key]) {
+                return false;
+            }
+        }
+        // all keys of this shortcut are pressed
+        return true;
+    }
+
+
+    actions = [
+        new GenericUserAction("ControlLeft+KeyZ","Undo", "Undo last change", (cm) => cm.revertChange()),
+        new GenericUserAction("ControlLeft+KeyY","Redo", "Redo last change", (cm) => cm.redoChange()),
+    ]
+}
+
+class KeyboardData {
+    pressedKeys={};
+    code=null;
 }
 
 class PointerInstance {
