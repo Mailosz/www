@@ -77,7 +77,7 @@ export class GenericUserAction {
      * @returns The UserChange for CanvasManager to commit
      */
     perform(cm) {
-        this.actionFunction(cm);
+        return this.actionFunction(cm);
     }
 
 }

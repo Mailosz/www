@@ -17,8 +17,8 @@ export class CurveDrawingManager extends CanvasDrawingManager {
         ds.resetTransform();
         ds.clearRect(0, 0, this.width, this.height);
 
-        let drawCircle = (p) => {
-            ds.ellipse(p.x, p.y, 5, 5, 0, 0, 2*Math.PI);
+        let drawCircle = (p, r = 5) => {
+            ds.ellipse(p.x, p.y, r, r, 0, 0, 2*Math.PI);
         }
 
         let drawSmoothSegment = (a, b, c) => {
@@ -65,11 +65,18 @@ export class CurveDrawingManager extends CanvasDrawingManager {
 
                 ds.lineWidth = 2;
                 ds.beginPath();
-                ds.fillStyle = "green";
+                ds.fillStyle = "lime";
                 drawCircle(lastSegment.cp2);
                 ds.fill();
                 ds.stroke();
-            } 
+
+            } else if (lastSegment.cp1 != null) {
+                ds.lineWidth = 1;
+                ds.beginPath();
+                ds.moveTo(lastSegment.position.x, lastSegment.position.y);
+                ds.lineTo(lastSegment.cp1.x, lastSegment.cp1.y);
+                ds.stroke();
+            }
 
             if (currentSegment.cp1 != null) {
                 ds.lineWidth = 1;
@@ -78,25 +85,18 @@ export class CurveDrawingManager extends CanvasDrawingManager {
                 ds.lineTo(currentSegment.cp1.x, currentSegment.cp1.y);
                 ds.stroke();
 
-                if (currentSegment.cp2 == null) {
-                    ds.lineWidth = 1;
-                    ds.beginPath();
-                    ds.moveTo(currentSegment.position.x, currentSegment.position.y);
-                    ds.lineTo(currentSegment.cp1.x, currentSegment.cp1.y);
-                    ds.stroke();
-                }
-
                 ds.lineWidth = 2;
                 ds.beginPath();
-                ds.fillStyle = "green";
+                ds.fillStyle = "lime";
                 drawCircle(currentSegment.cp1);
                 ds.fill();
                 ds.stroke();
             }
 
+            ds.lineWidth = 2;
             ds.beginPath();
-            ds.fillStyle = "blue";
-            drawCircle(currentSegment.position);
+            ds.fillStyle = "white";
+            drawCircle(lastSegment.position, 6);
             ds.fill();
             ds.stroke();
         }
@@ -110,6 +110,7 @@ export class CurveDrawingManager extends CanvasDrawingManager {
             }
             if (this.data.isClosed) {
                 drawSegment(this.data.segments[0]);
+                ds.fillStyle = "lightblue";
                 ds.fill();
             }
             ds.stroke();

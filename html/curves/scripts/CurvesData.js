@@ -2,9 +2,9 @@ import { MathUtils } from "../../../js/utils/MathUtils.js";
 
 export class CurvesData {
 
-    isclosed = false;
+    isClosed = false;
     segments = [
-        {position: {x: 100, y: 100},},
+        {cp1: {x: 400, y: 250}, cp2: {x: 100, y: 250}, position: {x: 100, y: 100}},
         {cp1: {x: 100, y: 50}, cp2: {x: 200, y: 50}, position: {x: 200, y: 100}},
         {cp1: {x: 200, y: 150}, cp2: {x: 300, y: 150}, position: {x: 300, y: 100}},
         {cp1: {x: 350, y: 50},  position: {x: 400, y: 100}},

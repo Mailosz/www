@@ -1,8 +1,13 @@
-import { CanvasManager } from "./CanvasManager.js";
+import { CanvasManager, KeyboardData } from "./CanvasManager.js";
 import { PopupMenu } from "../ui/PopupMenu.js";
+import { UserAction } from "./UserAction.js";
 
 export class InputManager {
 
+    /**
+     * @type {UserAction[]} Actions in this InputManager context that can be invoked by keyboard
+     */
+    keyboardActions = [];
 
     constructor() {
 
@@ -67,10 +72,18 @@ export class InputManager {
 
     /**
      * Handle keyboard input.
-     * @param {*} keyData 
+     * @param {KeyboardData} keyData 
      * @returns Return UserChange for CanvasManager to execute, or true to inform CM that input has been handled. Return null or false to make it try another input handler.
      */
     handleKey(keyData) {
+
+        for (let action of this.keyboardActions) {
+            if (keyData.keyWatcher.checkKeyboardShortcut(action.keyboardShortcut)) {
+                this.cm.performUserAction(action);
+                return true;
+            }
+        }
+
         return false;
     }
 }
@@ -103,6 +116,11 @@ export class GestureData extends PointerData {
  * Represents a single continous action a user takes
  */
 export class Manipulation {
+
+    /**
+     * @type {UserAction[]} Actions in this Manipulation context that can be invoked by keyboard
+     */
+    keyboardActions = [];
     
     /**
      * 
@@ -146,10 +164,18 @@ export class Manipulation {
 
     /**
      * Handle keyboard input.
-     * @param {*} keyData 
+     * @param {KeyboardData} keyData 
      * @returns Return UserChange for CanvasManager to execute, or true to inform CM that input has been handled. Return null or false to make it try another input handler.
      */
     handleKey(keyData) {
+
+        for (let action of this.keyboardActions) {
+            if (keyData.keyWatcher.checkKeyboardShortcut(action.keyboardShortcut)) {
+                this.cm.performUserAction(action);
+                return true;
+            }
+        }
+
         return false;
     }
 }

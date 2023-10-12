@@ -2,7 +2,7 @@ import { InputManager, Manipulation } from "../../../js/canvas/InputManager.js";
 import { PointerData, GestureData } from "../../../js/canvas/InputManager.js";
 import { GenericUserAction } from "../../../js/canvas/UserAction.js";
 import { CurvesData } from "./CurvesData.js";
-import { ClosednesChange } from "./changes/ClosednesChange.js";
+import { FigureCloseChange } from "./changes/FigureCloseChange.js";
 import { PointMoveManipulation } from "./manipulations/PointMoveManipulation.js";
 
 export class CurveInputManager extends InputManager {
@@ -15,7 +15,7 @@ export class CurveInputManager extends InputManager {
         super();
         this.data = data;
 
-        this.actions.push(new GenericUserAction("Space", "Change closedness", "", (cm) => new ClosednesChange(this.isClosed, !this.isClosed)))
+        this.keyboardActions.push(new GenericUserAction("Space", "Change closedness", "", (cm) => new FigureCloseChange()))
     }
 
 
@@ -66,8 +66,6 @@ export class CurveInputManager extends InputManager {
      */
     beginManipulation(pointer) {
         let {found, distance} = this.data.findNearestPoint(pointer.pressX, pointer.pressY);
-
-        console.log({found, distance} );
 
         if (found != null && distance < 10) {
             return new PointMoveManipulation(found);

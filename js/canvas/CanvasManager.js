@@ -1,5 +1,6 @@
+import { KeyWatcher } from "../utils/KeyWatcher.js";
 import { InputManager, PointerData } from "./InputManager.js";
-import { Settings } from "./Settings.js";
+import { CanvasSettings } from "./CanvasSettings.js";
 import { GenericUserAction } from "./UserAction.js";
 import { UserChange } from "./UserChange.js";
 
@@ -7,14 +8,19 @@ export class CanvasManager {
     #canvasResizeObserver
     /** 
      * @param {HTMLCanvasElement} canvasElement
-     * @param {DrawingManager} drawing
+     * @param {CanvasSettings} settings
      */
-    constructor(canvasElement) {
+    constructor(canvasElement, settings) {
         if (canvasElement == null) {
             throw "No canvasElement";
         }
         this.canvasElement = canvasElement;
         this.canvasElement.tabIndex = "0"; // without tab index canvasElement wouldn't produce keyboard events
+
+        /**
+         * @type {CanvasSettings}
+         */
+        this.settings = {...(new CanvasSettings()), ...settings};
 
         // /** @type {DrawingManager} */
         // this.drawing = drawing;
@@ -30,9 +36,11 @@ export class CanvasManager {
 
         this.pointers = {};
 
+        // watches which keyboard keys are pressed at the moment
+        this.keyWatcher = new KeyWatcher();
         //keyboard events
         this.canvasElement.addEventListener("keydown", this.#keydown.bind(this));
-        this.canvasElement.addEventListener("keyup", this.#keyup.bind(this));
+        // this.canvasElement.addEventListener("keyup", this.#keyup.bind(this));
 
         //pointer events
         this.canvasElement.addEventListener("pointerdown", this.#pointerdown.bind(this));
@@ -280,10 +288,8 @@ export class CanvasManager {
 
                 let dis = Math.sqrt((pointer.pressX - pointer.x) ** 2 + (pointer.pressY - pointer.y) ** 2);
 
-                let movedis = 10; //default distance after which move occurs
-
                 // manipulation starts
-                if (dis > movedis) {
+                if (dis > this.settings.pointerMoveDistance) {
                     pointer.moving = true;
                     pointer.startX = pointer.x;
                     pointer.startY = pointer.y;
@@ -332,13 +338,11 @@ export class CanvasManager {
         pointer.releaseTime = Date.now();
 
         let primaryButton = (pointer, data) => {
-            /** time between two clicks to be considered double click */
-            const dbClickTime = 500;
-
-            if (pointer.lastClickTime != null && (pointer.releaseTime - pointer.lastClickTime) < dbClickTime) { // double click
+            // double click
+            if (pointer.lastClickTime != null && (pointer.releaseTime - pointer.lastClickTime) < this.settings.dbClickTime) { 
                 let dis = Math.sqrt((pointer.pressX - pointer.lastClickX) ** 2 + (pointer.pressY - pointer.lastClickY) ** 2);
 
-                if (dis > 10) { // too far - this is a normal click
+                if (dis > this.settings.pointerMoveDistance) { // too far - this is a normal click
                     this.inputManager.click(data);
                     pointer.lastClickTime = Date.now();
                 } else { // two consecutive clicks near each other - doubleclick
@@ -374,8 +378,7 @@ export class CanvasManager {
                         }
                     } else {
                         /** Time of touch after which it is considered secondary touch */
-                        let touchTime = 500;
-                        if ((pointer.releaseTime - pointer.pressTime) < touchTime) {
+                        if ((pointer.releaseTime - pointer.pressTime) < this.settings.touchTime) {
                             primaryButton(pointer, data);
                         } else {
                             this.inputManager.alternativeClick(data);
@@ -411,13 +414,10 @@ export class CanvasManager {
         }
     }
 
-    pressedKeys = {};
     #keydown(event) {
-
-        this.pressedKeys[event.code] = true;
-
         let keyData = new KeyboardData();
-        keyData.pressedKeys = this.pressedKeys;
+        keyData.pressedKeys = this.keyWatcher.pressedKeys;
+        keyData.keyWatcher = this.keyWatcher;
         keyData.code = event.code;
 
 
@@ -433,21 +433,16 @@ export class CanvasManager {
         } 
     }
 
-    #keyup(event) {
-        this.pressedKeys[event.code] = undefined;
-    }
-
     /**
      * Handle keyboard input.
-     * @param {*} keyData 
+     * @param {KeyboardData} keyData 
      * @returns Return UserChange for CanvasManager to execute, or true to inform CM that input has been handled. Return null or false to make it try another input handler.
      */
     handleKey(keyData) {
 
-        for (let action of this.actions) {
-            if (this.checkKeyboardShortcut(action.keyboardShortcut, keyData.pressedKeys)) {
-                console.log(action.getName() + ": " + action.getDescription());
-                action.perform(this);
+        for (let action of this.keyboardActions) {
+            if (keyData.keyWatcher.checkKeyboardShortcut(action.keyboardShortcut)) {
+                this.performUserAction(action);
                 return true;
             }
         }
@@ -456,31 +451,33 @@ export class CanvasManager {
     }
 
     /**
-     * Returns true if all keys of this shortcut are curently pressed
-     * @param {string} shortcut 
-     * @param {*} pressedKeys 
+     * @type {UserAction[]}Actions in the global context that can be invoked by keyboard
      */
-    checkKeyboardShortcut(shortcut, pressedKeys) {
-        let keys = shortcut.split("+");
-
-        for (let key of keys) {
-            if (!pressedKeys[key]) {
-                return false;
-            }
-        }
-        // all keys of this shortcut are pressed
-        return true;
-    }
-
-
-    actions = [
+    keyboardActions = [
         new GenericUserAction("ControlLeft+KeyZ","Undo", "Undo last change", (cm) => cm.revertChange()),
         new GenericUserAction("ControlLeft+KeyY","Redo", "Redo last change", (cm) => cm.redoChange()),
     ]
+
+
+    /**
+     * Performs given user action
+     * @param {UserAction} action 
+     */
+    performUserAction(action) {
+        console.log(action.getName() + ": " + action.getDescription());
+        const change = action.perform(this);
+        // a user action can return a user change - if so CanvasManager will commit this change
+        if (change != null) {
+            console.log("Perform change")
+            this.commitChange(change);
+        }
+    }
 }
 
-class KeyboardData {
+export class KeyboardData {
     pressedKeys={};
+    /** @type {KeyWatcher} */
+    keyWatcher=null;
     code=null;
 }
 

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keyboard</title>
+</head>
+<body>
+    <div id="keys"></div>
+    <script type="module">
+        import {KeyWatcher} from "../js/utils/KeyWatcher.js";
+
+        let watcher = new KeyWatcher();
+
+        let keychange = (event) => {
+            let pressedKeysList = [];
+            for (let key in watcher.pressedKeys) {
+                if (watcher.pressedKeys[key]) {
+                    pressedKeysList.push(key);
+                }
+            }
+            let keys = pressedKeysList.join("+");
+            // console.log(keys);
+            document.getElementById("keys").innerText = keys;
+        }
+
+        document.addEventListener("keydown", keychange);
+        document.addEventListener("keyup", keychange);
+    </script>
+</body>
+</html>
