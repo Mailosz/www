@@ -4,10 +4,13 @@ export class CurvesData {
 
     isClosed = false;
     segments = [
-        {cp1: {x: 400, y: 250}, cp2: {x: 100, y: 250}, position: {x: 100, y: 100}},
-        {cp1: {x: 100, y: 50}, cp2: {x: 200, y: 50}, position: {x: 200, y: 100}},
-        {cp1: {x: 200, y: 150}, cp2: {x: 300, y: 150}, position: {x: 300, y: 100}},
-        {cp1: {x: 350, y: 50},  position: {x: 400, y: 100}},
+        {cp1: {x: 600, y: 250}, cp2: {x: 100, y: 250}, position: {x: 100, y: 100}, kind: SEGMENT_KIND.NORMAL},
+        {cp1: {x: 100, y: 50}, cp2: {x: 200, y: 50}, position: {x: 200, y: 100}, kind: SEGMENT_KIND.NORMAL},
+        {cp1: {x: 200, y: 150}, cp2: {x: 300, y: 150}, position: {x: 300, y: 100}, kind: SEGMENT_KIND.NORMAL},
+        {cp1: {x: 350, y: 50},  position: {x: 400, y: 100}, kind: SEGMENT_KIND.NORMAL},
+        {cp1: {x: 450, y: 100},  position: {x: 500, y: 100}, kind: SEGMENT_KIND.ARC},
+        {cp1: {x: 550, y: 150},  position: {x: 600, y: 100}, kind: SEGMENT_KIND.ARC_TO},
+        
     ];
 
 
@@ -66,14 +69,15 @@ export class Segment {
     kind;
 }
 
-export class NODE_KIND {
-    FREE = 0;
-    SMOOTH = 1;
-    SYMMETRICAL = 2;
-    KEEPANGLE = 3;
+export class SEGMENT_KIND {
+    static FREE = 0;
+    static SMOOTH = 1;
+    static SYMMETRICAL = 2;
+    static KEEPANGLE = 3;
 
-    NORMAL = 0;
-    ARC = 8;
+    static NORMAL = 0;
+    static ARC = 8;
+    static ARC_TO = 16;
 }
 
 

@@ -1,5 +1,6 @@
 import {CanvasDrawingManager} from "../../../js/canvas/CanvasDrawingManager.js";
 import { MathUtils } from "../../../js/utils/MathUtils.js";
+import { SEGMENT_KIND } from "./CurvesData.js";
 
 export class CurveDrawingManager extends CanvasDrawingManager {
 
@@ -43,18 +44,25 @@ export class CurveDrawingManager extends CanvasDrawingManager {
         }
 
 
-        let drawSegment = (segment) => {
-            if (segment.cp1 == null) {
+        let drawSegment = (lastPoint, segment) => {
+            // debugger
+            if ((segment.kind & SEGMENT_KIND.ARC) == SEGMENT_KIND.ARC) {
+                //ds.arcTo()
                 ds.lineTo(segment.position.x, segment.position.y);
-            } else if (segment.cp2 == null) {
-                ds.quadraticCurveTo(segment.cp1.x, segment.cp1.y, segment.position.x, segment.position.y)
+            } else if ((segment.kind & SEGMENT_KIND.ARC_TO) == SEGMENT_KIND.ARC_TO) {
+                drawSmoothSegment(lastPoint, segment.cp1, segment.position);
             } else {
-                ds.bezierCurveTo(segment.cp1.x, segment.cp1.y, segment.cp2.x, segment.cp2.y, segment.position.x, segment.position.y);
+                if (segment.cp1 == null) {
+                    ds.lineTo(segment.position.x, segment.position.y);
+                } else if (segment.cp2 == null) {
+                    ds.quadraticCurveTo(segment.cp1.x, segment.cp1.y, segment.position.x, segment.position.y)
+                } else {
+                    ds.bezierCurveTo(segment.cp1.x, segment.cp1.y, segment.cp2.x, segment.cp2.y, segment.position.x, segment.position.y);
+                }
             }
         }
 
         let drawSegmentControls = (lastSegment, currentSegment) => {
-            
             
             if (lastSegment.cp2 != null) {
                 ds.lineWidth = 1;
@@ -70,11 +78,20 @@ export class CurveDrawingManager extends CanvasDrawingManager {
                 ds.fill();
                 ds.stroke();
 
+
+
             } else if (lastSegment.cp1 != null) {
                 ds.lineWidth = 1;
                 ds.beginPath();
                 ds.moveTo(lastSegment.position.x, lastSegment.position.y);
                 ds.lineTo(lastSegment.cp1.x, lastSegment.cp1.y);
+                ds.stroke();
+
+                ds.lineWidth = 2;
+                ds.beginPath();
+                ds.fillStyle = "lime";
+                drawCircle(lastSegment.cp1);
+                ds.fill();
                 ds.stroke();
             }
 
@@ -104,12 +121,14 @@ export class CurveDrawingManager extends CanvasDrawingManager {
         if (this.data.segments.length > 1) {
             ds.lineWidth = 4;
             ds.beginPath()
-            ds.moveTo(this.data.segments[0].position.x, this.data.segments[0].position.y);
+            let lastPoint = {x: this.data.segments[0].position.x, y: this.data.segments[0].position.y};
+            ds.moveTo(lastPoint.x, lastPoint.y);
             for (let i = 1; i < this.data.segments.length; i++) {
-                drawSegment(this.data.segments[i]);
+                drawSegment(lastPoint, this.data.segments[i]);
+                lastPoint = this.data.segments[i].position;
             }
             if (this.data.isClosed) {
-                drawSegment(this.data.segments[0]);
+                drawSegment(lastPoint, this.data.segments[0]);
                 ds.fillStyle = "lightblue";
                 ds.fill();
             }

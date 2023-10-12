@@ -197,7 +197,7 @@ export class CanvasManager {
     #pointerwheel(event) {
         event.preventDefault();
         let by = Math.sign(event.deltaY);
-        if (Settings.invertMouseWheel) {by *= -1;}
+        if (this.settings.invertMouseWheel) {by *= -1;}
         let factor = (10 + by) / 10;
         const dpr = window.devicePixelRatio;
         const x = event.offsetX * dpr;
