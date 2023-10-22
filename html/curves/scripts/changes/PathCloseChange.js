@@ -1,6 +1,6 @@
 import { UserChange } from "../../../../js/canvas/UserChange.js";
 
-export class FigureCloseChange extends UserChange {
+export class PathCloseChange extends UserChange {
 
     constructor() {
         super();

@@ -36,5 +36,4 @@ export class NodeManipulation extends Manipulation {
 
 export class NODE_MANIPULATION_TYPE {
     POSITION = 0;
-    CONTROL_POINT = 1;
 }

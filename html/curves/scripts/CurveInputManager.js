@@ -2,7 +2,7 @@ import { InputManager, Manipulation } from "../../../js/canvas/InputManager.js";
 import { PointerData, GestureData } from "../../../js/canvas/InputManager.js";
 import { GenericUserAction } from "../../../js/canvas/UserAction.js";
 import { CurvesData } from "./CurvesData.js";
-import { FigureCloseChange } from "./changes/FigureCloseChange.js";
+import { PathCloseChange } from "./changes/PathCloseChange.js";
 import { PointMoveManipulation } from "./manipulations/PointMoveManipulation.js";
 
 export class CurveInputManager extends InputManager {
@@ -15,7 +15,7 @@ export class CurveInputManager extends InputManager {
         super();
         this.data = data;
 
-        this.keyboardActions.push(new GenericUserAction("Space", "Change closedness", "", (cm) => new FigureCloseChange()))
+        this.keyboardActions.push(new GenericUserAction("Space", "Change closedness", "", (cm) => new PathCloseChange()))
     }
 
 

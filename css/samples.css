@@ -1,3 +1,7 @@
+code {
+    white-space: pre;
+}
+
 .sample {
     background-color: lightgreen;
     position: relative;

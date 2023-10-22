@@ -1,6 +1,6 @@
 import {CanvasDrawingManager} from "../../../js/canvas/CanvasDrawingManager.js";
 import { MathUtils } from "../../../js/utils/MathUtils.js";
-import { SEGMENT_KIND } from "./CurvesData.js";
+import { SEGMENT_KIND } from "./data/Paths.js";
 
 export class CurveDrawingManager extends CanvasDrawingManager {
 
@@ -40,7 +40,6 @@ export class CurveDrawingManager extends CanvasDrawingManager {
                 ds.arcTo(b.x, b.y, c.x, c.y, h * 0.5);
                 ds.lineTo(c.x, c.y);
             }
-            console.log(h)
         }
 
 
@@ -118,33 +117,38 @@ export class CurveDrawingManager extends CanvasDrawingManager {
             ds.stroke();
         }
 
-        if (this.data.segments.length > 1) {
-            ds.lineWidth = 4;
-            ds.beginPath()
-            let lastPoint = {x: this.data.segments[0].position.x, y: this.data.segments[0].position.y};
-            ds.moveTo(lastPoint.x, lastPoint.y);
-            for (let i = 1; i < this.data.segments.length; i++) {
-                drawSegment(lastPoint, this.data.segments[i]);
-                lastPoint = this.data.segments[i].position;
+        for (let element of this.data.elements)
+        {
+            for (let shape of element.shapes) {
+                if (shape.segments.length > 1) {
+                    ds.lineWidth = 4;
+                    ds.beginPath()
+                    let lastPoint = {x: shape.segments[0].position.x, y: shape.segments[0].position.y};
+                    ds.moveTo(lastPoint.x, lastPoint.y);
+                    for (let i = 1; i < shape.segments.length; i++) {
+                        drawSegment(lastPoint, shape.segments[i]);
+                        lastPoint = shape.segments[i].position;
+                    }
+                    if (shape.isClosed) {
+                        drawSegment(lastPoint, shape.segments[0]);
+                        ds.fillStyle = "lightblue";
+                        ds.fill();
+                    }
+                    ds.stroke();
+    
+                    //draw controls
+                    let lastSegment = shape.segments[0];
+                    for (let i = 1; i < shape.segments.length; i++) {
+                        let currentSegment = shape.segments[i];
+                        drawSegmentControls(lastSegment, currentSegment);
+                        lastSegment = currentSegment;
+                    }
+                    drawSegmentControls(lastSegment, shape.segments[0]);
+                }
             }
-            if (this.data.isClosed) {
-                drawSegment(lastPoint, this.data.segments[0]);
-                ds.fillStyle = "lightblue";
-                ds.fill();
-            }
-            ds.stroke();
 
-            //draw controls
-            let lastSegment = this.data.segments[0];
-            for (let i = 1; i < this.data.segments.length; i++) {
-                let currentSegment = this.data.segments[i];
-                drawSegmentControls(lastSegment, currentSegment);
-                lastSegment = currentSegment;
-            }
-            drawSegmentControls(lastSegment, this.data.segments[0]);
+
         }
-
-
 
 
     }

@@ -4,11 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HTML elements preview</title>
-    <link rel="stylesheet" href="css/main.css">
-    <script type="module" src="./js/ui/controls/Notification.js"></script>
+    <link rel="stylesheet" href="../css/main.css">
+    <script type="module" src="../js/ui/controls/Notification.js"></script>
+    <script type="module" src="../js/ui/controls/OxButton.js"></script>
+    <style>
+        /* ox-button {
+            background-color: aqua;
+            color: red;
+            width: 100px;
+            height: 100px;
+        } */
+
+        .toolbox {
+            height: 40px;
+            display: flex;
+            justify-content: start;
+            align-items: stretch;
+            gap: 0;
+        }
+
+        .toolbox ox-button::part(button) {
+            box-shadow: none;
+            border: 1px solid darkgray;
+        }
+
+        .toolbox ox-button:not(:first-child)::part(button) {
+            
+        }
+    </style>
 </head>
 <body>
     <main>
+        <div class="toolbox">
+        <ox-button opener="split" class="opener">
+            <a>Przycisk</a>
+        </ox-button>
+        <ox-button opener="joint">
+            <a>Przycisk</a>
+        </ox-button>
+        <ox-button>
+            <img src="../res/img/a.png" style="object-fit:contain">
+        </ox-button>
+    </div>
         <p>Test</p>
         <p>Test</p>
         <p>Test</p>
@@ -19,36 +56,7 @@
         <p>Test</p>
     </main>
     <div class="notifications-container">
-        <ui-notification class="notification">
-            Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. 
-        </ui-notification>
-        <ui-notification class="notification">
-            Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. 
-        </ui-notification>
-        <ui-notification class="notification">
-            Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. 
-        </ui-notification>
-        <ui-notification class="notification">
-            Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. 
-        </ui-notification>
-        <ui-notification class="notification">
-            Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. Bardzo długa notyfikacja. 
-        </ui-notification>
-        <ui-notification class="notification">
-            Test notyfikacji
-        </ui-notification>
-        <ui-notification closeable="false" class="notification success">
-            Quite long success notification, but not too bad at all to test everything. Test test test. Test test test. Test test test. Test test test.
-        </ui-notification>
-        <ui-notification class="notification info">
-            Informacja
-        </ui-notification>
-        <ui-notification class="notification warning">
-            Ostrzeżenie
-        </ui-notification>
-        <ui-notification class="notification alert">
-            Alert!!!!!
-        </ui-notification>
+        <ui-notification>Ojoj</ui-notification>
     </div>
 </body>
 </html>
