@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codebox</title>
+    <style>
+        .codebox {
+            font-family: monospace;
+
+            grid-template-columns: 2em auto;
+            grid-auto-flow: row;
+            counter-reset: line-counter;
+        }
+
+        .codebox>div {
+            display: flex;
+            flex-direction: row;
+            min-height: 1em;
+            background-color: aliceblue;
+            counter-increment: line-counter 1;
+        }
+            .codebox>div::before {
+                content: counter(line-counter);
+                display: block;
+                background: lightgray;
+                border-right: 2px solid #888;
+                min-width: 1.5em;
+                text-align: right;
+                box-sizing: border-box;
+                flex-shrink: 0;
+                word-break: keep-all;
+                white-space: nowrap;
+            }
+
+    </style>
+</head>
+<body>
+    <div class="codebox" contenteditable="true" spellcheck="false">
+        <div>Line nr 1. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. v</div>
+        <div>Line nr 2. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. Lorem ipsum dolor est. </div>
+        <div>Line nr 3</div>
+        <div>Line nr 4</div>
+        <div>Line nr 5</div>
+        <div>Line nr 6</div>
+        <div>Line nr 7</div>
+    </div>
+</body>
+</html>
