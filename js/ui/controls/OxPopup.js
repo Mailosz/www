@@ -3,6 +3,7 @@ import { UsefulUtils } from '../../utils/UsefulUtils.js';
 import { OxControl } from './OxControl.js';
 
 const template = /*HTML*/`
+<div>
     <dialog id="popup-wrapper">
         <div id="popup-container">
             <slot></slot>
@@ -12,51 +13,59 @@ const template = /*HTML*/`
 
 const style = /* CSS */`
     @keyframes open {
-        0% {opacity: 0.2; transform: translateY(20px); filter: blur(10px);}
+        0% {opacity: 0.2; transform: translateY(10px); filter: blur(10px);}
         100% {opacity: 1; transform: translateY(0);}
     }
 
     @keyframes close {
         0% {opacity: 1; transform: translateY(0); display:block;}
-        100% {opacity: 0; transform: translateY(20px); filter: blur(20px); display:none;}
+        100% {opacity: 0; transform: translateY(20px); filter: blur(40px); display:none;}
     }
 
-    #popup-wrapper:popover-open {
+    @keyframes close-dialog {
+        0% {display:block;}
+        100% {display:none;}
+    }
+
+    dialog[open]>#popup-container {
         animation: open 200ms;
     }
 
     #popup-container {
+        position: fixed;
         background-color: white;
         padding: 10px;
         border: 1px solid gray;
         box-shadow: 0 0 10px rgba(127,127,127,0.5);
     }
 
-    .closing {
-        animation: close 500ms;
-    }
-
-    [popover] {
-        background: transparent;
+    [popover], dialog {
+        background: rgba(0,255,0,0.4);
         border: none;
         padding: 0;
     }
 
-    .opened[popover]:not(:popover-open):not(dialog[open]) {
+    dialog:not([open]) {
+        animation: close-dialog linear 400ms;
+    }
+    dialog:not([open])>#popup-container {
         animation: close linear 400ms;
     }
+
 `;
 
 export class OxPopup extends OxControl {
 
-    static observedAttributes = ["modal","placement"];
+    static observedAttributes = ["modal","placement","dismissable", "anchor"];
     #changedInertness = false;
     constructor(opts) {
         super();
 
         const defaultOpts = {
             modal: false,
-            placement: null
+            placement: null,
+            dismissable: false,
+            anchor: null
         };
 
         this.opts = {...defaultOpts, ...opts};
@@ -73,29 +82,12 @@ export class OxPopup extends OxControl {
         this.wrapper = shadowRoot.getElementById("popup-wrapper");
         this.container = shadowRoot.getElementById("popup-container");
 
-        this.wrapper.ontoggle = (event) => {
-            if (event.newState == "open") {
-                if (this.opts.placement) {
-                    this.wrapper.style.position = "fixed";
-                    PlacementHelper.placeElement(this.wrapper, null, this.opts.placement);
-                }
-                // if (this.opts.modal && !document.body.inert) {
-                //     document.body.inert = true;
-                //     this.#changedInertness = true;
-                // } else {
-                //     this.#changedInertness = false;
-                // }
-            } else if (event.newState == "closed") {
-                // if (this.#changedInertness) {
-                //     document.body.inert = false;
-                //     this.#changedInertness = false;
-                // }
-            }
-        }
-
         this.wrapper.onclick = (event) => {
+            //TODO: niemodalny też powinien móc być dismissable
             if (event.target == this.wrapper) {
-                this.close();
+                if (this.opts.dismissable) {
+                    this.close();
+                }
             }
         }
     }
@@ -103,8 +95,29 @@ export class OxPopup extends OxControl {
     open(opts) {
         this.opts = {...this.opts, ...opts};
         this.wrapper.classList.add("opened");
-        // this.wrapper.togglePopover(true);
-        this.wrapper.showModal();
+        
+        if (this.opts.modal == "true") {
+            this.wrapper.showModal();
+        } else {
+            this.wrapper.show();
+        }
+
+        if (this.opts.placement != false) {
+            this.wrapper.style.position = "fixed";
+
+            let anchor = null;
+            if (this.opts.anchor != null) {
+                if (anchor instanceof HTMLElement) {
+                    anchor = this.opts.anchor;
+                } else {
+                    anchor = document.getElementById(this.opts.anchor);
+                }
+            }
+
+            PlacementHelper.placeElement(this.container, anchor, this.opts.placement, {keepInside: this.wrapper});
+
+        }
+
     }
 
     close() {
@@ -117,6 +130,10 @@ export class OxPopup extends OxControl {
             this.opts.modal = newValue;
         } else if (name == "placement") {
             this.opts.placement = newValue;
+        } else if (name == "dismissable") {
+            this.opts.dismissable = newValue;
+        } else if (name == "anchor") {
+            this.opts.anchor = newValue;
         }
     }
 

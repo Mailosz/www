@@ -33,19 +33,48 @@
         <p>Click anywhere to open the popup.</p>
         <p><input autofocus></p>
         <p>Click anywhere to open the popup.</p>
-        <p>Click anywhere to open the popup.</p>
+        <!-- <p>Click anywhere to open the popup.</p>
         <p><button id="showPopupFlyout">Show flyout popup</button></p>
         <p>Click anywhere to open the popup.</p>
         <p><button id="showPopupFixed">Show fixed popup</button></p>
         <p>Click anywhere to open the popup.</p>
         <p>Click anywhere to open the popup.</p>
         <p>Click anywhere to open the popup.</p>
+        <p>Click anywhere to open the popup.</p> -->
         <p>Click anywhere to open the popup.</p>
-        <p>Click anywhere to open the popup.</p>
-        <p><button onclick="document.getElementById('ox-popup').open()">Pokaż</button></p>
-        <ox-popup id="ox-popup" modal="true" placement="left top">
+        <p>Ox-popup</p>
+        <p><button onclick="document.getElementById('ox-popup-modal').open()">Pokaż modalny</button></p>
+        <ox-popup id="ox-popup-modal" modal="true" placement="center center">
             <p>To jest testowy dialog.</p>
-            <button onclick="document.getElementById('ox-popup').close();">Zamknij</button>
+            <button onclick="document.getElementById('ox-popup-modal').close();">Zamknij</button>
+        </ox-popup>
+        <p><button onclick="document.getElementById('ox-popup-normal').open()">Pokaż niemodalny</button></p>
+        <ox-popup id="ox-popup-normal" modal="false" placement="center center">
+            <p>To jest testowy dialog.</p>
+            <button onclick="document.getElementById('ox-popup-normal').close();">Zamknij</button>
+        </ox-popup>
+
+        <p><button onclick="document.getElementById('ox-popup-dismissable-modal').open()">Pokaż znikający modalny</button></p>
+        <ox-popup id="ox-popup-dismissable-modal" modal="true" dismissable="true" placement="right top">
+            <p>To jest testowy dialog.</p>
+            <button onclick="document.getElementById('ox-popup-dismissable-modal').close();">Zamknij</button>
+        </ox-popup>
+        <p><button onclick="document.getElementById('ox-popup-dismissable-normal').open()">Pokaż znikający zwykły</button></p>
+        <ox-popup id="ox-popup-dismissable-normal" modal="false" dismissable="true" placement="right bottom">
+            <p>To jest testowy dialog.</p>
+            <button onclick="document.getElementById('ox-popup-dismissable-normal').close();">Zamknij</button>
+        </ox-popup>
+
+        <p><button onclick="document.getElementById('ox-popup-here-open').open({anchor: event.target})">Pokaż tu via opts</button></p>
+        <ox-popup id="ox-popup-here-open" modal="true" dismissable="true" placement="left topOut">
+            <p>To jest testowy dialog.</p>
+            <button onclick="document.getElementById('ox-popup-here-open').close();">Zamknij</button>
+        </ox-popup>
+
+        <p><button id="anchor-popup-button" onclick="document.getElementById('ox-popup-here-anchor').open()">Pokaż tu via anchor</button></p>
+        <ox-popup id="ox-popup-here-anchor" modal="true" dismissable="true" placement="left bottomOut" anchor="anchor-popup-button">
+            <p>To jest testowy dialog.</p>
+            <button onclick="document.getElementById('ox-popup-here-anchor').close();">Zamknij</button>
         </ox-popup>
         <p>Click anywhere to open the popup.</p>
         <p>Click anywhere to open the popup.</p>
@@ -125,8 +154,8 @@
             event.preventDefault();
         }
 
-        document.getElementById("showPopupFlyout").addEventListener("click", showPopup);
-        document.getElementById("showPopupFixed").addEventListener("click", showPopup);
+        // document.getElementById("showPopupFlyout").addEventListener("click", showPopup);
+        // document.getElementById("showPopupFixed").addEventListener("click", showPopup);
     </script>
 </body>
 </html>

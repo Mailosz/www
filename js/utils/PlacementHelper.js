@@ -109,8 +109,9 @@ export class PlacementHelper {
                 anchorY -= relativeY;
             }
             if (options.keepInside) {
+                const relativeToScreen = () => ({x: -relativeX, y: -relativeX, w: document.body.offsetWidth+relativeX, h: document.body.offsetHeight+relativeX});
                 if (options.keepInside === true) {
-                    boundingBox = {x: -relativeX, y: -relativeX, w: document.body.offsetWidth+relativeX, h: document.body.offsetHeight+relativeX};
+                    boundingBox = relativeToScreen();
                 } else if (options.keepInside == options.relativeTo) { // avoid recomputing
                     boundingBox = {
                         x: 0,
@@ -121,11 +122,15 @@ export class PlacementHelper {
                 } else if (options.keepInside instanceof HTMLElement) {
                     let rect = options.keepInside.getBoundingClientRect();
 
-                    boundingBox = {
-                        x: rect.x - relativeX,
-                        y: rect.y - relativeY,
-                        w: rect.width,
-                        h: rect.height
+                    if (rect.width == 0 && rect.height == 0) { // ignore empty bounding boxes
+                        boundingBox = relativeToScreen();
+                    } else {
+                        boundingBox = {
+                            x: rect.x - relativeX,
+                            y: rect.y - relativeY,
+                            w: rect.width,
+                            h: rect.height
+                        }
                     }
                 } else {
                     boundingBox = options.keepInside;

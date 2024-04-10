@@ -15,7 +15,7 @@ export class Popup {
      * @param {Object} options 
      * @param {boolean} options.pointerDismissable whether the popup should be closed by clicking outside of it
      * @param {boolean|string|[string]} options.keyboardDismissable whether the popup should be closed by a default key, or a specific key, or a list of keys that should close the popup
-     * @param {boolean} options.blurDismissable whether the popup should be closed when losing focus
+     * @param {boolean} options.blurDismissable whether the popup should be closed when loses focus
      * @param {boolean} options.blocksInput whether the popup should block pointer interaction with the elements beneath it
      * @param {boolean} options.seeTroughElement not yet available
      * @param {string} options.popupClassName class name for a popup container element
