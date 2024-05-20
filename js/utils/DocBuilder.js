@@ -26,7 +26,7 @@ export class DocBuilder {
 
     /**
      * Creates new text node
-     * @returns {TagBuilder}
+     * @returns {Text}
      */
     text(text) {
         return this.#doc.createTextNode(text);
@@ -47,7 +47,7 @@ export class DocBuilder {
 
 
 
-class TagBuilder {
+export class TagBuilder {
 
     /**
      * @type {Element}
@@ -59,7 +59,7 @@ class TagBuilder {
     }
 
     /**
-     * Sets te id
+     * Sets the tag's id
      * @param {*} id 
      */
     id(id) {
@@ -145,7 +145,7 @@ class TagBuilder {
 
     /**
      * Invokes arbitrary function on the tag
-     * @param {Function} func 
+     * @param {Function} func  funtion to invoke taking one parameter: the element itself
      */
     invoke(func) {
 
@@ -156,7 +156,7 @@ class TagBuilder {
 
      /**
      * Invokes arbitrary function for every child of the tag
-     * @param {Function} func 
+     * @param {Function} func  funtion to invoke taking one parameter: the element itself
      */
     forEveryChild(func) {
 
@@ -171,6 +171,12 @@ class TagBuilder {
 
 
     getTag() {
+        return this.#tag;
+    }
+    get() {
+        return this.#tag;
+    }
+    getElement() {
         return this.#tag;
     }
 }

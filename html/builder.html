@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<body>
+    <script type="module">
+    import {DocBuilder} from "../js/utils/DocBuilder.js";
+
+        let builder = new DocBuilder(document);
+
+        
+
+        document.body.appendChild(
+            builder.tag("div").attr("style", "color: red").innerText("Test").children(
+                builder.tag("button").innerText("content")
+            ).get()
+        );
+
+    </script>
+</body>
