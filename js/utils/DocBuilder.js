@@ -60,7 +60,8 @@ export class TagBuilder {
 
     /**
      * Sets the tag's id
-     * @param {*} id 
+     * @param {string} id 
+     * @returns {TagBuilder}
      */
     id(id) {
         this.#tag.id = id;
@@ -69,9 +70,9 @@ export class TagBuilder {
     }
 
     /**
-     * Appends CSS className
-     * @param {*} className 
-     * @returns 
+     * Appends CSS class name(s)
+     * @param {...string} className 
+     * @returns {TagBuilder}
      */
     class(className) {
         this.#tag.classList.add(className);
@@ -81,8 +82,8 @@ export class TagBuilder {
 
     /**
      * Sets the classname
-     * @param {*} className 
-     * @returns 
+     * @param {string} className 
+     * @returns {TagBuilder}
      */
     className(className) {
         this.#tag.className = className;
@@ -93,7 +94,8 @@ export class TagBuilder {
     /**
      * Sets the given attribute
      * @param {string} name 
-     * @param {*} value 
+     * @param {string} value 
+     * @returns {TagBuilder}
      */
     attr(name, value) {
         this.#tag.setAttribute(name, value);
@@ -104,6 +106,7 @@ export class TagBuilder {
     /**
      * Sets the innerHTML
      * @param {*} html 
+     * @returns {TagBuilder}
      */
     innerHTML(html) {
         this.#tag.innerHTML = html;
@@ -114,6 +117,7 @@ export class TagBuilder {
     /**
      * Sets the innerText
      * @param {*} html 
+     * @returns {TagBuilder}
      */
     innerText(text) {
         this.#tag.innerText = text;
@@ -124,6 +128,7 @@ export class TagBuilder {
     /**
      * Appends children to the end of element
      * @param {...Node} children 
+     * @returns {TagBuilder}
      */
     children(...children) {
 
@@ -135,6 +140,7 @@ export class TagBuilder {
     /**
      * Adds event listener to the tag
      * @param {Function} children 
+     * @returns {TagBuilder}
      */
     event(name, listener, options) {
 
@@ -146,6 +152,7 @@ export class TagBuilder {
     /**
      * Invokes arbitrary function on the tag
      * @param {Function} func  funtion to invoke taking one parameter: the element itself
+     * @returns {TagBuilder}
      */
     invoke(func) {
 
@@ -157,6 +164,7 @@ export class TagBuilder {
      /**
      * Invokes arbitrary function for every child of the tag
      * @param {Function} func  funtion to invoke taking one parameter: the element itself
+     * @returns {TagBuilder}
      */
     forEveryChild(func) {
 
@@ -169,13 +177,24 @@ export class TagBuilder {
         return this;
     }
 
-
+    /**
+     * Get the built HTML element
+     * @type {Element}
+     */
     getTag() {
         return this.#tag;
     }
+    /**
+     * Get the built HTML element
+     * @type {Element}
+     */
     get() {
         return this.#tag;
     }
+    /**
+     * Get the built HTML element
+     * @type {Element}
+     */
     getElement() {
         return this.#tag;
     }
