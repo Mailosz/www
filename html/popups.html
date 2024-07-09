@@ -71,8 +71,9 @@
             <button onclick="document.getElementById('ox-popup-here-open').close();">Zamknij</button>
         </ox-popup>
 
-        <p><button id="anchor-popup-button" onclick="document.getElementById('ox-popup-here-anchor').open()">Pokaż tu via anchor</button></p>
-        <ox-popup id="ox-popup-here-anchor" modal="true" dismissable="true" placement="left bottomOut" anchor="anchor-popup-button">
+        <p><button id="anchor-popup-button" onclick="document.getElementById('ox-popup-here-anchor').open()">Pokaż tu via anchor (closable)</button></p>
+        <ox-popup id="ox-popup-here-anchor" modal="true" dismissable="true" placement="left bottomOut" anchor="anchor-popup-button" closable="true" movable="true">
+            <h3 slot="title">To jest tytuł</h3>
             <p>To jest testowy dialog.</p>
             <button onclick="document.getElementById('ox-popup-here-anchor').close();">Zamknij</button>
         </ox-popup>
