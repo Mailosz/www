@@ -70,7 +70,7 @@ export class WebglDrawingManager extends DrawingManager {
         this.cm.canvasElement.height = height;
 
         //resize viewport
-        this.gl.viewport(0, 0, this.width, this.height);
+        if (this.gl != null) this.gl.viewport(0, 0, this.width, this.height);
         
         this.redraw();
     }

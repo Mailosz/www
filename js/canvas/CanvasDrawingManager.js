@@ -27,6 +27,11 @@ export class CanvasDrawingManager extends DrawingManager {
         this.ctx = this.cm.canvasElement.getContext("2d");
     }
 
+    /**
+     * 
+     * @param {*} factor 
+     * @param {x:Number, y:Number} origin 
+     */
     zoomBy(factor, origin) {
         this.zoom = Math.max(0.0001,Math.min(this.zoom * factor, 10000));
         console.log("zoom: " + this.zoom * 100 + "%");

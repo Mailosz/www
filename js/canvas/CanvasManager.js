@@ -93,8 +93,8 @@ export class CanvasManager {
         try {
             this.#canvasResizeObserver.observe(this.canvasElement, {box: 'device-pixel-content-box'});
         } catch (ex) {
-          // device-pixel-content-box not supported, fallback to content-box
-          this.#canvasResizeObserver.observe(this.canvasElement, {box: 'content-box'});
+            console.log("device-pixel-content-box not supported, fallback to content-box");
+            this.#canvasResizeObserver.observe(this.canvasElement, {box: 'content-box'});
         }
         
 
@@ -124,6 +124,7 @@ export class CanvasManager {
 
         this.drawing = drawingManager;
         this.drawing.setCanvasManager(this);
+        this.drawing.prepare();
     }
 
     /**

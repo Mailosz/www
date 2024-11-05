@@ -49,7 +49,7 @@ function createProgram(gl, vertexShader, fragmentShader) {
     var success = gl.getProgramParameter(program, gl.LINK_STATUS);
     if (!success) {
         // something went wrong with the link
-        throw ("program failed to link:" + gl.getProgramInfoLog (program));
+        throw ("program failed to link:" + gl.getProgramInfoLog(program));
     }
 
     return program;

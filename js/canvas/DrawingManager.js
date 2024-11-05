@@ -9,17 +9,18 @@ export class DrawingManager {
         /** @type {CanvasManager} */
         this.cm = null;
     }
-
-    resize(width, height) {
-        throw "resize not implemented";
-    }
-
+    
     /**
      * Canvas manager sets itself as context once the DrawingManager is set
      * @param {CanvasManager} canvasManager 
      */
     setCanvasManager(canvas) {
         this.cm = canvas;
+    }
+
+    
+    resize(width, height) {
+        throw "resize not implemented";
     }
 
     /**
