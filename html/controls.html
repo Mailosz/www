@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../css/main.css">
     <script type="module" src="../js/ui/controls/Notification.js"></script>
     <script type="module" src="../js/ui/controls/OxButton.js"></script>
+    <script type="module" src="../js/ui/controls/OxUpload.js"></script>
     <style>
         /* ox-button {
             background-color: aqua;
@@ -51,6 +52,15 @@
         <p>Test</p>
         <p>Test</p>
         <p>Test</p>
+        <ox-upload id="abc" onupload="console.log('test')" multiple></ox-upload>
+        <script>
+            const abc = document.getElementById("abc");
+            abc.addEventListener("upload", (event) => {
+                const item = document.createElement("div");
+                item.innerText = event.file.name;
+                abc.insertAdjacentElement("beforebegin", item);
+            });
+        </script>
         <p>Test</p>
         <p>Test</p>
         <p>Test</p>

@@ -1,6 +1,6 @@
 import {OxControl} from "./OxControl.js";
 
-const template = /*HTML*/`
+const template = /*html*/`
     <div id="button-wrapper">
         <div id="button-container" part="button">
             <div id="content-container" part="content">
@@ -15,7 +15,7 @@ const template = /*HTML*/`
     </div>
 `;
 
-const style = /* CSS */`
+const style = /*css*/`
     * {
         box-sizing: border-box;
     }
@@ -40,8 +40,8 @@ const style = /* CSS */`
 
 
     #button-wrapper:active>#button-container {
-        transform: scale(0.9);
-        transition: transform 50ms;
+        transform: scale(0.95);
+        transition: transform 10ms;
     }
 
     /* not split */

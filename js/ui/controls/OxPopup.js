@@ -2,7 +2,7 @@ import {PlacementHelper} from '../../utils/PlacementHelper.js';
 import { UsefulUtils } from '../../utils/UsefulUtils.js';
 import { OxControl } from './OxControl.js';
 
-const template = /*HTML*/`
+const template = /*html*/`
     <dialog id="popup-wrapper">
         <div id="popup-container">
             <div id="popup-bar">
