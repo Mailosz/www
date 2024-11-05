@@ -2,12 +2,10 @@ import {OxControl} from "./OxControl.js";
 
 
 const template = /*html*/`
-    <div id="control-wrapper">
-        <label id="input-panel">
-            <input type="file" id="upload-input">
-            <slot>Upload file</slot>
-        </label>
-    </div>
+    <label id="input-panel">
+        <input type="file" id="upload-input">
+        <slot>Upload file</slot>
+    </label>
 `;
 
 const style = /*css*/`
@@ -16,23 +14,10 @@ const style = /*css*/`
     }
 
     :host {
-        display: inline-block;
-    }
-
-    #control-wrapper {
         border: 1px gray dashed;
         min-width: 1em;
         min-height: 1em;
         cursor: pointer;
-    }
-
-    #control-wrapper.dragover,
-    #control-wrapper:hover  {
-        background: #eee;
-    }
-
-    #control-wrapper:active  {
-        background: #ddd;
     }
 
     #upload-input {
@@ -56,20 +41,21 @@ export class OxUpload extends OxControl {
         this.createShadowRoot(template, style);
         
         
-        const wrapper = this.shadowRoot.getElementById("control-wrapper");
+        // const wrapper = this.shadowRoot.getElementById("control-wrapper");
         this.input = this.shadowRoot.getElementById("upload-input");
 
-        wrapper.ondragover = (event) => {
-            wrapper.classList.add("dragover");
+
+        this.ondragover = (event) => {
+            this.classList.add("dragover");
             event.dataTransfer.dropEffect = "copy";
             event.preventDefault();
         }
 
-        wrapper.ondragleave = (event) => {
-            wrapper.classList.remove("dragover");
+        this.ondragleave = (event) => {
+            this.classList.remove("dragover");
         }
 
-        wrapper.ondrop = (event) => {
+        this.ondrop = (event) => {
             event.preventDefault();
 
             this.input.files = event.dataTransfer.files;
@@ -77,7 +63,7 @@ export class OxUpload extends OxControl {
                 this.uploadFile(file, "drop");
             });
 
-            wrapper.classList.remove("dragover");
+            this.classList.remove("dragover");
         }
 
         this.input.oninput = (event) => {

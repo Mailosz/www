@@ -5,15 +5,17 @@ export class OxControl extends HTMLElement {
 
     createShadowRoot(html, css) {
         const shadowRoot = this.attachShadow({ mode: "open"});
-        shadowRoot.innerHTML = html;
+        if (html) {
+            shadowRoot.innerHTML = html;
+        }
     
     
-        const styleSheet = new CSSStyleSheet();
-        styleSheet.replaceSync(css);
-    
-        shadowRoot.adoptedStyleSheets.push(styleSheet);
-
-        return shadowRoot;
+        if (css) {
+            const styleSheet = new CSSStyleSheet();
+            styleSheet.replaceSync(css);
+        
+            shadowRoot.adoptedStyleSheets.push(styleSheet);
+        }
     }
 
     connectedCallback() {

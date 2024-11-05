@@ -1,5 +1,6 @@
-@import url(notifications.css);
 @import url(basic.css);
+@import url(notifications.css);
+@import url(controls.css);
 @import url(layout.css);
 @import url(page.css);
 @import url(tables.css);

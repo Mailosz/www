@@ -1,0 +1,14 @@
+ox-upload {
+    border: 1px dashed gray;
+    padding: 0.25em;
+}
+
+ox-upload.dragover,
+ox-upload:hover  {
+    background: #eee;
+}
+
+ox-upload:active  {
+    background: #ddd;
+}
+

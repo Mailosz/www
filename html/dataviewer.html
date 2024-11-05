@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data viewer</title>
+    <script type="module" src="../js/ui/controls/OxView.js"></script>
+    <link rel="stylesheet" href="../css/basic.css">
+    <style>
+        ox-view {
+
+        }
+
+        body {
+            background-color: aqua;
+            display: flex;
+            flex-direction: column;
+            justify-content: stretch;
+        }
+    </style>
+</head>
+<body>
+    <ox-view>
+        <div slot="header">Test</div>
+        <button slot="actions">Add</button>
+
+        
+    </ox-view>
+</body>
+</html>

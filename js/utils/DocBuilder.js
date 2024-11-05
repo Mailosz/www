@@ -32,6 +32,57 @@ export class DocBuilder {
         return this.#doc.createTextNode(text);
     }
 
+    /**
+     * Creates new DIV tag builder
+     * Shortcut for .tag("div")
+     * @param {ElementCreationOptions?} options document.createElement(name, options) options
+     * @returns 
+     */
+    div(options) {
+        return this.tag("div", options);
+    }
+
+    /**
+     * Creates new SPAN tag builder
+     * Shortcut for .tag("span")
+     * @param {ElementCreationOptions?} options document.createElement(name, options) options
+     * @returns 
+     */
+    span(options) {
+        return this.tag("span", options);
+    }
+
+    /**
+     * Creates new BUTTON tag builder
+     * Shortcut for .tag("button")
+     * @param {ElementCreationOptions?} options document.createElement(name, options) options
+     * @returns 
+     */
+    button(options) {
+        return this.tag("button", options);
+    }
+
+    /**
+     * Creates new INPUT tag builder
+     * Shortcut for .tag("input")
+     * @param {ElementCreationOptions?} options document.createElement(name, options) options
+     * @returns 
+     */
+    input(options) {
+        return this.tag("input", options);
+    }
+
+    /**
+     * Creates new A tag builder
+     * Shortcut for .tag("a")
+     * @param {ElementCreationOptions?} options document.createElement(name, options) options
+     * @returns 
+     */
+    a(options) {
+        return this.tag("a", options);
+    }
+
+
 
     getBody() {
         return new TagBuilder(this.#doc.body);
@@ -99,6 +150,27 @@ export class TagBuilder {
      */
     attr(name, value) {
         this.#tag.setAttribute(name, value);
+
+        return this;
+    }
+
+    /**
+     * Sets the style attribute
+     * 
+     * @param {string} value 
+     * @returns {TagBuilder}
+     */
+    style(style) {
+        if (typeof(style) == "string") {
+            this.#tag.setAttribute("style", style);
+        } else if (typeof(style) == "object") {
+
+            for (const property in style) {
+                this.#tag.style.setProperty(property, style[property]);
+            }
+        } else {
+            throw "Wrong type of argument 'style'";
+        }
 
         return this;
     }
