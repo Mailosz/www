@@ -157,7 +157,7 @@ export class TagBuilder {
     /**
      * Sets the style attribute
      * 
-     * @param {string} value 
+     * @param {string|object} style Properties to set
      * @returns {TagBuilder}
      */
     style(style) {

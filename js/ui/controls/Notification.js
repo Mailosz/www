@@ -1,7 +1,7 @@
 import { UsefulUtils } from "../../utils/UsefulUtils.js";
 import {OxControl} from "./OxControl.js";
 
-let style = /*CSS*/`
+let style = /*css*/`
 #notification-wrapper {
     margin: auto;
     display: flex;

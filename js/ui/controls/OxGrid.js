@@ -26,6 +26,12 @@ const style = /*css*/`
     #grid {
         flex: 1;
         display: grid;
+
+        justify-content: stretch;
+        align-items: stretch;
+        justify-items: stretch;
+        grid-template-columns: [header] min-content;
+        grid-auto-columns: 1fr;
     }
 
     .cell:focus {
@@ -53,14 +59,15 @@ const style = /*css*/`
         display: contents;
     }
 
-    .row-num {
+    .row-header {
         text-align: right;
-        padding: var(--cell-padding)
+        padding: var(--cell-padding);
     }
 
-    .col-num {
+    .col-header {
         min-height: 1em;
         text-align: center;
+        padding: var(--cell-padding);
     }
 
 `;
@@ -70,6 +77,7 @@ export class OxGrid extends OxControl {
     static observedAttributes = ["editable"];
 
     #data;
+    #columnsLength = 0;
 
     constructor() {
         super();
@@ -79,6 +87,10 @@ export class OxGrid extends OxControl {
         if (this.data) {
             this.#populateFromData(this.data);
         }
+
+        let db = new DocBuilder(this.ownerDocument);
+
+        this.shadowRoot.appendChild(db.button().innerText("+").class("add-row").event("click", () => this.addRow()).get());
    }
 
     get data() {
@@ -97,67 +109,29 @@ export class OxGrid extends OxControl {
     #populateFromData(data) {
         const grid = this.shadowRoot.firstElementChild;
         grid.innerHTML = "";
-        grid.style
+
 
         let db = new DocBuilder(this.ownerDocument);
 
-        const addCell = (row, col, text) => {
-            const el = db.div().class("cell").innerText(text).style({"grid-row": row + 2, "grid-column": col + 2});
-            if (this.editable == true) {
-                el.attr("contenteditable", true);
-                el.event("input", (event) => { this.#updateData(row, col, event.target.innerText)})
-            }
-            return el;
-        }
-
         let rn = 0;
         let col = 0;
-        let maxcells = 0;
+        this.#columnsLength = 0;
         if (data.rows) {
-            for (const row of data.rows) {
-
-                const rowEl = db.div().class("row");
-
-                if (row.id != null) {
-                    rowEl.children(db.div().class("row-num").style({"grid-row": rn + 2, "grid-column": 1}).innerText(row.id));
-                } else {
-                    rowEl.children(db.div().class("row-num").style({"grid-row": rn + 2, "grid-column": 1}).class("empty"));
-                }
-                for (const cell of row.cells) {
-                    const cellEl = addCell(rn, col, cell);
-                    rowEl.children(cellEl);
-                    col++;
-                }
-                if (row.cells.length > maxcells) {
-                    maxcells = row.cells.length;
-                    let rr = 0;
-                    for (const row of grid.children) {
-                        while (row.children.length < maxcells + 1) {
-                            row.appendChild(addCell(rr, row.children.length - 1, null).get());
-                        }
-                        rr++;
-                    }
-                } else if (row.cells.length < maxcells) {
-                    for (let i = row.cells.length; i < maxcells; i++) {
-                        rowEl.children(addCell(rn, i, null));
-                    }
-                }
-                grid.appendChild(rowEl.get());
-                rn++;
-                col=0;
+            for (const rowData of data.rows) {
+                this.addRow(rowData);
             }
         }
 
         const header = db.div().class("header").get();
-        header.appendChild(db.div().class("col-num").innerText(null).get());
+        header.appendChild(db.div().class("col-header").innerText(null).get());
         if (data.columns) {
             for (const column of data.columns) {
-                header.appendChild(db.div().class("col-num").style({"grid-row": 1, "grid-column": header.children.length + 1}).innerText(column.name).get());
+                header.appendChild(db.div().class("col-header").style({"grid-row": 1, "grid-column": header.children.length + 1}).innerText(column.name).get());
             }
         }
 
-        while (header.children.length < maxcells + 1) {
-            header.appendChild(db.div().class("col-num").style({"grid-row": 1, "grid-column": header.children.length + 1}).innerText("a").get());
+        while (header.children.length < this.#columnsLength + 1) {
+            header.appendChild(db.div().class("col-header").style({"grid-row": 1, "grid-column": header.children.length + 1}).innerText("a").get());
         }
         grid.insertBefore(header, grid.firstElementChild);
 
@@ -170,6 +144,62 @@ export class OxGrid extends OxControl {
         }
     }
 
+    
+
+    /**
+     * Inserts a row to the grid
+     * @param {*} rowData 
+     */
+    addRow(rowData) {
+
+        if (!rowData) {
+            rowData = {cells: []};
+        }
+
+        const grid = this.shadowRoot.firstElementChild;
+
+        const db = new DocBuilder(this.ownerDocument);
+        const rowEl = db.div().class("row");
+
+        const addCell = (row, col, text) => {
+            const el = db.div().class("cell").innerText(text).style({"grid-row": row + 2, "grid-column": col + 2});
+            if (this.editable == true) {
+                el.attr("contenteditable", true);
+                el.event("input", (event) => { this.#updateData(row, col, event.target.innerText)})
+            }
+            return el;
+        }
+
+        const rowNumber = grid.children.length;
+
+        if (rowData.id != null) {
+            rowEl.children(db.div().class("row-header").style({"grid-row": rowNumber + 2, "grid-column": 1}).innerText(rowData.id));
+        } else {
+            rowEl.children(db.div().class("row-header").style({"grid-row": rowNumber + 2, "grid-column": 1}).class("empty"));
+        }
+        let col = 0;
+        for (const cell of rowData.cells) {
+            const cellEl = addCell(rowNumber, col, cell);
+            rowEl.children(cellEl);
+            col++;
+        }
+        if (rowData.cells.length > this.#columnsLength) {
+            this.#columnsLength = rowData.cells.length;
+            let rr = 0;
+            for (const row of grid.children) {
+                while (row.children.length < this.#columnsLength + 1) {
+                    row.appendChild(addCell(rr, row.children.length - 1, null).get());
+                }
+                rr++;
+            }
+        } else if (rowData.cells.length < this.#columnsLength) {
+            for (let i = rowData.cells.length; i < this.#columnsLength; i++) {
+                rowEl.children(addCell(rowNumber, i, null));
+            }
+        }
+
+        grid.appendChild(rowEl.get());
+    }
 }
 
 window.customElements.define("ox-grid", OxGrid);
