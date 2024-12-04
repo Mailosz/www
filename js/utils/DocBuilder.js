@@ -122,11 +122,11 @@ export class TagBuilder {
 
     /**
      * Appends CSS class name(s)
-     * @param {...string} className 
+     * @param {...string} classNames 
      * @returns {TagBuilder}
      */
-    class(className) {
-        this.#tag.classList.add(className);
+    class(...classNames) {
+        this.#tag.classList.add(...classNames);
 
         return this;
     }

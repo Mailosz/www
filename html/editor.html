@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor</title>
+    <script type="module">
+        import {OxEditor} from "../js/ui/controls/OxEditor.js";
+        import {NodeHelper} from "../js/ui/controls/OxEditor.js";
+        /**
+         * @param {Range} range
+         */
+        window.findContainingElement = (range) => {
+
+            const startPos = NodeHelper.nodeOffsetPosition(range.startContainer, range.startOffset);
+            const endPos = NodeHelper.nodeOffsetPosition(range.endContainer, range.endOffset);
+            
+            const findMatchingEndAncestor = (node) => {
+
+                if (endPos == NodeHelper.START) {
+                    let parent = range.endContainer;// potencjalnie może trza zaczynać od parenta
+                    while (parent != null) {
+                        if (node == parent.previousSibling) {
+                            return parent.previousSibling;
+                        }
+                        if (!NodeHelper.isFirstChild(parent)) {
+                            return null;
+                        }
+                        parent = parent.parentElement;
+                    }
+                    return null;
+                } else if (endPos == NodeHelper.MIDDLE) {
+                    if (!NodeHelper.isTextNode(range.endContainer)) {
+                        let child = range.endContainer.childNodes.item(range.endOffset - 1);
+
+                        if (node == child) {
+                            return node;
+                        } else {
+                            return null;
+                        }
+                    } else {
+                        return null;
+                    }
+                } else {
+                    let parent = range.endContainer;
+                    while (parent != null) {
+                        if (node == parent) {
+                            return parent;
+                        }
+                        if (!NodeHelper.isLastChild(parent)) {
+                            return null;
+                        }
+                        parent = parent.parentElement;
+                    }
+                    return null;
+                }
+            }
+
+            if (range.startContainer == range.endContainer) {
+                if (startPos == NodeHelper.START && endPos == NodeHelper.END) {
+                    if (!NodeHelper.isTextNode(range.startContainer)) {
+                        return range.startContainer;
+                    } else if (range.startContainer.parentElement.childNodes.length == 1) {
+                        return range.startContainer.parentElement;
+                    } else {
+                        return null;
+                    }
+                } else if (!NodeHelper.isTextNode(range.startContainer) && range.startOffset + 1 == range.endOffset) {
+                    return range.startContainer.childNodes.item(range.startOffset);
+                } else {
+                    return null;
+                }
+            } else {
+
+                if (startPos == NodeHelper.START) {
+                    let startParent = range.startContainer.parentElement;
+                    while (startParent != null) {
+                        let matching = findMatchingEndAncestor(startParent);
+                        if (matching != null) {
+                            return matching;
+                        }
+                        if (!NodeHelper.isFirstChild(startParent)) {
+                            break;
+                        }
+                        startParent = startParent.parentElement;
+                    }
+                    return null;
+                // } else if (startPos == NodeHelper.MIDDLE) {
+                //     if (!NodeHelper.isTextNode(range.startContainer)) {
+                //         let child = range.endContainer.childNodes.item(range.endOffset);
+
+                //         if (node == child) {
+                //             return node;
+                //         } else {
+                //             return null;
+                //         }
+                //     } else {
+                //         return null;
+                //     }
+                //     return null;
+                } else if (startPos == NodeHelper.END) {
+                    let startParent = range.startContainer;
+                    while (startParent != null) {
+                        if (startParent.nextSibling != null) {
+                            let matching = findMatchingEndAncestor(startParent.nextSibling);
+                            if (matching != null) {
+                                return matching;
+                            }
+                        }
+                        if (!NodeHelper.isLastChild(startParent)) {
+                            break;
+                        }
+                        startParent = startParent.parentElement;
+                    }
+                    return null;
+                }
+            }
+
+            return null;
+        }
+
+        window.containingElement = (node) => NodeHelper.containingElement(node);
+    </script>
+    <style>
+        ox-editor {
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <button onclick="embolden();"><b>b</b></button>
+    <button onclick="italize();"><i>i</i></button>
+    <button onclick="underline()"><u>u</u></button>
+    <button onclick="commit((editor) => editor.focus());"><u>Focus</u></button>
+    <ox-editor id="main-editor" srcdoc="<div>Lorem ipsum dolor est Dolores.</div><a href='./controls.html'>Controls html</a>"></ox-editor>
+    <script>
+
+        function forEverySuccessor(element, foo) {
+            const walker = document.createTreeWalker(element, NodeFilter.SHOW_ELEMENT);
+
+            while (walker.nextNode()) {
+                foo(walker.currentNode);
+            }
+        }
+
+        function surroundBySpan(foo) {
+            let editor = document.getElementById("main-editor");
+
+            editor.forEverySelectionRange((range) => {
+
+                let element = findContainingElement(range);
+
+                let containerStyle;
+                if (element == null) {
+                    containerStyle = getComputedStyle(containingElement(range.commonAncestorContainer));
+                    element = document.createElement("span");
+                    element = editor.surroundRangeWithNode(range, element);
+                } else {
+                    containerStyle = getComputedStyle(element);
+                }
+
+                foo(element, containerStyle)
+
+            });
+        }
+
+        function embolden() {
+            surroundBySpan((element, containerStyle) =>{
+                if (containerStyle.fontWeight < 600) {
+                    element.style.fontWeight = "700";
+                } else {
+                    element.style.fontWeight = "400";
+                }
+
+                forEverySuccessor(element, (element) => element.style.fontWeight = "inherit");
+            });
+        }
+
+        function italize() {
+            surroundBySpan((element, containerStyle) =>{
+                if (containerStyle.fontStyle != "italic") {
+                    element.style.fontStyle = "italic";
+                } else {
+                    element.style.fontStyle = "none";
+                }
+
+                forEverySuccessor(element, (element) => element.style.fontStyle = "inherit");
+            });
+        }
+
+        function underline() {
+            surroundBySpan((element, containerStyle) =>{
+                if (containerStyle.textDecoration != "underline") {
+                    element.style.textDecoration = "underline";
+                } else {
+                    element.style.textDecoration = "none";
+                }
+
+                forEverySuccessor(element, (element) => element.style.textDecoration = "inherit");
+            });          
+        }
+
+        function commit(foo) {
+            let editor = document.getElementById("main-editor");
+            foo(editor);
+        }
+    </script>
+</body>
+</html>

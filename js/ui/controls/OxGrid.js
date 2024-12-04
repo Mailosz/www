@@ -165,6 +165,7 @@ export class OxGrid extends OxControl {
             const el = db.div().class("cell").innerText(text).style({"grid-row": row + 2, "grid-column": col + 2});
             if (this.editable == true) {
                 el.attr("contenteditable", true);
+                el.attr("enterkeyhint", "next");
                 el.event("input", (event) => { this.#updateData(row, col, event.target.innerText)})
             }
             return el;

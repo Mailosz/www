@@ -3,7 +3,9 @@ export class OxControl extends HTMLElement {
       super();
     }
 
-    createShadowRoot(html, css) {
+    createShadowRoot(html, css, options) {
+        options = {...{ mode: "open"}, ...options};
+
         const shadowRoot = this.attachShadow({ mode: "open"});
         if (html) {
             shadowRoot.innerHTML = html;
