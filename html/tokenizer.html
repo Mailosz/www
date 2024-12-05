@@ -40,11 +40,21 @@
                 let elems = document.getElementsByClassName("script");
 
                 for (let el of elems){
+                    colorizeInnerText(el, language);
+                }
+            }
 
-                    let tokenizer = new StringTokenizer(language, el.innerText);
-                    el.innerHTML = "";
+            function colorizeInnerText(element, language) {
+                let text = element.innerText.split('\n');
+                element.innerHTML = "";
 
-                    while (!tokenizer.isFinished()) {
+                let tokenizer = new StringTokenizer(language);
+                for (const line of text) {
+                    tokenizer.resetText(line);
+
+                    const lineElement = document.createElement("div");
+
+                        while (!tokenizer.isFinished()) {
                         let token = tokenizer.getNextToken();
 
                         let span = document.createElement("span");
@@ -58,9 +68,9 @@
                         }
                         span.title = token.state;
 
-                        el.appendChild(span);
+                        lineElement.appendChild(span);
                     }
-
+                    element.appendChild(lineElement);
                 }
             }
         </script>

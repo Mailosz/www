@@ -3,7 +3,7 @@
 	"default-state":{ 
 		/* defines when state begins */
 		"begin": {
-			/* on which state this rule works */
+			/* name of the state on which to test for this rule */
 			"on": "second-state",
 			/* when this token is encountered this state is chosen */
 			"by": "goto default"

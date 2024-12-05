@@ -345,15 +345,17 @@ class StringTokenizer {
 	/**
 	 * 
 	 * @param {StringTokenizerLanguage} language 
-	 * @param {String} text 
+	 * @param {String} text Initial text to parse
 	 */
 	constructor(language, text) {
 		this.#lang = language;
 		this.#text = text;
 		this.#pos = 0;
+		this.#tokenStart = 0;
 		this.#state = language.states[language.defaultState];
 		this.#beginData = {};
 		this.#values = {};
+		this.#hasFinished = text == null; // if no text passed then the tokenizer is finished
 	}
 
 	setState(state) {
@@ -415,14 +417,36 @@ class StringTokenizer {
 			return null;
 	}
 
+	/**
+	 * Sets text to parse while keeping current state
+	 * @param {String} text 
+	 */
+	resetText(text) {
+		this.#text = text;
+		this.#pos = 0;
+		this.#tokenStart = 0;
+
+		if (this.#hasFinished) {
+			console.warn("Resetting parse text before it has been fully consumed")
+		}
+		this.#hasFinished = text == null;
+	}
+
+	/**
+	 * Iterator inteface implementation
+	 * @returns 
+	 */
+	next() {
+		return {value: this.getNextToken(), done: this.#hasFinished};
+	}
 
 	getNextToken() {
 		if (this.#pos >= this.#text.length) {
+			this.#hasFinished = true;
 			if (this.#tokenStart < this.#text.length) { //reached end of text
 				let token = {start: this.#tokenStart, beginData: this.#beginData, data: this.#state.data, state: this.#state.name};
 				token.text = this.#text.substring(token.start);
 				token.end == this.#text.length;
-				this.#hasFinished = true;
 				return token;
 			}
 			return null;
