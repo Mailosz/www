@@ -1,6 +1,50 @@
-class StringTokenizerLanguage {
+export class StringTokenizerLanguageService {
 
-	constructor(language, options){
+	static #cache = {}; 
+	
+	/**
+	 * 
+	 * @param {String} src 
+	 * @param {String?} identifier Optional identifier of a language (if the same identifier is used twice then cached language is returned), if none specified then the src is taken as one
+	 */
+	static async getLanguageAsync(src, identifier) {
+		if (!identifier) identifier = src;
+
+		/**
+		 * @type {Promise}
+		 */
+		try {
+			const promise = await StringTokenizerLanguageService.#cache[identifier];
+			if (promise) {
+				return promise;
+			}
+		} catch(ex) {
+
+		}
+
+		const promise = fetch(src).then((response) => {
+			if (response.ok) {
+				return response.json();
+			} else {
+				throw response.status + ": " + response.statusText;
+			}
+
+		}).then((json) =>{
+			const lang = new StringTokenizerLanguage(json);
+
+			return lang;
+		});
+
+		StringTokenizerLanguageService.#cache[identifier] = promise;
+
+		return await promise;
+	}
+}
+
+
+export class StringTokenizerLanguage {
+
+	constructor(languageJson, options){
 		let nvl = (val, defaultVal) => {
 			if (typeof(val) === "undefined") {
 				return defaultVal;
@@ -10,7 +54,7 @@ class StringTokenizerLanguage {
 		};
 		this.functionsAllowed = nvl(options?.allowFunctions, false);
 
-		this.#prepare(language);
+		this.#prepare(languageJson);
 	}
 
 	/**
@@ -332,7 +376,7 @@ class StringTokenizerLanguage {
 	}
 }
 
-class StringTokenizer {
+export class StringTokenizer {
 	#lang = null;
 	#text = null;
 	#pos = 0;

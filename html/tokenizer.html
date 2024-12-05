@@ -9,8 +9,35 @@
                 background-color: rgba(127,127,127,0.3);
             }
         </style>
-        <script src="../js/StringTokenizer/stringTokenizer.js"></script>
-        <script>
+    </head>
+    <body>
+        <!-- contenteditable="true" onkeyup="change(this);" -->
+        <code class="script" >
+            &lt;!DOCTYPE html&gt;<br>
+            &lt;html&gt;<br>
+            &lt;!-- To jest komentarz --&gt;<br>
+                &lt;head&gt;<br>
+                    &lt;title>Koloryzowanie składni&lt;/title&gt;<br>
+                    &lt;meta charset="UTF-8"/&gt;<br>
+                    &lt;style&gt;<br>
+                    html,body {height: 100%; content: "&lt;br&gt;"} <br>
+                    &lt;/style&gt;<br>
+                &lt;/head&gt;<br>
+                &lt;body style="background-color: rgba(255,255,255,0.5); color: black"&gt;<br>
+                    &lt;input abc=&gt;
+                    &lt;input type=text autocomplete value="New \"hope \""&gt;<br>
+                    &lt;span id='identyf\'ikator'&gt; &amp;amp &amp;lt&lt;/span&gt;
+                    &lt;code&gt;<br>
+                        To jest napis &amp;copy;Miłosz.O<br>
+                    &lt;/code&gt;<br>
+                    &lt;input&gt;&lt;input&gt;&lt;input&gt;&lt;input&gt;
+                &lt;/body&gt;<br>
+                &lt;/html&gt;<br>
+        </code>
+
+
+        <script type="module">
+            import {StringTokenizer, StringTokenizerLanguage, StringTokenizerLanguageService } from "../js/stringTokenizer/StringTokenizer.js";
 
             function prepareLanguage(name){
                 var langRequest = new Request('../js/StringTokenizer/html.json');
@@ -31,11 +58,7 @@
 
             async function colorizeAll() {
 
-                let lang = await prepareLanguage("html.json");
-
-                let language = new StringTokenizerLanguage(lang);
-
-                //let tokenizer = new StringTokenizer(language);
+                let language = await StringTokenizerLanguageService.getLanguageAsync("../js/StringTokenizer/html.json");
 
                 let elems = document.getElementsByClassName("script");
 
@@ -73,31 +96,9 @@
                     element.appendChild(lineElement);
                 }
             }
+
+
+            colorizeAll();
         </script>
-    </head>
-    <body onload="colorizeAll();">
-        <!-- contenteditable="true" onkeyup="change(this);" -->
-        <code class="script" >
-            &lt;!DOCTYPE html&gt;<br>
-            &lt;html&gt;<br>
-            &lt;!-- To jest komentarz --&gt;<br>
-                &lt;head&gt;<br>
-                    &lt;title>Koloryzowanie składni&lt;/title&gt;<br>
-                    &lt;meta charset="UTF-8"/&gt;<br>
-                    &lt;style&gt;<br>
-                    html,body {height: 100%; content: "&lt;br&gt;"} <br>
-                    &lt;/style&gt;<br>
-                &lt;/head&gt;<br>
-                &lt;body style="background-color: rgba(255,255,255,0.5); color: black"&gt;<br>
-                    &lt;input abc=&gt;
-                    &lt;input type=text autocomplete value="New \"hope \""&gt;<br>
-                    &lt;span id='identyf\'ikator'&gt; &amp;amp &amp;lt&lt;/span&gt;
-                    &lt;code&gt;<br>
-                        To jest napis &amp;copy;Miłosz.O<br>
-                    &lt;/code&gt;<br>
-                    &lt;input&gt;&lt;input&gt;&lt;input&gt;&lt;input&gt;
-                &lt;/body&gt;<br>
-                &lt;/html&gt;<br>
-        </code>
     </body>
 </html>
