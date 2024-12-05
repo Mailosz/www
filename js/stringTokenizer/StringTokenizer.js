@@ -441,7 +441,7 @@ class StringTokenizer {
 	}
 
 	getNextToken() {
-		if (this.#pos >= this.#text.length) {
+		if (this.#pos > this.#text.length) {
 			this.#hasFinished = true;
 			if (this.#tokenStart < this.#text.length) { //reached end of text
 				let token = {start: this.#tokenStart, beginData: this.#beginData, data: this.#state.data, state: this.#state.name};
