@@ -1,5 +1,6 @@
 import { DocBuilder } from "../../utils/DocBuilder.js";
 import {OxControl} from "./OxControl.js";
+import {StringTokenizer, StringTokenizerLanguageService} from "../../StringTokenizer/StringTokenizer.js";
 
 
 const template = /*html*/`
@@ -72,12 +73,14 @@ const style = /*css*/`
 
 export class OxCode extends OxControl {
 
+    static observedAttributes = ["tokenizer-language", "contenteditable"];
+
+    tokenizerLanguage = null;
+
     constructor() {
         super();
 
         this.createShadowRoot(template, style);
-
-        this.shadowRoot.firstElementChild.contentEditable = "true";
 
         const code = this.innerHTML;
         if (code.length > 0) {
@@ -110,6 +113,49 @@ export class OxCode extends OxControl {
             const lineCode = document.createElement("div");
             lineCode.innerText = line;
             this.shadowRoot.firstElementChild.appendChild(lineCode);
+        }
+    }
+
+    tokenizeCode() {
+        const lines = this.shadowRoot.firstElementChild.innerText.split("\n");
+        this.shadowRoot.firstElementChild.innerText = "";
+
+        const tokenizer = new StringTokenizer(this.tokenizerLanguage);
+
+        for (const line of lines) {
+            tokenizer.resetText(line);
+
+            const lineElement = document.createElement("div");
+
+                while (!tokenizer.isFinished()) {
+                let token = tokenizer.getNextToken();
+
+                let span = document.createElement("span");
+                span.innerText = token.text;
+                span.classList.add("token");
+                if (token.data && token.data.color) {
+                    span.style.color = token.data.color;
+                }
+                if (token.startData && token.startData.error) {
+                    span.style.textDecoration = "1px wavy red underline";
+                }
+                span.title = token.state;
+
+                lineElement.appendChild(span);
+            }
+            this.shadowRoot.firstElementChild.appendChild(lineElement);
+        }
+    }
+
+    
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (name == "tokenizer-language") {
+            StringTokenizerLanguageService.getLanguageAsync(newValue).then((language) => {
+                this.tokenizerLanguage = language;
+                this.tokenizeCode();
+            });
+        } else if (name == "contenteditable") {
+            this.shadowRoot.firstElementChild.contentEditable = newValue;
         }
     }
 
