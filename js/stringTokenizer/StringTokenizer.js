@@ -196,7 +196,7 @@ export class StringTokenizerLanguage {
 		}
 
 		if (this.defaultState === null) {
-			this.defaultState = this.states[Object.keys(obj)[0]];
+			this.defaultState = Object.keys(this.states)[0];
 
 			warn("No state set as default, using the first one, " + this.defaultState)
 		}

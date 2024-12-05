@@ -4,7 +4,7 @@ import {StringTokenizer, StringTokenizerLanguageService} from "../../StringToken
 
 
 const template = /*html*/`
-<div id="code-box"></div>
+<slot id="code-box"></slot>
 <div id="line-counters-box"></div>
 `;
 
@@ -35,8 +35,9 @@ const style = /*css*/`
     }
     
     #code-box {
+        display: block;
         flex: 1;
-        padding: 4px;
+        padding: 4px 0;
         overflow-x: auto;
         white-space: pre;
     }
@@ -45,15 +46,16 @@ const style = /*css*/`
         outline: none;
     }
 
-    #code-box>div {
+    ::slotted(div) {
         min-height: 1.1em;
+        padding: 0 4px;
     }
 
-    #code-box>div:active {
+    ::slotted(div):hover {
         background: var(--selected-line-background);
     }
 
-    #code-box>div::before {
+    ::slotted(div)::before {
         counter-increment: row-num;
         content: counter(row-num);
         width: var(--line-counter-width);
@@ -82,7 +84,9 @@ export class OxCode extends OxControl {
 
         this.createShadowRoot(template, style);
 
-        const code = this.innerHTML;
+        this.spellcheck = false;
+
+        const code = this.innerText;
         if (code.length > 0) {
             this.#createCodeBox(code);
         }
@@ -109,16 +113,22 @@ export class OxCode extends OxControl {
             lines.pop();
         }
 
+        this.innerHTML = "";
+        let slot = this.shadowRoot.firstElementChild;
+        let list = [];
         for (const line of lines){            
-            const lineCode = document.createElement("div");
-            lineCode.innerText = line;
-            this.shadowRoot.firstElementChild.appendChild(lineCode);
+            const lineElement = document.createElement("div");
+            lineElement.innerText = line;
+            this.appendChild(lineElement);
+            list.push(lineElement);
         }
+        slot.assign(...list);
+        console.log(slot.assignedNodes());
     }
 
     tokenizeCode() {
-        const lines = this.shadowRoot.firstElementChild.innerText.split("\n");
-        this.shadowRoot.firstElementChild.innerText = "";
+        const lines = this.innerText.split("\n");
+        this.innerText = "";
 
         const tokenizer = new StringTokenizer(this.tokenizerLanguage);
 
@@ -133,17 +143,18 @@ export class OxCode extends OxControl {
                 let span = document.createElement("span");
                 span.innerText = token.text;
                 span.classList.add("token");
-                if (token.data && token.data.color) {
-                    span.style.color = token.data.color;
+                if (token.data && token.data.class) {
+                    span.classList.add(token.data.class);
+                } else {
+                    span.classList.add(token.state);
                 }
                 if (token.startData && token.startData.error) {
                     span.style.textDecoration = "1px wavy red underline";
                 }
-                span.title = token.state;
 
                 lineElement.appendChild(span);
             }
-            this.shadowRoot.firstElementChild.appendChild(lineElement);
+            this.appendChild(lineElement);
         }
     }
 

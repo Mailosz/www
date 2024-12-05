@@ -3,17 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Samples</title>
     <link rel="stylesheet" href="../css/samples.css">
+    <link rel="stylesheet" href="../css/langs/html-lang.css">
     <script type="module" src="../js/ui/controls/OxCode.js"></script>
+    <style>
+    
+    </style>
 </head>
 <body>
     <ox-code contenteditable="true" tokenizer-language="../js/StringTokenizer/html.json">
-        &lt;test&gt;
-        &lt;test&gt;
-        &lt;test&gt;
-        &lt;test&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;!-- To jest komentarz --&gt;
+    &lt;head&gt;
+        &lt;title>Koloryzowanie składni&lt;/title&gt;
+        &lt;meta charset="UTF-8"/&gt;
+        &lt;style&gt;
+        html,body {height: 100%; content: "&lt;br&gt;"} 
+        &lt;/style&gt;
+    &lt;/head&gt;
+    &lt;body style="background-color: rgba(255,255,255,0.5); color: black"&gt;
+        &lt;input abc=&gt;
+        &lt;input type=text autocomplete value="New \"hope \""&gt;
+        &lt;span id='identyf\'ikator'&gt; &amp;amp &amp;lt&lt;/span&gt;
+        &lt;code&gt;
+            To jest napis &amp;copy;Miłosz.O
+        &lt;/code&gt;
+        &lt;input&gt;&lt;input&gt;&lt;input&gt;&lt;input&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
     </ox-code>
+    <p></p>
+    <p></p>
+    <p></p>
+    <ox-code contenteditable="true" tokenizer-language="../js/StringTokenizer/css.json">
+        html {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+        }
+        
+        @media (min-width: 1200px) {
+            html {
+                background-color: #f8f8f8;
+            }
+            main {
+                box-shadow: 0px 0px 20px rgba(0,0,0,0.2);
+                max-width: 1024px;
+                --main-padding: 40px;
+            }
+        } 
+        
+        @media not (min-width: 1200px) {
+            main{
+                --main-padding: max(calc(10vw - 20px), 10px);
+            }
+        }
+        
+        main {
+            
+            /* --main-padding: min(5vw, 24px); */
+        
+            background-color: #ffffff;
+            margin: auto;
+            box-sizing: border-box;
+            padding: 40px var(--main-padding);
+            
+        }
+        </ox-code>
 
 
     <!-- <script type="module">
