@@ -4,14 +4,14 @@ import { OxControl } from './OxControl.js';
 
 const template = /*html*/`
     <dialog id="popup-wrapper">
-        <div id="popup-container">
+        <div id="popup-container" part="container">
             <div id="popup-bar">
-                <div id="popup-title">
+                <div id="popup-title" part="title">
                     <slot name="title"></slot>
                 </div>
-                <button id="popup-close-button" onclick=""></button>
+                <button id="popup-close-button" part="close"></button>
             </div>
-            <div id="popup-content">
+            <div id="popup-content" part="content">
                 <slot></slot>
             </div>
         </div>
@@ -19,23 +19,33 @@ const template = /*html*/`
 `;
 
 const style = /*css*/`
-    @keyframes open {
+
+    :host {
+        --open-animation: open-animation 200ms;
+        --close-animation: close-animation 8000ms;
+        display: contents;
+    }
+
+    @keyframes open-animation {
         0% {opacity: 0.2; transform: translateY(10px); filter: blur(10px);}
         100% {opacity: 1; transform: translateY(0);}
     }
 
-    @keyframes close {
-        0% {opacity: 1; transform: translateY(0); display:block;}
-        100% {opacity: 0; transform: translateY(20px); filter: blur(40px); display:none;}
+    @keyframes close-animation {
+        0% {opacity: 1; transform: translateY(0);}
+        100% {opacity: 0; transform: translateY(10px); filter: blur(10px);}
     }
 
-    @keyframes close-dialog {
-        0% {display:block;}
-        100% {display:none;}
+
+    dialog[open]>#popup-container, #popup-wrapper:popover-open>#popup-container {
+        animation: var(--open-animation);
     }
 
-    dialog[open]>#popup-container {
-        animation: open 200ms;
+    /*#popup-wrapper.opened:not(:popover-open):not([open])>#popup-container*/
+    #popup-wrapper.closing {
+        animation: var(--open-animation);
+        display: block;
+        pointer-events: none;
     }
 
     #popup-title {
@@ -51,7 +61,7 @@ const style = /*css*/`
         position: fixed;
         background-color: white;
 
-        border: 1px solid gray;
+        border: 1px solid black;
         box-shadow: 0 0 20px rgba(127,127,127,0.7);
     }
 
@@ -62,13 +72,6 @@ const style = /*css*/`
     [popover], dialog {
         border: none;
         padding: 0;
-    }
-
-    dialog:not([open]) {
-        animation: close-dialog linear 400ms;
-    }
-    dialog:not([open])>#popup-container {
-        animation: close linear 400ms;
     }
 
     #popup-close-button {
@@ -91,7 +94,7 @@ const style = /*css*/`
 
 export class OxPopup extends OxControl {
 
-    static observedAttributes = ["modal","placement","dismissable", "anchor", "closable", "movable"];
+    static observedAttributes = ["modal", "placement", "dismissable", "anchor", "closable", "movable"];
     #changedInertness = false;
     constructor(opts) {
         super();
@@ -107,17 +110,11 @@ export class OxPopup extends OxControl {
 
         this.opts = {...defaultOpts, ...opts};
 
-        const shadowRoot = this.attachShadow({ mode: "open"});
-        shadowRoot.innerHTML = template;
+        this.createShadowRoot(template, style);
 
 
-        const styleSheet = new CSSStyleSheet();
-        styleSheet.replaceSync(style);
-
-        shadowRoot.adoptedStyleSheets.push(styleSheet);
-
-        this.wrapper = shadowRoot.getElementById("popup-wrapper");
-        this.container = shadowRoot.getElementById("popup-container");
+        this.wrapper = this.shadowRoot.getElementById("popup-wrapper");
+        this.container = this.shadowRoot.getElementById("popup-container");
 
         this.wrapper.onclick = (event) => {
             if (event.target == this.wrapper) {
@@ -127,7 +124,7 @@ export class OxPopup extends OxControl {
             }
         }
 
-        const closeButton = shadowRoot.getElementById("popup-close-button");
+        const closeButton = this.shadowRoot.getElementById("popup-close-button");
         closeButton.onclick = (event)=>{
             event.preventDefault();
             this.close();
@@ -135,6 +132,16 @@ export class OxPopup extends OxControl {
 
         this.#isClosableChanged();
         this.#isMovableChanged();
+        this.#isDismissableChanged();
+    }
+
+    #isDismissableChanged() {
+        const wrapper = this.shadowRoot.getElementById("popup-wrapper");
+        if (this.opts.dismissable) {
+            wrapper.popover = "auto";
+        } else {
+            wrapper.popover = "manual";
+        }
     }
 
     #isClosableChanged() {
@@ -163,6 +170,9 @@ export class OxPopup extends OxControl {
      * @param {PointerEvent} event 
      */
     #startMove(event) {
+        if (event.target.id == "popup-close-button") {
+            return;
+        }
         const popupBar = this.shadowRoot.getElementById("popup-bar");
         popupBar.setPointerCapture(event.pointerId);
         event.preventDefault();
@@ -190,7 +200,7 @@ export class OxPopup extends OxControl {
         if (this.opts.modal == "true") {
             this.wrapper.showModal();
         } else {
-            this.wrapper.show();
+            this.wrapper.showPopover();
         }
 
         if (this.opts.placement != false) {
@@ -213,7 +223,10 @@ export class OxPopup extends OxControl {
 
     close() {
         // this.wrapper.togglePopover(false);       
+        this.wrapper.classList.add("closing");
+        this.wrapper.onanimationend = (event) => this.wrapper.classList.remove("closing");
         this.wrapper.close();
+        this.wrapper.hidePopover();
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -223,6 +236,7 @@ export class OxPopup extends OxControl {
             this.opts.placement = newValue;
         } else if (name == "dismissable") {
             this.opts.dismissable = newValue;
+            this.#isDismissableChanged();
         } else if (name == "anchor") {
             this.opts.anchor = newValue;
         } else if ( name == "closable") {

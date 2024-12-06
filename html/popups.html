@@ -7,6 +7,10 @@
     <title>Popups test</title>
     <link rel="stylesheet" href="../css/main.css">
     <style>
+        ox-popup::part(container) {
+            background: white;
+            border: 2px solid #555;
+        }
 
         .popup-backdrop:focus-within>.popup {
             box-shadow: 0px 0px 15px rgba(127,127,127,0.5);
@@ -22,6 +26,18 @@
 
         button:hover {
             background-color: lightskyblue;
+        }
+
+        button:active {
+            background-color: blue;
+        }
+
+        ox-popup::part(close) {
+            
+        }
+
+        ox-popup::part(content) {
+            
         }
     </style>
 </head>
@@ -73,7 +89,7 @@
 
         <p><button id="anchor-popup-button" onclick="document.getElementById('ox-popup-here-anchor').open()">Pokaż tu via anchor (closable)</button></p>
         <ox-popup id="ox-popup-here-anchor" modal="true" dismissable="true" placement="left bottomOut" anchor="anchor-popup-button" closable="true" movable="true">
-            <h3 slot="title">To jest tytuł</h3>
+            <h3 slot="title" style="margin: 0;">To jest tytuł</h3>
             <p>To jest testowy dialog.</p>
             <button onclick="document.getElementById('ox-popup-here-anchor').close();">Zamknij</button>
         </ox-popup>
