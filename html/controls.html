@@ -9,6 +9,7 @@
     <script type="module" src="../js/ui/controls/OxButton.js"></script>
     <script type="module" src="../js/ui/controls/OxUpload.js"></script>
     <script type="module" src="../js/ui/controls/OxGrid.js"></script>
+    <script type="module" src="../js/ui/controls/OxPaging.js"></script>
     <style>
         /* ox-button {
             background-color: aqua;
@@ -33,6 +34,7 @@
         .toolbox ox-button:not(:first-child)::part(button) {
             
         }
+
     </style>
 </head>
 <body>
@@ -108,9 +110,12 @@
         <p>Test</p>
         <p>Test</p>
         <p>Test</p>
+        <p>
+            <ox-paging first-index="1" current-index="10" last-index="20">
+
+            </ox-paging>
+        </p>
     </main>
-    <div class="notifications-container">
-        <ui-notification>Ojoj</ui-notification>
-    </div>
+
 </body>
 </html>
