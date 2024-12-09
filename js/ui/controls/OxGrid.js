@@ -133,8 +133,14 @@ export class OxGrid extends OxControl {
         console.log("Cell edited: " + col + ", " + row + ", value: " + value);
         if (this.data) {
             if (row == -1) { // column header
+                while (this.data.columns.length <= col) {
+                    this.data.columns.push({});
+                }
                 this.data.columns[col].name = value;
             } else if (col == -1) { // row header
+                while (this.data.rows.length <= row) {
+                    this.data.rows.push({cells: []});
+                }
                 this.data.rows[row].name = value;
             } else {
 
@@ -218,6 +224,12 @@ export class OxGrid extends OxControl {
         
         cell.appendChild(editBox);
         editBox.focus();
+        if (editBox.lastChild != null) {
+            document.getSelection().removeAllRanges();
+            const range = document.createRange();
+            range.setStart(editBox.lastChild, editBox.lastChild.length);
+            document.getSelection().addRange(range);
+        }
     }
 
     #createCell(row, col, text) {
@@ -229,9 +241,10 @@ export class OxGrid extends OxControl {
         cell.part = "cell";
         cell.tabIndex = 0;
 
-
-        cell.oninput = (event) => {
-            console.log(event.data);
+        cell.onkeypress = (event) => {
+            if (event.target == event.currentTarget) {
+                this.#editCell(row, col, cell, event.key);
+            }
         }
 
         cell.ondblclick = (event) => {
