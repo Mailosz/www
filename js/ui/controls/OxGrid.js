@@ -15,17 +15,19 @@ const style = /*css*/`
 
     :host {
         display: block;
-        background: rgba(127,127,127,0.2);
+        background: #aaa;
         border: 1px solid black;
-        --col-border:1px solid gray;
-        --row-border:1px solid gray;
+        --cell-gap:1px;
         --cell-padding: 2px 4px;
         --cell-background: white;
+        --header-background: #ddd;
+        position: relative;
     }
 
     #grid {
         flex: 1;
         display: grid;
+        gap: var(--cell-gap);
 
         justify-content: stretch;
         align-items: stretch;
@@ -35,8 +37,10 @@ const style = /*css*/`
     }
 
     .cell:focus {
-        outline: 4px blue solid;
+        outline: 4px rgba(0,0,255,0.7) solid;
+        box-sizing: content-box;
         z-index: 10;
+        background: white;
     }
 
     .cell {
@@ -46,15 +50,6 @@ const style = /*css*/`
         padding: var(--cell-padding);
     }
 
-    .cell:not(:last-child) {
-        border-right: var(--col-border);
-
-    }
-
-    .row:not(:last-child) > .cell {
-        border-bottom: var(--row-border);
-    }
-
     .row, .header {
         display: contents;
     }
@@ -62,12 +57,28 @@ const style = /*css*/`
     .row-header {
         text-align: right;
         padding: var(--cell-padding);
+        background: var(--header-background);
     }
 
     .col-header {
         min-height: 1em;
         text-align: center;
         padding: var(--cell-padding);
+        background: var(--header-background);
+    }
+
+    .add-row {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        transform: translate(-50%,50%);
+    }
+
+    .add-col {
+        position: absolute;
+        top: 0;
+        right: 0;
+        transform: translate(50%,-50%);
     }
 
 `;
@@ -84,25 +95,30 @@ export class OxGrid extends OxControl {
         this.editable = true;
         this.createShadowRoot(template, style);
 
-        if (this.data) {
-            this.#populateFromData(this.data);
+        if (this.#data) {
+            this.#populateFromData(this.#data);
         }
 
         let db = new DocBuilder(this.ownerDocument);
 
         this.shadowRoot.appendChild(db.button().innerText("+").class("add-row").event("click", () => this.addRow()).get());
+        this.shadowRoot.appendChild(db.button().innerText("+").class("add-col").event("click", () => this.addColumn()).get());
    }
 
     get data() {
         return this.#data;
     }
 
-    set data(data) {
+    setData(data) {
+        console.log("XXXxxxXXXxxxXXX");
         this.#data = data;
         this.#populateFromData(data);
     }
 
     #updateData(row, col, value) {
+        if (this.data) {
+            this.data.rows[row].cells[col] = value;
+        }
         console.log("Cell edited: " + row + ", " + col + ", value: " + value);
     }
 
@@ -166,6 +182,7 @@ export class OxGrid extends OxControl {
             if (this.editable == true) {
                 el.attr("contenteditable", true);
                 el.attr("enterkeyhint", "next");
+                el.attr("part", "cell");
                 el.event("input", (event) => { this.#updateData(row, col, event.target.innerText)})
             }
             return el;
@@ -200,6 +217,14 @@ export class OxGrid extends OxControl {
         }
 
         grid.appendChild(rowEl.get());
+    }
+
+    /**
+     * Inserts a column to the grid
+     * @param {*} rowData 
+     */
+    addColumn(columnData) {
+
     }
 }
 
