@@ -2,11 +2,13 @@ import { OxControl } from "./OxControl.js";
 
 const template = /*html*/`
     <div id="container">
-        <div id="first">&#10094;</div>
+        <div id="first"></div>
         <div id="start"></div>
-        <div id="middle"></div>
+        <div id="prev"></div>
+        <div id="current" class="page-number" part="selected"></div>
+        <div id="next"></div>
         <div id="end"></div>
-        <div id="last">&#10095;</div>
+        <div id="last"></div>
     </div>
 `;
 
@@ -21,7 +23,8 @@ const style = /*css*/`
 
     ::part(selected) {
         font-weight: 600;
-        background: rgba(31,31,224,0.2);
+        background: AccentColor; 
+        color: AccentColorText;
     }
 
     #container {
@@ -34,9 +37,17 @@ const style = /*css*/`
         justify-content: center;
     }
 
-    #start, #middle, #end {
+    #start, #prev, #next, #end {
         display: flex;
         gap: 0.5em;
+    }
+
+    #first.active::before {
+        content: "\\276E";
+    }
+
+    #last.active::before {
+        content: "\\276F";
     }
 
     #start:not(:empty)::after,
@@ -44,27 +55,36 @@ const style = /*css*/`
         content: "...";
     }
 
+    #first, #last {
+        flex: 1;
+        max-width: 4em;
+    }
+
     #first, #last,
     .page-number {
         display: inline-block;
         text-align: center;
-        cursor: pointer;
         min-width: 2em;
         padding: 0.5em 2px;
         line-height: 1em;
     }
+
+    .active, .page-number {
+        cursor: pointer;
+    }
+
 
     div.page-number::before {
         content: attr(page-index);
     }
 
     div.page-number:hover,
-    #first:hover, #last:hover {
+    .active:hover {
         background: rgba(127,127,127,0.2);
     }
 
     div.page-number:active,
-    #first:active, #last:active {
+    .active:active {
         background: rgba(127,127,127,0.5);
     }
 
@@ -114,14 +134,15 @@ export class OxPaging extends OxControl {
         const last = +this.opts.lastIndex ?? +this.opts.currentIndex;
 
         const current = +this.opts.currentIndex;
+        const container = this.shadowRoot.firstElementChild;
 
-        const middle = this.shadowRoot.querySelector("#middle");
 
-        const currentEl = document.createElement("div");
+        
+        let maxnum = 10;
+
+        const currentEl = this.shadowRoot.querySelector("#current");
         currentEl.setAttribute("page-index", current);
-        currentEl.part = "selected";
-        currentEl.classList.add("page-number");
-        middle.appendChild(currentEl);
+
 
         let createPageNumber = (number) => {
             const indexEl = document.createElement("div");
@@ -133,19 +154,49 @@ export class OxPaging extends OxControl {
             return indexEl;
         }
 
-        let maxnum = 6;
-
-        for (let i = 1; i <= maxnum && current - i >= first; i++) {
+        const prevEl = this.shadowRoot.querySelector("#prev");
+        const prevMax = Math.max(maxnum / 2, maxnum - (last - current));
+        for (let i = 1; i <= prevMax && current - i >= first; i++) {
             const indexEl = createPageNumber(current - i);
-            middle.insertBefore(indexEl, middle.firstChild);
+            prevEl.insertBefore(indexEl, prevEl.firstChild);
         }
 
-        for (let i = 1; i <= maxnum && current + i <= last; i++) {
+        const nextEl = this.shadowRoot.querySelector("#next");
+        const nextMax = Math.max(maxnum / 2, maxnum - (current - first));
+        for (let i = 1; i <= nextMax && current + i <= last; i++) {
             const indexEl = createPageNumber(current + i);
-            middle.appendChild(indexEl);
+            nextEl.appendChild(indexEl);
         }
 
-        const lower = current - maxnum;
+        const ro = new ResizeObserver((entry) => {
+            const target = entry[0].target;
+            let child = target.firstElementChild;
+            while (child != null) {
+
+                if (target.scrollWidth > target.clientWidth) {
+                    target.style.display = none;
+                } else {
+                    break;
+                }
+                child = child.nextElementSibling;
+            }
+
+
+            child = target.firstElementChild;
+            while (child != null) {
+
+                if (target.scrollWidth > target.clientWidth) {
+                    target.style.display = none;
+                } else {
+                    break;
+                }
+                child = child.nextElementSibling;
+            }
+        });
+        ro.observe(prevEl);
+        ro.observe(nextEl);
+
+        const lower = current - prevMax;
         if (lower > first) {
             const startEl = this.shadowRoot.querySelector("#start");
 
@@ -153,7 +204,7 @@ export class OxPaging extends OxControl {
             startEl.appendChild(indexEl);
         }
 
-        const upper = current + maxnum;
+        const upper = current + nextMax;
         if (upper < last) {
             const endEl = this.shadowRoot.querySelector("#end");
 
@@ -161,12 +212,19 @@ export class OxPaging extends OxControl {
             endEl.appendChild(indexEl);
         }
 
-        this.shadowRoot.querySelector("#first").onclick = () => this.previousPage();
-        this.shadowRoot.querySelector("#last").onclick = () => this.nextPage();
+        const firstEl = this.shadowRoot.querySelector("#first");
+        if (current > first) {
+            firstEl.onclick = () => this.previousPage();
+            firstEl.classList.add("active");
+        }
+        const lastEl = this.shadowRoot.querySelector("#last");
+        if (current < last) {
+            lastEl.onclick = () => this.nextPage();
+            lastEl.classList.add("active");
+        }
     }
 
     previousPage() {
-
         this.setAttribute("current-index", Math.max(+this.getAttribute("current-index") - 1, this.getAttribute("first-index")));
     }
 
