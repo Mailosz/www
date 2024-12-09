@@ -38,9 +38,7 @@ const style = /*css*/`
 
     .cell:focus {
         outline: 4px rgba(0,0,255,0.7) solid;
-        box-sizing: content-box;
         z-index: 10;
-        background: white;
     }
 
     .cell {
@@ -48,6 +46,23 @@ const style = /*css*/`
         min-width: 10px;
         min-height: 1em;
         padding: var(--cell-padding);
+        position: relative;
+    }
+
+    .cell::before {
+        content: "\\200B"; /* minimum height hack */
+    }
+
+    .cell>.edit-box {
+        outline: 4px rgba(0,0,255,0.7) solid;
+        padding: var(--cell-padding);
+        background: var(--cell-background);
+        min-width: 100%;
+        min-height: 100%;
+        z-index: 10;
+        position: absolute;
+        left: 0;
+        top: 0;
     }
 
     .row, .header {
@@ -101,7 +116,7 @@ export class OxGrid extends OxControl {
 
         let db = new DocBuilder(this.ownerDocument);
 
-        this.shadowRoot.appendChild(db.button().innerText("+").class("add-row").event("click", () => this.addRow()).get());
+        this.shadowRoot.appendChild(db.button().innerText("+").class("add-row").event("click", () => this.insertRow(null, this.shadowRoot.querySelector("#grid").children.length - 1)).get());
         this.shadowRoot.appendChild(db.button().innerText("+").class("add-col").event("click", () => this.addColumn()).get());
    }
 
@@ -110,16 +125,29 @@ export class OxGrid extends OxControl {
     }
 
     setData(data) {
-        console.log("XXXxxxXXXxxxXXX");
         this.#data = data;
         this.#populateFromData(data);
     }
 
     #updateData(row, col, value) {
+        console.log("Cell edited: " + col + ", " + row + ", value: " + value);
         if (this.data) {
-            this.data.rows[row].cells[col] = value;
+            if (row == -1) { // column header
+                this.data.columns[col].name = value;
+            } else if (col == -1) { // row header
+                this.data.rows[row].name = value;
+            } else {
+
+                while (this.data.rows.length <= row) {
+                    this.data.rows.push({cells: []});
+                }
+
+                while (this.data.rows[row].cells.length <= col) {
+                    this.data.rows[row].cells.push("");
+                }
+                this.data.rows[row].cells[col] = value;
+            }
         }
-        console.log("Cell edited: " + row + ", " + col + ", value: " + value);
     }
 
     #populateFromData(data) {
@@ -134,7 +162,7 @@ export class OxGrid extends OxControl {
         this.#columnsLength = 0;
         if (data.rows) {
             for (const rowData of data.rows) {
-                this.addRow(rowData);
+                this.insertRow(rowData, grid.children.length);
             }
         }
 
@@ -142,12 +170,16 @@ export class OxGrid extends OxControl {
         header.appendChild(db.div().class("col-header").innerText(null).get());
         if (data.columns) {
             for (const column of data.columns) {
-                header.appendChild(db.div().class("col-header").style({"grid-row": 1, "grid-column": header.children.length + 1}).innerText(column.name).get());
+                const rowHeader = this.#createCell(-1, header.children.length - 1, column.name);
+                rowHeader.classList.add("col-header");
+                header.appendChild(rowHeader);
             }
         }
 
         while (header.children.length < this.#columnsLength + 1) {
-            header.appendChild(db.div().class("col-header").style({"grid-row": 1, "grid-column": header.children.length + 1}).innerText("a").get());
+            const rowHeader = this.#createCell(-1, header.children.length - 1, null);
+            rowHeader.classList.add("col-header");
+            header.appendChild(rowHeader);
         }
         grid.insertBefore(header, grid.firstElementChild);
 
@@ -160,13 +192,64 @@ export class OxGrid extends OxControl {
         }
     }
 
+    #editCell(row, col, cell, text) {
+        const editBox = document.createElement("div");
+        editBox.classList.add("edit-box");
+        editBox.contentEditable = true;
+        editBox.innerText = text ?? cell.innerText;
+
+        const confirm = () => {
+            this.#updateData(row, col, editBox.innerText);
+            cell.innerText = editBox.innerText;
+        }
+
+        editBox.onkeydown = (event) => {
+            if (event.key == "Escape") {
+                cell.removeChild(editBox);
+            } else if (event.key == "Enter") {
+                if (!event.shiftKey && !event.ctrlKey) {
+                    confirm();
+                }
+
+            }
+        }
+        
+        editBox.onblur = (event) => { confirm();};
+        
+        cell.appendChild(editBox);
+        editBox.focus();
+    }
+
+    #createCell(row, col, text) {
+        const cell = document.createElement("div");
+        cell.innerText = text ?? "";
+        cell.classList.add("cell");
+        cell.style.gridRow = row + 2;
+        cell.style.gridColumn = col + 2;
+        cell.part = "cell";
+        cell.tabIndex = 0;
+
+
+        cell.oninput = (event) => {
+            console.log(event.data);
+        }
+
+        cell.ondblclick = (event) => {
+           this.#editCell(row, col, cell);
+        };
+
+        return cell;
+    }
+
+
+
     
 
     /**
      * Inserts a row to the grid
      * @param {*} rowData 
      */
-    addRow(rowData) {
+    insertRow(rowData, rowNumber) {
 
         if (!rowData) {
             rowData = {cells: []};
@@ -175,30 +258,19 @@ export class OxGrid extends OxControl {
         const grid = this.shadowRoot.firstElementChild;
 
         const db = new DocBuilder(this.ownerDocument);
-        const rowEl = db.div().class("row");
+        const rowEl = document.createElement("div");
+        rowEl.classList.add("row");
 
-        const addCell = (row, col, text) => {
-            const el = db.div().class("cell").innerText(text).style({"grid-row": row + 2, "grid-column": col + 2});
-            if (this.editable == true) {
-                el.attr("contenteditable", true);
-                el.attr("enterkeyhint", "next");
-                el.attr("part", "cell");
-                el.event("input", (event) => { this.#updateData(row, col, event.target.innerText)})
-            }
-            return el;
-        }
+        //row header
+        const rowHeader = this.#createCell(rowNumber, -1, rowData.name ?? rowData.id);
+        rowHeader.classList.add("row-header");
+        rowEl.appendChild(rowHeader);
 
-        const rowNumber = grid.children.length;
 
-        if (rowData.id != null) {
-            rowEl.children(db.div().class("row-header").style({"grid-row": rowNumber + 2, "grid-column": 1}).innerText(rowData.id));
-        } else {
-            rowEl.children(db.div().class("row-header").style({"grid-row": rowNumber + 2, "grid-column": 1}).class("empty"));
-        }
         let col = 0;
         for (const cell of rowData.cells) {
-            const cellEl = addCell(rowNumber, col, cell);
-            rowEl.children(cellEl);
+            const cellEl = this.#createCell(rowNumber, col, cell);
+            rowEl.appendChild(cellEl);
             col++;
         }
         if (rowData.cells.length > this.#columnsLength) {
@@ -206,17 +278,23 @@ export class OxGrid extends OxControl {
             let rr = 0;
             for (const row of grid.children) {
                 while (row.children.length < this.#columnsLength + 1) {
-                    row.appendChild(addCell(rr, row.children.length - 1, null).get());
+                    row.appendChild(this.#createCell(rr, row.children.length - 1, null));
                 }
                 rr++;
             }
         } else if (rowData.cells.length < this.#columnsLength) {
             for (let i = rowData.cells.length; i < this.#columnsLength; i++) {
-                rowEl.children(addCell(rowNumber, i, null));
+                rowEl.appendChild(this.#createCell(rowNumber, i, null));
             }
         }
 
-        grid.appendChild(rowEl.get());
+        if (rowNumber < grid.children.length) {
+            grid.insertBefore(rowEl, grid.children.item(rowNumber));
+        } else if (rowNumber == grid.children.length) {
+             grid.appendChild(rowEl);
+        } else {
+            throw "Too big index";
+        }
     }
 
     /**
