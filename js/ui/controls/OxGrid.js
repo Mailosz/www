@@ -49,7 +49,7 @@ const style = /*css*/`
         position: relative;
     }
 
-    .cell::before {
+    .cell:empty::before {
         content: "\\200B"; /* minimum height hack */
     }
 
