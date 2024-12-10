@@ -6,7 +6,7 @@ import {StringTokenizer, StringTokenizerLanguageService} from "../../StringToken
 const template = /*html*/`
 <div id="code-box"></div>
 <link rel="stylesheet">
-<div id="line-counters-box" contenteditable="true"></div>
+<div id="line-counters-box" contenteditable="false"></div>
 `;
 
 const style = /*css*/`
@@ -76,7 +76,7 @@ const style = /*css*/`
 
 export class OxCode extends OxControl {
 
-    static observedAttributes = ["tokenizer-language", "contenteditable", "code-style", "code"];
+    static observedAttributes = ["tokenizer-language", "contenteditable", "code-style"];
 
     tokenizerLanguage = null;
 
@@ -101,6 +101,15 @@ export class OxCode extends OxControl {
             this.#createCodeBox(code);
         }
 
+    }
+
+    setCode() {
+        this.#createCodeBox(newValue);
+    }
+
+
+    getCode() {
+        return this.shadowRoot.querySelector("#code-box").innerText;
     }
 
     /**
@@ -195,6 +204,10 @@ export class OxCode extends OxControl {
             const lineElement = document.createElement("div");
             lineElement.innerHTML = line.substring(linePadding) + "\n";
             codeBox.appendChild(lineElement);
+        }
+
+        if (this.tokenizerLanguage) {
+            this.tokenizeCode();
         }
     }
 
@@ -339,8 +352,6 @@ export class OxCode extends OxControl {
             this.shadowRoot.querySelector("#code-box").contentEditable = newValue;
         } else if (name == "code-style") {
             this.shadowRoot.querySelector("link").href = newValue;
-        } else if (name == "code") {
-            this.#createCodeBox(newValue);
         }
     }
 
