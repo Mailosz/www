@@ -12,28 +12,29 @@
     </style>
 </head>
 <body>
-    <ox-code contenteditable="true" tokenizer-language="../js/StringTokenizer/html.json">
-&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-&lt;!-- To jest komentarz --&gt;
-    &lt;head&gt;
-        &lt;title>Koloryzowanie składni&lt;/title&gt;
-        &lt;meta charset="UTF-8"/&gt;
-        &lt;style&gt;
-        html,body {height: 100%; content: "&lt;br&gt;"} 
-        &lt;/style&gt;
-    &lt;/head&gt;
-    &lt;body style="background-color: rgba(255,255,255,0.5); color: black"&gt;
-        &lt;input abc=&gt;
-        &lt;input type=text autocomplete value="New \"hope \""&gt;
-        &lt;span id='identyf\'ikator'&gt; &amp;amp &amp;lt&lt;/span&gt;
-        &lt;code&gt;
-            To jest napis &amp;copy;Miłosz.O
-        &lt;/code&gt;
-        &lt;input&gt;&lt;input&gt;&lt;input&gt;&lt;input&gt;
-    &lt;/body&gt;
-&lt;/html&gt;
+    <ox-code contenteditable="true" tokenizer-language="../js/StringTokenizer/html.json" code-style="../css/langs/html-lang.css">
+        &lt;!DOCTYPE html&gt;
+        &lt;html&gt;
+        &lt;!-- To jest komentarz --&gt;
+            &lt;head&gt;
+                &lt;title>Koloryzowanie składni&lt;/title&gt;
+                &lt;meta charset="UTF-8"/&gt;
+                &lt;style&gt;
+                html,body {height: 100%; content: "&lt;br&gt;"} 
+                &lt;/style&gt;
+            &lt;/head&gt;
+            &lt;body style="background-color: rgba(255,255,255,0.5); color: black"&gt;
+                &lt;input abc=&gt;
+                &lt;input type=text autocomplete value="New \"hope \""&gt;
+                &lt;span id='identyf\'ikator'&gt; &amp;amp &amp;lt&lt;/span&gt;
+                &lt;code&gt;
+                    To jest napis &amp;copy;Miłosz.O
+                &lt;/code&gt;
+                &lt;input&gt;&lt;input&gt;&lt;input&gt;&lt;input&gt;
+            &lt;/body&gt;
+        &lt;/html&gt;
     </ox-code>
+    <button id="recolorize">Recolorize</button>
     <p></p>
     <p></p>
     <p></p>
@@ -83,10 +84,10 @@
         </ox-code>
 
 
-    <!-- <script type="module">
-        import {MakeSamples} from "../js/sampleMaker/SampleMaker.js";
-
-        MakeSamples();
-    </script> -->
+    <script type="module">
+        document.querySelector("#recolorize").onclick = () => {
+            document.querySelector("ox-code").tokenizeCode();
+        }
+    </script>
 </body>
 </html>

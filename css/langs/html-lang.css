@@ -1,22 +1,22 @@
-ox-code .token.tagStart { color: maroon;}
-ox-code .token.tagName { color: blue;}
-ox-code .token.tagAttrName { color: darkblue;}
-ox-code .token.tagAttrEqSign { color: goldenrod;}
-ox-code .token.tagAttrValue { color: slateblue;}
-ox-code .token.tagEnd { color: maroon;}
-ox-code .token.closingTagStart { color: maroon;}
-ox-code .token.closingTagName { color: blue;}
-ox-code .token.closingTagEnd { color: maroon;}
-ox-code .token.quotedValue { color: slateblue;}
-ox-code .token.doublyQuotedValueStart { color: goldenrod;}
-ox-code .token.doublyQuotedValueEnd { color: goldenrod;}
-ox-code .token.singlyQuotedValueStart { color: goldenrod;}
-ox-code .token.singlyQuotedValueContent { color: saddlebrown;}
-ox-code .token.doublyQuotedValueContent { color: saddlebrown;}
-ox-code .token.htmlCommentStart { color: green;}
-ox-code .token.htmlCommentContent { color: green;}
-ox-code .token.htmlCommentEnd { color: green;}
-ox-code .token.specialCharStart { color: violet;}
-ox-code .token.specialCharContent { color: violet;}
-ox-code .token.specialCharEnd { color: violet;}
-ox-code .token.specialChar { color: violet;}
+.token.tagStart { color: maroon;}
+.token.tagName { color: blue;}
+.token.tagAttrName { color: darkblue;}
+.token.tagAttrEqSign { color: goldenrod;}
+.token.tagAttrValue { color: slateblue;}
+.token.tagEnd { color: maroon;}
+.token.closingTagStart { color: maroon;}
+.token.closingTagName { color: blue;}
+.token.closingTagEnd { color: maroon;}
+.token.quotedValue { color: slateblue;}
+.token.doublyQuotedValueStart { color: goldenrod;}
+.token.doublyQuotedValueEnd { color: goldenrod;}
+.token.singlyQuotedValueStart { color: goldenrod;}
+.token.singlyQuotedValueContent { color: saddlebrown;}
+.token.doublyQuotedValueContent { color: saddlebrown;}
+.token.htmlCommentStart { color: green;}
+.token.htmlCommentContent { color: green;}
+.token.htmlCommentEnd { color: green;}
+.token.specialCharStart { color: violet;}
+.token.specialCharContent { color: violet;}
+.token.specialCharEnd { color: violet;}
+.token.specialChar { color: violet;}

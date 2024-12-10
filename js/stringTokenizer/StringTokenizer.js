@@ -402,7 +402,14 @@ export class StringTokenizer {
 		this.#hasFinished = text == null; // if no text passed then the tokenizer is finished
 	}
 
+	/**
+	 * Sets current state
+	 * @param {String} state State name
+	 */
 	setState(state) {
+		if (!this.#lang.states.hasOwnProperty(state)) {
+			throw "Cannot set state '"+ state +"' because it doesn't exist in the language";
+		}
 		this.#state = this.#lang.states[state];
 	}
 

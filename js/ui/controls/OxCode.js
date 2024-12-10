@@ -4,8 +4,9 @@ import {StringTokenizer, StringTokenizerLanguageService} from "../../StringToken
 
 
 const template = /*html*/`
-<slot id="code-box"></slot>
-<div id="line-counters-box"></div>
+<div id="code-box"></div>
+<link rel="stylesheet">
+<div id="line-counters-box" contenteditable="true"></div>
 `;
 
 const style = /*css*/`
@@ -16,7 +17,7 @@ const style = /*css*/`
         flex-direction: row-reverse;
 
 
-        background: rgba(127,127,127,0.2);
+        background: rgba(127,127,127,0.1);
         font-family: monospace;
         border: 1px solid black;
         position: relative;
@@ -31,7 +32,7 @@ const style = /*css*/`
         --line-counter-background: rgba(127,127,127,0.2);
         --line-counter-border: 2px solid gray;
 
-        --selected-line-background: rgba(127,127,127,0.2);
+        --selected-line-background: rgba(127,127,127,0.1);
     }
     
     #code-box {
@@ -46,16 +47,16 @@ const style = /*css*/`
         outline: none;
     }
 
-    ::slotted(div) {
+    #code-box>div {
         min-height: 1.1em;
         padding: 0 4px;
     }
 
-    ::slotted(div):hover {
+    #code-box>div:hover {
         background: var(--selected-line-background);
     }
 
-    ::slotted(div)::before {
+    #code-box>div::before {
         counter-increment: row-num;
         content: counter(row-num);
         width: var(--line-counter-width);
@@ -75,22 +76,77 @@ const style = /*css*/`
 
 export class OxCode extends OxControl {
 
-    static observedAttributes = ["tokenizer-language", "contenteditable"];
+    static observedAttributes = ["tokenizer-language", "contenteditable", "code-style", "code"];
 
     tokenizerLanguage = null;
+
+    #tokenizationTimeout = null;
 
     constructor() {
         super();
 
-        this.createShadowRoot(template, style);
+        this.createShadowRoot(template, style, {delegatesFocus: true, slotAssignment: "manual"});
 
         this.spellcheck = false;
 
-        const code = this.innerText;
+        const codeBox = this.shadowRoot.querySelector("#code-box");
+
+        codeBox.onbeforeinput = (event) => {
+            const ranges = event.getTargetRanges();
+            this.#handleInput(ranges);
+        }
+
+        const code = this.innerHTML;
         if (code.length > 0) {
             this.#createCodeBox(code);
         }
 
+    }
+
+    /**
+     * 
+     * @param {InputEvent} event 
+     */
+    #handleInput(ranges) {
+        clearTimeout(this.#tokenizationTimeout);
+        setTimeout(() => {
+            let firstNode = null;
+            for (const range of ranges) {
+                let currentNode = range.startContainer;
+                while (currentNode != null) {
+                    if ("DIV" == currentNode.nodeName) {
+                        if (firstNode == null || firstNode.compareDocumentPosition(currentNode) == Node.DOCUMENT_POSITION_PRECEDING) {
+                            firstNode = currentNode;
+                        }
+                        break;
+                    }
+                    currentNode = currentNode.parentElement;
+                }
+            }
+
+            if (firstNode != null) {
+                this.tokenizeCode(firstNode);
+            }
+        }, 1000);
+    }
+
+    #isWhitespace(c) {
+        return c === ' '
+            || c === '\n'
+            || c === '\t'
+            || c === '\r'
+            || c === '\f'
+            || c === '\v'
+            || c === '\u00a0'
+            || c === '\u1680'
+            || c === '\u2000'
+            || c === '\u200a'
+            || c === '\u2028'
+            || c === '\u2029'
+            || c === '\u202f'
+            || c === '\u205f'
+            || c === '\u3000'
+            || c === '\ufeff';
     }
 
     /**
@@ -104,44 +160,75 @@ export class OxCode extends OxControl {
         const lines = code.split('\n');
 
         //remove first empty line
-        if (lines.length > 0 && lines[0].trim().length == 0) {
+        if (lines.length > 0 && lines[0].trimStart().length == 0) {
             lines.shift();
         }
 
         //remove last empty line
-        while (lines.length > 0 && lines[lines.length - 1].trim().length == 0) {
+        if (lines.length > 0 && lines[lines.length - 1].trimStart().length == 0) {
             lines.pop();
         }
 
-        this.innerHTML = "";
-        let slot = this.shadowRoot.firstElementChild;
-        let list = [];
-        for (const line of lines){            
-            const lineElement = document.createElement("div");
-            lineElement.innerText = line;
-            this.appendChild(lineElement);
-            list.push(lineElement);
+        let whitespacePadding = 0;
+        if (lines.length > 0) {
+            const firstLine = lines[0];
+            for (let i = 0; i < firstLine.length; i++) {
+                let c = firstLine.charAt(i);
+                if (!this.#isWhitespace(c)) {
+                    whitespacePadding = i;
+                    break;
+                }
+            }
         }
-        slot.assign(...list);
-        console.log(slot.assignedNodes());
+
+        let codeBox = this.shadowRoot.querySelector("#code-box");
+        codeBox.innerHTML = "";
+        for (const line of lines){    
+            let linePadding = whitespacePadding;
+            for (let i = 0; i < whitespacePadding; i++) {
+                let c = line.charAt(i);
+                if (!this.#isWhitespace(c)) {
+                    linePadding = i;
+                    break;
+                }
+            }        
+            const lineElement = document.createElement("div");
+            lineElement.innerHTML = line.substring(linePadding) + "\n";
+            codeBox.appendChild(lineElement);
+        }
     }
 
-    tokenizeCode() {
-        const lines = this.innerText.split("\n");
-        this.innerText = "";
+    /**
+     * Tokenizes code using chosen language (tokenizer-language attribute)
+     * @param {Node?} startingFrom Optional node from which to start tokenizing code
+     */
+    tokenizeCode(startingFrom) {
+
+        //TODO: keep selection
+        const codeBox = this.shadowRoot.querySelector("#code-box");
 
         const tokenizer = new StringTokenizer(this.tokenizerLanguage);
 
-        for (const line of lines) {
-            tokenizer.resetText(line);
+        let lineElement;
+        if (!startingFrom) {
+            lineElement = codeBox.firstElementChild;
+        } else {
+            lineElement = startingFrom;
+            if (startingFrom.firstElementChild != null && startingFrom.firstElementChild.tokenState != null) {
+                tokenizer.setState(startingFrom.firstElementChild.tokenState);
+            }
+        }
 
-            const lineElement = document.createElement("div");
-
+        while (lineElement != null) {
+            tokenizer.resetText(lineElement.innerText);
+            lineElement.innerText = "";
+            
                 while (!tokenizer.isFinished()) {
                 let token = tokenizer.getNextToken();
 
                 let span = document.createElement("span");
                 span.innerText = token.text;
+                span.tokenState = token.state;
                 span.classList.add("token");
                 if (token.data && token.data.class) {
                     span.classList.add(token.data.class);
@@ -154,7 +241,7 @@ export class OxCode extends OxControl {
 
                 lineElement.appendChild(span);
             }
-            this.appendChild(lineElement);
+            lineElement = lineElement.nextSibling;
         }
     }
 
@@ -166,7 +253,11 @@ export class OxCode extends OxControl {
                 this.tokenizeCode();
             });
         } else if (name == "contenteditable") {
-            this.shadowRoot.firstElementChild.contentEditable = newValue;
+            this.shadowRoot.querySelector("#code-box").contentEditable = newValue;
+        } else if (name == "code-style") {
+            this.shadowRoot.querySelector("link").href = newValue;
+        } else if (name == "code") {
+            this.#createCodeBox(newValue);
         }
     }
 

@@ -3,6 +3,12 @@ export class OxControl extends HTMLElement {
       super();
     }
 
+    /**
+     * 
+     * @param {String} html 
+     * @param {String} css 
+     * @param {ShadowRootInit} options 
+     */
     createShadowRoot(html, css, options) {
         options = {...{ mode: "open"}, ...options};
 

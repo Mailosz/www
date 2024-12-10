@@ -44,7 +44,7 @@
 		"tagAttrSpace": {
 			"begin": {
 				"on": ["tagName", "tagAttrName", "tagAttrValue"],
-				"by": " "
+				"by": [" ", "\n"]
 			}
 		},
 		"tagAttrName": {
