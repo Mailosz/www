@@ -86,7 +86,8 @@
 
     <script type="module">
         document.querySelector("#recolorize").onclick = () => {
-            document.querySelector("ox-code").tokenizeCode();
+            let code = document.querySelector("ox-code").getCode();
+            console.log(code);
         }
     </script>
 </body>

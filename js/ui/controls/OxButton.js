@@ -120,15 +120,15 @@ const style = /*css*/`
 
 export class OxButton extends OxControl {
 
-    static observedAttributes = ["opener"];
-
+    static observedAttributes = ["opener", "toggled", "mode"];
 
     constructor(opts) {
         super();
 
         const defaultOpts = {
             split: false,
-            placement: null
+            placement: null,
+            mode: "default",
         };
     
         this.opts = {...defaultOpts, ...opts};
@@ -161,7 +161,27 @@ export class OxButton extends OxControl {
             }
 
             this.opts.opener = newValue;
+        } else if (name == "mode") {
+            let mode;
+            if (newValue == null || newValue == "default") {
+                mode = "default;"
+            } else if (newValue == "toggle") {
+                mode = "toggle;"
+            } else if (newValue == "menu") {
+                mode = "menu"
+            } else {
+                mode = "default";
+            }
+            if (mode != this.opts.mode) {
+                this.opts.mode = mode;
+
+                this.#build();
+            }
         }
+    }
+
+    #build() {
+        
     }
 
 }

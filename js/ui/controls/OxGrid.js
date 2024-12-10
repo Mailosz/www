@@ -100,7 +100,7 @@ const style = /*css*/`
 
 export class OxGrid extends OxControl {
 
-    static observedAttributes = ["editable"];
+    static observedAttributes = ["contenteditable", "data"];
 
     #data;
     #columnsLength = 0;
@@ -118,13 +118,17 @@ export class OxGrid extends OxControl {
 
         this.shadowRoot.appendChild(db.button().innerText("+").class("add-row").event("click", () => this.insertRow(null, this.shadowRoot.querySelector("#grid").children.length - 1)).get());
         this.shadowRoot.appendChild(db.button().innerText("+").class("add-col").event("click", () => this.addColumn()).get());
+
+        if (this.data) {
+            this.#populateFromData(this.data);
+        }
    }
 
     get data() {
         return this.#data;
     }
 
-    setData(data) {
+    set data(data) {
         this.#data = data;
         this.#populateFromData(data);
     }
@@ -192,13 +196,19 @@ export class OxGrid extends OxControl {
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
-        if (name == "editable") {
+        if (name == "contenteditable") {
             this.editable = newValue == "true";
-            this.#populateFromData(this.data);
+        } else if (name == "data") {
+            this.#data = data;
+            this.#populateFromData(data);
         }
     }
 
     #editCell(row, col, cell, text) {
+        if (!this.editable) {
+            return;
+        }
+
         const editBox = document.createElement("div");
         editBox.classList.add("edit-box");
         editBox.contentEditable = true;
