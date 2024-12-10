@@ -477,7 +477,7 @@ export class StringTokenizer {
 		this.#pos = 0;
 		this.#tokenStart = 0;
 
-		if (this.#hasFinished) {
+		if (!this.#hasFinished) {
 			console.warn("Resetting parse text before it has been fully consumed")
 		}
 		this.#hasFinished = text == null;

@@ -115,7 +115,7 @@ export class OxCode extends OxControl {
                 let currentNode = range.startContainer;
                 while (currentNode != null) {
                     if ("DIV" == currentNode.nodeName) {
-                        if (firstNode == null || firstNode.compareDocumentPosition(currentNode) == Node.DOCUMENT_POSITION_PRECEDING) {
+                        if (firstNode == null || firstNode.compareDocumentPosition(currentNode) & Node.DOCUMENT_POSITION_PRECEDING) {
                             firstNode = currentNode;
                         }
                         break;
@@ -219,6 +219,55 @@ export class OxCode extends OxControl {
             }
         }
 
+
+        // save selection positions
+        const countDivOffset = (container, containerOffset) => {
+            //TODO: it could fail for when container type is element, but hasn't so far in tests
+            let current = container;
+            let offset = containerOffset;
+            while (current != null) {
+                if (current.parentElement == null) {
+                    return null;
+                }
+
+                if (current.parentElement.isSameNode(codeBox)) {
+                    return {container: current, offset: offset};
+                }
+
+                while (current.previousSibling != null) {
+                    current = current.previousSibling;
+                    offset += current.textContent.length;
+                }
+                current = current.parentElement;
+            }
+        }
+        
+        /**
+         * @type {Selection}
+         */
+        let selection;
+        if (this.shadowRoot.getSelection) { // selection handling incosistency between chrome and firefox - check safari
+            selection = this.shadowRoot.getSelection();
+        } else {
+            selection = document.getSelection();
+        }
+        const oldRanges = [];
+        for (let i = 0; i < selection.rangeCount; i++) {
+            let range = selection.getRangeAt(i);
+            let start = countDivOffset(range.startContainer, range.startOffset);
+            if (start) {
+                if (range.collapsed) {
+                    oldRanges.push({ start: start, end: null});
+                } else {
+                    let end = countDivOffset(range.endContainer, range.endOffset);
+                    if (end) {
+                        oldRanges.push({ start: start, end: end});
+                    }
+                }
+            }
+        }
+        //
+
         while (lineElement != null) {
             tokenizer.resetText(lineElement.innerText);
             lineElement.innerText = "";
@@ -243,6 +292,40 @@ export class OxCode extends OxControl {
             }
             lineElement = lineElement.nextSibling;
         }
+
+        // restore selection positions
+        const findElementFromOffset = (containerOffset) => {
+            let current = containerOffset.container;
+            let offset = containerOffset.offset;
+            while (current != null) {
+                if (offset > current.textContent.length) {
+                    offset -= current.textContent.length;
+                    current = current.nextSibling;
+                    continue;
+                }
+
+                if (current.firstChild != null) {
+                    current = current.firstChild;
+                } else {
+                    return {element: current, offset: offset};
+                }
+            }
+        }
+
+        selection.empty();
+        for (let oldRange of oldRanges) {
+            const range = document.createRange();
+            const start = findElementFromOffset(oldRange.start);
+            range.setStart(start.element, start.offset);
+            if (oldRange.end) {
+                const end = findElementFromOffset(oldRange.end);
+                range.setEnd(end.element, end.offset);
+            } else {
+                range.setEnd(start.element, start.offset);
+            }
+            selection.addRange(range);
+        }
+        //
     }
 
     
