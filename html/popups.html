@@ -49,14 +49,6 @@
         <p>Click anywhere to open the popup.</p>
         <p><input autofocus></p>
         <p>Click anywhere to open the popup.</p>
-        <!-- <p>Click anywhere to open the popup.</p>
-        <p><button id="showPopupFlyout">Show flyout popup</button></p>
-        <p>Click anywhere to open the popup.</p>
-        <p><button id="showPopupFixed">Show fixed popup</button></p>
-        <p>Click anywhere to open the popup.</p>
-        <p>Click anywhere to open the popup.</p>
-        <p>Click anywhere to open the popup.</p>
-        <p>Click anywhere to open the popup.</p> -->
         <p>Click anywhere to open the popup.</p>
         <p>Ox-popup</p>
         <p><button onclick="document.getElementById('ox-popup-modal').open()">Pokaż modalny</button></p>
@@ -81,7 +73,7 @@
             <button onclick="document.getElementById('ox-popup-dismissable-normal').close();">Zamknij</button>
         </ox-popup>
 
-        <p><button onclick="document.getElementById('ox-popup-here-open').open({anchor: event.target})">Pokaż tu via opts</button></p>
+        <p><button onclick="document.getElementById('ox-popup-here-open').open({anchor: event.currentTarget})">Pokaż tu via opts</button></p>
         <ox-popup id="ox-popup-here-open" modal="true" dismissable="true" placement="left topOut">
             <p>To jest testowy dialog.</p>
             <button onclick="document.getElementById('ox-popup-here-open').close();">Zamknij</button>
@@ -94,6 +86,7 @@
             <button onclick="document.getElementById('ox-popup-here-anchor').close();">Zamknij</button>
         </ox-popup>
         <p>Click anywhere to open the popup.</p>
+        <p><input></p>
         <p>Click anywhere to open the popup.</p>
         <p>Click anywhere to open the popup.</p>
         <p>Click anywhere to open the popup.</p>

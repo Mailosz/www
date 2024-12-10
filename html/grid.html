@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/grid.css">
+    <script type="module" src="../js/ui/controls/OxGrid.js"></script>
+</head>
+<body>
+    <main>
+        <ox-grid id="grid" editable="true">
+
+        </ox-grid>
+        <button onclick="window.localStorage['grid'] = JSON.stringify(document.getElementById('grid').data);">Save</button>
+        <button onclick="load()">Load</button>
+        <script>
+
+            function load() {
+                let data = window.localStorage.getItem('grid'); 
+                if (data) { 
+                    let grid = document.getElementById('grid');
+                    grid.setData(JSON.parse(data)); 
+
+                }
+            }
+            const grid = document.getElementById("grid");
+
+            grid.data = {
+                columns: [{
+                    name: "First"
+                },{
+                    name: "Second"
+                },{
+                    name: "Third"
+                }],
+                rows: [{
+                    id: 1,
+                    name: "Row",
+                    cells: [
+                        "abc", "def", "ghi", "jkl"
+                    ]
+                },{
+                    id: 2,
+                    cells: [
+                        "123", "456", "789", "012"
+                    ]
+                },{
+                    id: 3,
+                    cells: [
+                        "xyz", "qwe"
+                    ]
+                },{
+                    id: 4,
+                    cells: [
+                        "123", null, "789", null
+                    ]
+                },{
+                    id: 6,
+                    cells: [
+                        "aaa", "aaa", null, "jkl", null, "555"
+                    ]
+                }]
+            };
+
+        </script>
+    </main>
+
+</body>
+</html>

@@ -56,60 +56,7 @@
     </div>
         <p>Test</p>
         <p>Test</p>
-        <ox-grid id="grid" editable="true">
-
-        </ox-grid>
-        <button onclick="window.localStorage['grid'] = JSON.stringify(document.getElementById('grid').data);">Save</button>
-        <button onclick="load()">Load</button>
-        <script>
-
-            function load() {
-                let data = window.localStorage.getItem('grid'); 
-                if (data) { 
-                    let grid = document.getElementById('grid');
-                    grid.setData(JSON.parse(data)); 
-
-                }
-            }
-            const grid = document.getElementById("grid");
-
-            grid.data = {
-                columns: [{
-                    name: "Pierwsza"
-                },{
-                    name: "Druga"
-                },{
-                    name: "Trzecia"
-                }],
-                rows: [{
-                    id: 1,
-                    cells: [
-                        "abc", "def", "ghi", "jkl"
-                    ]
-                },{
-                    id: 2,
-                    cells: [
-                        "123", "456", "789", "012"
-                    ]
-                },{
-                    id: 3,
-                    cells: [
-                        "xyz", "qwe"
-                    ]
-                },{
-                    id: 4,
-                    cells: [
-                        "123", null, "789", null
-                    ]
-                },{
-                    id: 6,
-                    cells: [
-                        "aaa", "aaa", null, "jkl", null, "555"
-                    ]
-                }]
-            };
-
-        </script>
+        
         <p>Test</p>
         <p>Test</p>
         <p>Test</p>
