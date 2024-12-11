@@ -95,10 +95,10 @@ export class OxCode extends OxControl {
 
         const codeBox = this.shadowRoot.querySelector("#code-box");
 
-        codeBox.onbeforeinput = (event) => {
-            const ranges = event.getTargetRanges();
-            this.#handleInput(ranges);
-        }
+        /**
+         * @param {InputEvent} event 
+         */
+        codeBox.onbeforeinput = (event) => {this.#handleInput(event);}
 
         const code = this.innerHTML;
         if (code.length > 0) {
@@ -120,7 +120,9 @@ export class OxCode extends OxControl {
      * 
      * @param {InputEvent} event 
      */
-    #handleInput(ranges) {
+    #handleInput(event) {
+        // recolorizing after a time
+        const ranges = event.getTargetRanges();
         clearTimeout(this.#tokenizationTimeout);
         setTimeout(() => {
             let firstNode = null;
