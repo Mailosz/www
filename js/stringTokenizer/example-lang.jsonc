@@ -10,7 +10,7 @@
 		},
 		/* this state is the default one (there can only be one; if no state has "default": true, then the first one is default) */
 		"default": true,
-		/* when the state is chosen these variables are set*/
+		/* when the state is chosen these variables are set, and can later be used in conditional begins ("when" rule) */
 		"set": {
 			"variable-one": false,
 			"variable-two": "string-value"
@@ -33,7 +33,8 @@
 				"number": true
 			}
 		},{
-			"on": "default-state",
+			/* this value must be set to true if there is no "on" value - this means that this begin is checked for every other state */
+			"everywhere": true,
 			"by": ["goto other"],
 			/* "data" inside a begin rule means, that these variables will be set only if this particular rule is used to start the state */
 			"data": {

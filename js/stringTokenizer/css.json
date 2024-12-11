@@ -1,13 +1,43 @@
 {
     "default": {
-        "begin": {
+        "begin": [{
             "on": "declarationEnd"
+        },{
+            "on": "commentEnd",
+            "when": {
+                "previous-state": ""
+            }
+        }],
+        "default": true
+    },
+    "mediaQuery": {
+        "begin": {
+            "on": ["default", "selector"],
+            "by": "@"
+        },
+        "data": {
+            "color": "orange"
+        }
+    },
+    "mediaQueryInner": {
+        "begin": {
+            "on": ["mediaQuery"],
+            "by": "{"
+        },
+        "data": {
+            "color": "maroon"
         }
     },
     "selector": {
-        "begin": {
-            "on": "default"
-        }
+        "begin": [{
+            "on": ["default", "mediaQueryInner"],
+            "by": ""
+        },{
+            "on": "commentEnd",
+            "when": {
+                "previous-state": "selector"
+            }
+        }]
     },
     "declarationStart": {
         "begin": {
@@ -23,7 +53,7 @@
     },
     "declarationEnd": {
         "begin": {
-            "on": "declaration",
+            "on": ["declaration", "mediaQueryInner", "selector", "default"],
             "by": "}"
         },
 		"data": {
@@ -37,6 +67,11 @@
         },{
             "on": "value",
             "by": ";"
+        },{
+            "on": "commentEnd",
+            "when": {
+                "previous-state": "property"
+            }
         }],
 		"data": {
 			"color": "green"
@@ -60,5 +95,38 @@
 		"data": {
 			"color": "blue"
 		}
+    },
+    "comment": {
+        "begin": [{
+            "by": "/*",
+            "everywhere": true,
+            "set": {
+                "previous-state": ""
+            }
+        },{
+            "by": "/*",
+            "on": "selector",
+            "set": {
+                "previous-state": "selector"
+            }
+        },{
+            "by": "/*",
+            "on": "property",
+            "set": {
+                "previous-state": "property"
+            }
+        }],
+        "data": {
+            "color": "lime"
+        }
+    }, 
+    "commentEnd": {
+        "begin": [{
+            "by": "*/",
+            "on": "comment"
+        }],
+        "data": {
+            "color": "lime"
+        }
     }
 }

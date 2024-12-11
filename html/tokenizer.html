@@ -13,7 +13,7 @@
     <body>
         <!-- contenteditable="true" onkeyup="change(this);" -->
         <code class="script" >
-            &lt;!DOCTYPE html&gt;<br>
+            <!-- &lt;!DOCTYPE html&gt;<br>
             &lt;html&gt;<br>
             &lt;!-- To jest komentarz --&gt;<br>
                 &lt;head&gt;<br>
@@ -32,33 +32,58 @@
                     &lt;/code&gt;<br>
                     &lt;input&gt;&lt;input&gt;&lt;input&gt;&lt;input&gt;
                 &lt;/body&gt;<br>
-                &lt;/html&gt;<br>
+                &lt;/html&gt;<br> -->
+                html {<br>
+                    width: 100%;<br>
+                    height: 100%;<br>
+                    padding: 0;<br>
+                    margin: 0;<br>
+                <br>
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;<br>
+                }<br>
+                <br>
+                body {<br>
+                    padding: 0;<br>
+                    margin: 0;<br>
+                    min-height: 100vh;<br>
+                }<br>
+                <br>
+                @media (min-width: 1200px) {<br>
+                    html {<br>
+                        background-color: #f8f8f8;<br>
+                    }<br>
+                    main {<br>
+                        box-shadow: 0px 0px 20px rgba(0,0,0,0.2);<br>
+                        max-width: 1024px;<br>
+                        --main-padding: 40px;<br>
+                    }<br>
+                } <br>
+                <br>
+                @media not (min-width: 1200px) {<br>
+                    main{<br>
+                        --main-padding: max(calc(10vw - 20px), 10px);<br>
+                    }<br>
+                }<br>
+                <br>
+                main {<br>
+                    <br>
+                    /** --main-padding: min(5vw, 24px); */<br>
+                <br>
+                    background-color: #ffffff;<br>
+                    margin: auto;<br>
+                    box-sizing: border-box;<br>
+                    padding: 40px var(--main-padding);<br>
+                    <br>
+                }
         </code>
 
 
         <script type="module">
             import {StringTokenizer, StringTokenizerLanguage, StringTokenizerLanguageService } from "../js/stringTokenizer/StringTokenizer.js";
 
-            function prepareLanguage(name){
-                var langRequest = new Request('../js/StringTokenizer/html.json');
-
-                var opts = { 
-                    method: 'GET',
-                    mode: 'same-origin',
-                    cache: 'default' 
-                    };
-
-                return fetch(langRequest, opts).then(function(response) {
-                    return response.json();
-                }).then(function(response) {
-                    return response;
-                });
-            }
-
-
             async function colorizeAll() {
 
-                let language = await StringTokenizerLanguageService.getLanguageAsync("../js/StringTokenizer/html.json");
+                let language = await StringTokenizerLanguageService.getLanguageAsync("../js/StringTokenizer/css.json");
 
                 let elems = document.getElementsByClassName("script");
 
@@ -89,7 +114,21 @@
                         if (token.startData && token.startData.error) {
                             span.style.textDecoration = "1px wavy red underline";
                         }
-                        span.title = token.state;
+                        span.title = token.state + "\n";
+
+                        if (Object.values(token.data).length > 0) {
+                            span.title += "\nData:\n";
+                            for (const d in token.data) {
+                                span.title += d + ": " + token.data[d] + "\n";
+                            }
+                        }
+
+                        if (Object.values(token.values).length > 0) {
+                            span.title += "\nValues:\n";
+                            for (const d in token.values) {
+                                span.title += d + ": " + token.values[d] + "\n";
+                            }
+                        }
 
                         lineElement.appendChild(span);
                     }

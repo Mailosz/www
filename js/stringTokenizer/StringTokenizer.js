@@ -112,9 +112,6 @@ export class StringTokenizerLanguage {
 			}
 		}
 
-		let warn = (str) => {warnList.push(str);};
-
-		let warnList = [];
 		this.states = [];
 		this.defaultState = null;
 
@@ -137,7 +134,7 @@ export class StringTokenizerLanguage {
 		//prepare states
 		for (const name in language){
 			//is default
-			let isDefault = language[name].default;
+			const isDefault = language[name].default;
 			if (isDefault !== undefined){
 				if (isDefault === true){
 					if (this.defaultState === null) {
@@ -149,12 +146,12 @@ export class StringTokenizerLanguage {
 			}
 
 			//parents
-			let parentName = language[name].parent;
+			const parentName = language[name].parent;
 			if (parentName !== undefined){
 				if (Array.isArray){
 					throw "Parent value cannot be an array";
 				}
-				let parentState = this.states[parentName];
+				const parentState = this.states[parentName];
 				if (parentState === undefined){
 					throw "No state named " + parentName + " (occured in a 'parent' on " + name + ")";
 				}
@@ -163,15 +160,15 @@ export class StringTokenizerLanguage {
 			}
 
 			//groups
-			let group = language[name].group;
+			const group = language[name].group;
 			if (group !== undefined){
-				let groupNames = arrayize(group);
-				let groupStates = [];
+				const groupNames = arrayize(group);
+				const groupStates = [];
 				for (let groupName of groupNames){
 					if (groupName == name) {
 						throw "State cannot have itself as a group (occured in a 'group' on " + name + ")";
 					}
-					let groupState = this.states[groupName];
+					const groupState = this.states[groupName];
 					if (groupState === undefined){
 						throw "No state named " + groupName + " (occured in a 'group' on " + name + ")";
 					}
@@ -198,67 +195,9 @@ export class StringTokenizerLanguage {
 		if (this.defaultState === null) {
 			this.defaultState = Object.keys(this.states)[0];
 
-			warn("No state set as default, using the first one, " + this.defaultState)
+			console.warn("No state set as default, using the first one, " + this.defaultState)
 		}
-					
-		let readChange = (begin, name, where, targets) => {
-
-
-			let by;
-			if (begin.by !== undefined) {
-				by = arrayize(begin.by);
-			} else {
-				if (begin.on === undefined) {
-					throw "Cannot have begin without any of 'on' or 'by'  (state \"" + name + "\")";
-				}
-				by = [""];
-			}
-
-			let when = null;
-			if (begin.when !== undefined) {
-				when = begin.when;
-			}
-
-			let data;
-			if (begin.data !== undefined) {
-				data = begin.data;
-			}
-
-			let set = {};
-			if (begin.set !== undefined) {
-				set = begin.set;
-			}
-
-			let importance;
-			if (begin.importance !== undefined) {
-				importance = begin.importance;
-			} else {
-				importance = 0;
-			}
-			
-			let watches = [];
-			for (const target of targets){
-				for (const start of by){
-					watches.push({start: start, target: target, data: data, set: set, when: when, importance: importance});
-				}
-			}
-
-			for (const s of where) {
-				for (const watch of watches) {
-					let ind = s.watchFor.findIndex((el) => el.start == watch.start && el.target == watch.target);
-					if (ind >= 0) {//duplicate
-						warn("Duplicate change (by: \"" + watch.by + "\", target: \"" + watch.target.name + ") on state " + s.name);
-
-						s.watchFor[ind].importance = Math.max(s.watchFor[ind].importance, watch.importance);
-						s.watchFor[ind].data = {...s.watchFor[ind].data, ...watch.data};
-					} else {
-						s.watchFor.push(watch);
-					}
-				}
-			}
-
-		}
-
+		
 		let valueNames;
 		if (this.states[this.defaultState].set === undefined){
 			valueNames = [];
@@ -278,22 +217,76 @@ export class StringTokenizerLanguage {
 			//TODO: same check for values on a watch
 		}
 
-		//parse changes
+		/**
+		 * Returns the index of a matching state begin (same target and by values)
+		 * @param {*} list 
+		 * @param {*} watch 
+		 * @returns 
+		 */
+		const findSameWatch = (list, watch) => {
+			return list.findIndex((el) => el.start == watch.start && el.target == watch.target);
+		}
+
+		const watchForEverywhere = [];
+		//for every state name
 		for (const name in language){
 
 			//where the state's start
-			let begin = language[name].begin;
+			const begin = language[name].begin;
 			if (begin !== undefined){
 				forElementOrArray(begin, (begin) => {
 
-					let where;
+					//
+					//
+					//
+
+					let by;
+					if (begin.by !== undefined) {
+						by = arrayize(begin.by);
+					} else {
+						if (begin.on === undefined) {
+							throw "Cannot have begin without any of 'on' or 'by'  (state \"" + name + "\")";
+						}
+						by = [""];
+					}
+
+					let when = null;
+					if (begin.when !== undefined) {
+						when = begin.when;
+					}
+
+					let data;
+					if (begin.data !== undefined) {
+						data = begin.data;
+					}
+
+					let set = {};
+					if (begin.set !== undefined) {
+						set = begin.set;
+					}
+
+					let importance;
+					if (begin.importance !== undefined) {
+						importance = begin.importance;
+					} else {
+						importance = 0;
+					}
+					
+					let watches = [];
+					const targets = [name]; // previous idea was to apply this to many states at once - currently unused
+					for (const target of targets){
+						for (const start of by){
+							watches.push({start: start, target: target, data: data, set: set, when: when, importance: importance});
+						}
+					}
+
 					if (begin.on !== undefined) {
-						where = [];
+						const where = [];
 						let names = arrayize(begin.on);
 		
 						for (const n of names) {
 							if (this.states[n] === undefined){
-								throw "No such state: " + n;
+								throw "No such state: " + n + " (state \"" + name + "\")";
 							}
 							where.push(this.states[n]);
 							
@@ -305,39 +298,69 @@ export class StringTokenizerLanguage {
 								where.push(child);
 							}
 						}
-						
+
+						for (const originState of where) {
+							for (const watch of watches) {
+								const ind = findSameWatch(originState.watchFor, watch);
+								if (ind >= 0) {//duplicate
+									throw "Duplicate change (by: \"" + watch.start + "\", on: \"" + originState.name + "\") in state " + watch.target;
+	
+									originState.watchFor[ind].importance = Math.max(originState.watchFor[ind].importance, watch.importance);
+									originState.watchFor[ind].data = {...originState.watchFor[ind].data, ...watch.data};
+								} else {
+									originState.watchFor.push(watch);
+								}
+							}
+						}
 					} else {
-						if (begin.everywhere) {
-							where = this.states;
+						if (begin.everywhere === true) {
+							watchForEverywhere.push(...watches);
 						} else {
-							throw "A change without 'on' value must have \"'everywhere': true\" set (state \"" + name + "\")";
+							throw "A begin without 'on' value must have \"'everywhere': true\" set (state \"" + name + "\")";
 						}
 					}
 
-					readChange(begin, name, where, [name]);
+					//
+					//
+					//
 				});
 			}
-
-			//where is the state's end
-			let end = language[name].end;
-			if (end !== undefined){
-				forElementOrArray(end, (end) => readChange(end, name, [this.states[name]], [null]));
-			}
-
 		}
+
+
 
 		//checking
 		for (const stateName in this.states){
 			const state = this.states[stateName];
-			if (state.watchFor === undefined ){
-				if (state.immediate === undefined && !state.isFinal) {
-					throw "State " + stateName + " has no way out and is not final";
+
+
+			// add watches for every state
+			for (const watch of watchForEverywhere) {
+				if (watch.target == stateName) { //except if this is rule for current state
+					continue;
 				}
+
+				const ind = findSameWatch(state.watchFor, watch);
+				if (ind >= 0) {//duplicate
+					if (watch.importance > state.watchFor[ind].importance) {
+						console.info("'Everywhere' begin for state '" + watch.target + "' on state overrided explicit one for state '" + state.name + "' because of higher importance");
+
+						state.watchFor.splice(ind, 1);
+						state.watchFor.push(watch);
+					}
+				} else {
+					state.watchFor.push(watch);
+				}
+			}
+
+
+			if (state.watchFor.length == 0){
+				console.warn("State " + stateName + " has no way out and is not final");
 			} else {
 
 				//sorting watchFors by importance and length
 				state.watchFor.sort((a,b) => {
-					const impdif = a.importance - b.importance;
+					const impdif = b.importance - a.importance;
 					if (impdif == 0){
 						return b.start.length - a.start.length;
 					} else {
@@ -346,6 +369,8 @@ export class StringTokenizerLanguage {
 				});
 			}
 		}
+
+		console.log(this.states)
 	}
 
 	#computeGroups(state, history){
@@ -502,7 +527,7 @@ export class StringTokenizer {
 			}
 			return null;
 		} else {
-			let token = {start: this.#tokenStart, beginData: this.#beginData, data: this.#state.data, state: this.#state.name};
+			let token = {start: this.#tokenStart, beginData: this.#beginData, data: this.#state.data, state: this.#state.name, values: this.#values};
 
 			while (true) {
 				let watch = this.#checkChar(this.#text, this.#values, this.#state, this.#pos);

@@ -52,10 +52,6 @@ const style = /*css*/`
         padding: 0 4px;
     }
 
-    #code-box>div:hover {
-        background: var(--selected-line-background);
-    }
-
     #code-box>div::before {
         counter-increment: row-num;
         content: counter(row-num);
@@ -66,6 +62,14 @@ const style = /*css*/`
         position: absolute;
         left: 0;
     }
+
+        #code-box>div:hover {
+            background: var(--selected-line-background);
+        }
+
+        #code-box>div:hover::before {
+            background: rgba(127,127,127,0.3);
+        }
 
     #line-counters-box {
         width: var(--line-counter-width);
