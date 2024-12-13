@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input handler</title>
+    <link rel="stylesheet" href="../css/switch.css">
+    <style>
+        .input-box {
+            background: rgba(127, 127, 127, 0.1);
+            border: 1px solid black;
+            padding: 4px;
+            min-height: 200px;
+        }
+
+        p {
+            padding: 10px;
+            margin: 10px;
+            background-color: darkseagreen;
+        }
+        .input-box div {
+            padding: 10px;
+            background-color: aquamarine;;
+            margin: 10px;
+        }
+
+        .input-box span {
+            padding: 4px;
+            background-color: lightpink;;
+            margin: 4px;
+        }
+
+        .selection {
+            outline: 2px solid red;
+            min-width: 1px;
+            z-index: 10000;
+        }
+        .selection.rect {
+            outline: 2px solid orange;
+        }
+        .selection.end {
+            outline: 2px solid blue;
+
+        }
+        .selection.start {
+            outline: 2px solid green;
+        }
+        .selection.between {
+            outline: 2px solid black;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <div id="test-elem" style="display: inline flex;"></div>
+    </div>
+<button id="test-button">Test</button>
+<div class="input-box input-handler" contenteditable="true"><div><p>qwertyu<span>iop[asd</span>fgh<span>jkl;</span>zxcvbnm</p><p>qwertyu<span>iop[</span><span>asd</span>fghjkl;zxcvbnm<span><span>test</span></span></p>abcd<p>qwertyuiop<span></span>[asdfghjkl;zxcvbnm</p></div></div>
+<br>
+<div class="input-box" contenteditable="true"><div class="test"><div>test</div></div></div>
+<script type="module">
+    import {handleInput, handleKeyDown} from "../js/utils/InputHandler.js";
+
+    let p = document.createElement("p");
+    let options = {
+        paragraph: p
+    };
+
+    document.querySelectorAll(".input-handler").forEach((element) => {
+        element.onbeforeinput = handleInput(options);
+        element.onkeydown = handleKeyDown;
+    });
+
+    function createSelectionRect(rect, ...classes) {
+        let selem = document.createElement("div");
+        selem.classList.add("selection");
+        selem.classList.add(...classes);
+
+        selem.style.left = rect.left + "px";
+        selem.style.top = rect.top + "px";
+        selem.style.width = rect.width + "px";
+        selem.style.height = rect.height + "px";
+        selem.style.position = "absolute";
+
+        document.body.appendChild(selem);
+        return selem;
+    }
+
+    /**
+     * @param {Event} event 
+     */
+    document.onselectionchange  = (event) => {
+        let selection = document.getSelection();
+
+        let allSel = document.querySelectorAll(".selection");
+        allSel.forEach((el) => el.parentElement.removeChild(el));
+
+
+        for (let i = 0; i < selection.rangeCount; i++) {
+            const range = selection.getRangeAt(i);
+
+            const rects = range.getClientRects();
+            for (let rect of rects) {
+                createSelectionRect(rect, "rect", range.collapsed ? "blink" : null)
+            }
+
+            if (range.startContainer.nodeType === Node.ELEMENT_NODE) {
+                if (range.startOffset === range.startContainer.childNodes.length) {
+                    let rect = range.startContainer.getBoundingClientRect();
+
+                    createSelectionRect(new DOMRect(rect.right, rect.top, 0, rect.height), "end");
+                    
+                } else if (range.startOffset === 0) {
+                    let rect = range.startContainer.getBoundingClientRect();
+
+                    createSelectionRect(new DOMRect(rect.left, rect.top, 0, rect.height), "start");
+                } else if (range.startOffset > 0) {
+
+                    let node = range.startContainer.childNodes.item(range.startOffset);
+
+                    let spacer = document.createElement("div");
+                    spacer.style.display = "inline";
+                    spacer.style.margin = "0";
+                    spacer.style.padding = "0";
+                    range.startContainer.insertBefore(spacer, node);
+                    
+                    let rects = spacer.getClientRects();
+                    range.startContainer.removeChild(spacer);
+                    for (const rect of rects) {
+                        createSelectionRect(rect, "between");
+                    }
+
+                }
+            }
+            console.log(rects);
+        }
+    }
+
+
+
+    let button = document.querySelector("#test-button");
+
+    button.onclick = (event) => {
+        
+    }
+
+    // let element = document.querySelector("#test-elem")
+    // // let element = button;
+
+    // let style = getComputedStyle(element);//Array.from(element.computedStyleMap().entries());
+
+    // console.log(style.display);
+    // console.log(style);
+
+    // document.onselectionchange = (event) => {
+    //     console.log(event);
+    // }
+</script>
+</body>
+</html>
