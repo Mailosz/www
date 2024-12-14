@@ -108,13 +108,13 @@ const style = /*css*/`
 
 export class OxGrid extends OxControl {
 
-    static observedAttributes = ["contenteditable", "data"];
+    static observedAttributes = ["contenteditable", "editable", "data"];
 
     #data;
 
     constructor() {
         super();
-        this.editable = true;
+        this.editable = false;
         this.createShadowRoot(template, style);
 
         if (this.#data) {
@@ -130,6 +130,7 @@ export class OxGrid extends OxControl {
             this.#populateFromData(this.data);
         }
 
+        // navigation between cells
         this.onkeydown = (event) => {
             if (event.key === "ArrowLeft") {
                 if (this.shadowRoot.activeElement?.previousElementSibling) {
@@ -223,6 +224,7 @@ export class OxGrid extends OxControl {
         
         const topLeftHeader = this.ownerDocument.createElement("div");
         topLeftHeader.id = "top-left-header";
+        topLeftHeader.part = "top-left-header";
         headerRow.appendChild(topLeftHeader);
         grid.appendChild(headerRow);
 
@@ -243,6 +245,8 @@ export class OxGrid extends OxControl {
     attributeChangedCallback(name, oldValue, newValue) {
         if (name == "contenteditable") {
             this.editable = newValue == "true";
+        } else if (name == "editable") {
+            this.editable = newValue == "true";
         } else if (name == "data") {
             this.#data = data;
             this.#populateFromData(data);
@@ -250,7 +254,7 @@ export class OxGrid extends OxControl {
     }
 
     #editCell(row, col, cell, text) {
-        if (!this.editable) {
+        if (!this.editable || cell.disabled) {
             return;
         }
 
@@ -313,6 +317,7 @@ export class OxGrid extends OxControl {
     #createColumnHeaderCell(col, columnData) {
         const columnHeader = this.#createCell(-1, col, columnData?.name ?? "");
         columnHeader.classList.add("col-header");
+        columnHeader.part = "column-header";
         
 
         return columnHeader;
@@ -336,6 +341,7 @@ export class OxGrid extends OxControl {
         //row header
         const rowHeader = this.#createCell(rowNumber, -1, rowData.name ?? rowData.id);
         rowHeader.classList.add("row-header");
+        rowHeader.part = "row-header";
         currentRow.appendChild(rowHeader);
 
         // insert data cells
@@ -413,7 +419,7 @@ export class OxGrid extends OxControl {
 
     /**
      * Inserts a column to the grid
-     * @param {*} rowData 
+     * @param {*} columnData 
      */
     insertColumn(columnData, columnNumber) {
 
