@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="css/grid.css">
+    <!-- <link rel="stylesheet" href="css/grid.css"> -->
     <script type="module" src="../js/ui/controls/OxGrid.js"></script>
 </head>
 <body>
@@ -15,6 +15,13 @@
         </ox-grid>
         <button onclick="window.localStorage['grid'] = JSON.stringify(document.getElementById('grid').data);">Save</button>
         <button onclick="load()">Load</button>
+        <br><br>
+        <ox-grid id="grid-2" contenteditable="true">
+
+        </ox-grid><br><br>
+        <ox-grid id="grid-3" contenteditable="true">
+
+        </ox-grid>
         <script>
 
             function load() {
@@ -34,6 +41,60 @@
                     name: "Second"
                 },{
                     name: "Third"
+                },{
+                    name: "xyz"
+                }],
+                rows: [{
+                    id: 1,
+                    name: "Row",
+                    cells: [
+                        "abc", "def", "ghi", "jkl", {data: "noe dit", disabled: true}
+                    ]
+                },{
+                    id: 2,
+                    cells: [
+                        "123", "456", {"data": "789", "background": "lightblue", "color": "red", "skip": 0}, "012"
+                    ]
+                },{
+                    id: 3,
+                    cells: [
+                        "xyz", "qwe", {"type": "boolean", "data": true}
+                    ]
+                },{
+                    id: 4,
+                    cells: [
+                        "123", null, "789", null
+                    ]
+                },{
+                    id: 6,
+                    cells: [
+                        "aaa", "aaa", null, "jkl", null, "555"
+                    ]
+                }]
+            };
+
+
+            const grid2 = document.getElementById("grid-2");
+
+            grid2.data = {
+                columns: [{
+                    name: "First"
+                },{
+                    name: "Second"
+                },{
+                    name: "Third"
+                },{
+                    name: "xyz"
+                },{
+                    name: "xyz"
+                },{
+                    name: "xyz"
+                },{
+                    name: "xyz"
+                },{
+                    name: "xyz"
+                },{
+                    name: "xyz"
                 }],
                 rows: [{
                     id: 1,
@@ -44,7 +105,49 @@
                 },{
                     id: 2,
                     cells: [
-                        "123", "456", "789", "012"
+                        "123", "456", {"data": "789", "background": "lightblue", "color": "red", "skip": 0}, "012"
+                    ]
+                },{
+                    id: 3,
+                    cells: [
+                        "xyz", "qwe"
+                    ]
+                },{
+                    id: 4,
+                    cells: [
+                        "123", null, "789", null
+                    ]
+                },{
+                    id: 6,
+                    cells: [
+                        "aaa", "aaa", null, "jkl", null, "555"
+                    ]
+                }]
+            };
+
+
+            const grid3 = document.getElementById("grid-3");
+
+            grid3.data = {
+                columns: [{
+                    name: "First"
+                },{
+                    name: "Second"
+                },{
+                    name: "Third"
+                },{
+                    name: "xyz"
+                }],
+                rows: [{
+                    id: 1,
+                    name: "Row",
+                    cells: [
+                        "abc", "def", "ghi", "jkl"
+                    ]
+                },{
+                    id: 2,
+                    cells: [
+                        "123", "456", {"data": "789", "background": "lightblue", "color": "red", "skip": 6}, "012"
                     ]
                 },{
                     id: 3,
