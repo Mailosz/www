@@ -7,24 +7,113 @@
     <title>Document</title>
     <!-- <link rel="stylesheet" href="css/grid.css"> -->
     <script type="module" src="../js/ui/controls/OxGrid.js"></script>
+    <style>
+        .switch-button {
+            border: 2px solid #999;
+            background-color: #eee;
+            border-radius: 4px;
+            padding: 2px 4px;
+        }
+
+        .switch-button:has(:checked) {
+            border: 2px solid green;
+            background-color: #afa;
+        }
+
+        .switch-button:hover {
+            filter: brightness(1.1);
+        }
+
+        .switch-button:active {
+            filter: brightness(0.9);
+        }
+
+        .switch-button>input {
+            display: none;
+        }
+    </style>
 </head>
 <body>
     <main>
-        <ox-grid id="grid" contenteditable="true">
+        <div style="display: inline-block;">
+            <span>Local</span><br>
+            <button onclick="window.localStorage['grid'] = JSON.stringify(document.getElementById('grid').data);">Save</button>
+            <button onclick="localLoad()">Load</button>
+        </div>
+        <span>&emsp;</span>
+        <div style="display: inline-block;">
+            <span>Database</span><br>
+            <button onclick="saveToDatabase();">Save</button>
+            <button onclick="loadFromDatabase();">Load</button>
+        </div>
+        <span>&emsp;</span>
+        <div style="display: inline-block;">
+            <span>Name</span><br>
+            <input id="grid-name-input" value="default" style="width: 80px">
+        </div>
 
-        </ox-grid>
-        <button onclick="window.localStorage['grid'] = JSON.stringify(document.getElementById('grid').data);">Save</button>
-        <button onclick="load()">Load</button>
+        <span>&emsp;</span>
+        <button onclick="console.log(document.getElementById('grid').data)">Show data</button>
+        <span>&emsp;</span>
+        <label class="switch-button"><input type="checkbox" onchange="updateSelectionProperties(event.target.checked ? {background: 'green'} : {background: 'red'})"><b>b</b></label>
+        <label class="switch-button"><input type="radio" name="align-group" onclick="updateSelectionProperties({align: 'left'})">align-left</label>
+        <label class="switch-button"><input type="radio" name="align-group" onclick="updateSelectionProperties({align: 'center'})">align-center</label>
+        <label class="switch-button"><input type="radio" name="align-group" onclick="updateSelectionProperties({align: 'right'})">align-right</label>
+        <button><i>i</i></button>
+        <button><u>u</u></button>
+
         <br><br>
-        <ox-grid id="grid-2">
-
-        </ox-grid><br><br>
-        <ox-grid id="grid-3" contenteditable="true">
+        <ox-grid id="grid" editable="true">
 
         </ox-grid>
+        
         <script>
 
-            function load() {
+            function updateSelectionProperties(properties) {
+                const grid = document.getElementById("grid");
+                if (!grid.selectedCell) {
+                    return;
+                }
+                grid.updateCellProperties(grid.selectedCell, properties)
+            }
+
+            function saveToDatabase() {
+                const name = document.getElementById("grid-name-input").value;
+
+                const data = grid.data;
+                data.name = name;
+
+                const request = new Request("http://127.0.0.1:8080/grid/", {
+                    method: "PUT",
+                    headers: new Headers({'content-type': 'application/json'}),
+                    body: JSON.stringify(data)
+                });
+
+                fetch(request).then((resp) => console.log(resp));
+
+            }            
+            
+            function loadFromDatabase() {
+                const name = document.getElementById("grid-name-input").value;
+
+                const request = new Request("http://127.0.0.1:8080/grid/name/" + name, {
+                    method: "GET"
+                });
+
+                fetch(request).then((resp) => {
+                    if (resp.ok) {
+                        return resp.json();
+                    } else {
+                        
+                        throw resp;
+                    }
+                }).then((json) => {
+                    console.log(json);
+                    document.getElementById("grid").setData(json);
+                }).catch((err) => console.log(resp));
+            }
+
+            function localLoad() {
                 let data = window.localStorage.getItem('grid'); 
                 if (data) { 
                     let grid = document.getElementById('grid');
@@ -32,9 +121,10 @@
 
                 }
             }
-            const grid = document.getElementById("grid");
-
-            grid.data = {
+            
+            document.body.onload = () => {
+                const grid = document.getElementById("grid");
+                grid.setData({
                 columns: [{
                     name: "First"
                 },{
@@ -71,101 +161,24 @@
                         "aaa", "aaa", null, "jkl", null, "555"
                     ]
                 }]
-            };
+            });
+            }
+            
 
+            // setTimeout(() => {
+            //     console.time("build");
+            //     const grid = document.getElementById("grid");
+            //     for (let i = 0; i < 100; i++) {
+            //         grid.insertRow({name: i, cells: ["a", "b", "c", "d", "e", "f", "g", "h"]}, grid.rowCount);
+            //     }
 
-            const grid2 = document.getElementById("grid-2");
+            //     for (let i = 0; i < 100; i++) {
+            //         grid.insertColumn({name: i}, grid.columnCount);
+            //     }
+                
+            //     console.timeEnd("build");
+            // },1000);
 
-            grid2.data = {
-                columns: [{
-                    name: "First"
-                },{
-                    name: "Second"
-                },{
-                    name: "Third"
-                },{
-                    name: "xyz"
-                },{
-                    name: "xyz"
-                },{
-                    name: "xyz"
-                },{
-                    name: "xyz"
-                },{
-                    name: "xyz"
-                },{
-                    name: "xyz"
-                }],
-                rows: [{
-                    id: 1,
-                    name: "Row",
-                    cells: [
-                        "abc", "def", "ghi", "jkl"
-                    ]
-                },{
-                    id: 2,
-                    cells: [
-                        "123", "456", {"data": "789", "background": "lightblue", "color": "red", "skip": 0}, "012"
-                    ]
-                },{
-                    id: 3,
-                    cells: [
-                        "xyz", "qwe"
-                    ]
-                },{
-                    id: 4,
-                    cells: [
-                        "123", null, "789", null
-                    ]
-                },{
-                    id: 6,
-                    cells: [
-                        "aaa", "aaa", null, "jkl", null, "555"
-                    ]
-                }]
-            };
-
-
-            const grid3 = document.getElementById("grid-3");
-
-            grid3.data = {
-                columns: [{
-                    name: "First"
-                },{
-                    name: "Second"
-                },{
-                    name: "Third"
-                },{
-                    name: "xyz"
-                }],
-                rows: [{
-                    id: 1,
-                    name: "Row",
-                    cells: [
-                        "abc", "def", "ghi", "jkl"
-                    ]
-                },{
-                    id: 2,
-                    cells: [
-                        "123", "456", {"data": "789", "background": "lightblue", "color": "red", "skip": 6}, "012"
-                    ]
-                },{
-                    id: 3,
-                    cells: [
-                        "xyz", "qwe"
-                    ]
-                },{
-                    id: 4,
-                    cells: [
-                        "123", null, "789", null
-                    ]
-                },{
-                    id: 6,
-                    cells: [
-                        "aaa", "aaa", null, "jkl", null, "555"
-                    ]
-                }]
-            };
 
         </script>
     </main>
