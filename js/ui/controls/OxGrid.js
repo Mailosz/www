@@ -210,39 +210,6 @@ export class OxGrid extends OxControl {
         return this.#selectedCell;
     }
 
-    #updateData(row, col, value) {
-        console.log("Cell edited: " + col + ", " + row + ", value: " + value);
-        if (this.data) {
-            if (row == -1) { // column header
-                while (this.data.columns.length <= col) {
-                    this.data.columns.push({});
-                }
-                this.data.columns[col].name = value;
-            } else if (col == -1) { // row header
-                while (this.data.rows.length <= row) {
-                    this.data.rows.push({cells: []});
-                }
-                this.data.rows[row].name = value;
-            } else {
-
-                while (this.data.rows.length <= row) {
-                    this.data.rows.push({cells: []});
-                }
-
-                while (this.data.rows[row].cells.length <= col) {
-                    this.data.rows[row].cells.push(null);
-                }
-                const cell = this.data.rows[row].cells[col];
-                if (cell instanceof Object) {
-                    cell.data = value;
-                } else {
-                    this.data.rows[row].cells[col] = value;
-                }
-                
-            }
-        }
-    }
-
     #populateFromData(data) {
         const grid = this.#getGrid();
         grid.innerHTML = "";
@@ -293,7 +260,7 @@ export class OxGrid extends OxControl {
         editBox.innerText = text ?? cell.innerText;
 
         const confirm = () => {
-            this.#updateData(row, col, editBox.innerText);
+            this.#updateCellValue(col, row, editBox.innerText);
             cell.innerText = editBox.innerText;
         }
 
@@ -365,32 +332,6 @@ export class OxGrid extends OxControl {
     }
 
     /**
-     * Update cell visual and data properites
-     * @param {HTMLElement} cell 
-     * @param {*} properties 
-     */
-    updateCellProperties(cell, properties) {
-        let col = 0;
-        let row = 0;
-        console.time("szukaj");
-        let prev = cell;
-        while (prev.previousElementSibling != null) {
-            col++;
-            prev = prev.previousElementSibling;
-        }
-        prev = prev.parentElement;
-        while (prev != null) {
-            row++;
-            prev = prev.previousElementSibling;;
-        }
-        console.timeEnd("szukaj");
-        console.log("col: " + col + ", row: " + row);
-
-        this.#updateCellVisual(cell, properties);
-        this.#updateCellProperties(col, row, properties);
-    }
-
-    /**
      * 
      * @param {HTMLElement} cell 
      */
@@ -403,55 +344,6 @@ export class OxGrid extends OxControl {
         if (this.#selectedCell) {
             this.#selectedCell.classList.add("focused");
         }
-    }
-
-    /**
-     * Updates grid cell to match new properties
-     * @param {HTMLElement} cell 
-     * @param {*} properties 
-     */
-    #updateCellVisual(cell, properties) {
-
-        if (properties.data != null) {
-            cell.innerText = properties.data;
-        }
-
-        if (properties.background != null) {
-            cell.style.background = properties.background;
-        }
-
-        if (properties.color != null) {
-            cell.style.color = properties.color;
-        }
-
-        if (properties.align != null) {
-            cell.style.textAlign = properties.align;
-        }
-
-        if (properties.disabled != null) {
-            cell.disabled = properties.disabled;
-        }
-
-        if (properties.type) {
-            if (properties.type == "boolean") {
-                cell.innerHTML = "";
-                let checkbox = this.ownerDocument.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.checked = cell.innerText;
-                cell.appendChild(checkbox);
-            }
-        }
-
-    }
-
-    /**
-     * Updates grid data with new cell properties 
-     * @param {*} col 
-     * @param {*} row 
-     * @param {*} properties 
-     */
-    #updateCellProperties(col, row, properties) {
-        //TODO
     }
 
     /**
@@ -478,8 +370,9 @@ export class OxGrid extends OxControl {
         // insert data cells
         for (const cell of rowData.cells) {
             if (cell instanceof Object) {
-                const element = this.#createCell(currentRow.childElementCount - 1, rowNumber, "");
-                this.#updateCellVisual(element, cell);
+                const colNumber = currentRow.childElementCount - 1;
+                const element = this.#createCell(colNumber, rowNumber, "");
+                this.#updateCellVisual(colNumber, rowNumber, element, cell);
                 currentRow.appendChild(element);
             } else {
                 currentRow.appendChild(this.#createCell(currentRow.childElementCount - 1, rowNumber, cell));
@@ -544,6 +437,148 @@ export class OxGrid extends OxControl {
             rowNumber++;
         }
     }
+
+    /**
+     * Update cell visual and data properites
+     * @param {HTMLElement} cell 
+     * @param {*} properties 
+     */
+    updateCellProperties(cell, properties) {
+        let col = -1;
+        let row = -1;
+        console.time("szukaj");
+        let prev = cell;
+        while (prev.previousElementSibling != null) {
+            col++;
+            prev = prev.previousElementSibling;
+        }
+        prev = prev.parentElement?.previousElementSibling;
+        while (prev != null) {
+            row++;
+            prev = prev.previousElementSibling;;
+        }
+        console.timeEnd("szukaj");
+        console.log("col: " + col + ", row: " + row);
+
+        this.#updateCellVisual(col, row, cell, properties);
+        this.#updateCellProperties(col, row, properties);
+    }
+
+    #updateData(col, row, updateFn) {
+        if (this.data) {
+            if (row == -1) { // column header
+                while (this.data.columns.length <= col) {
+                    this.data.columns.push({});
+                }
+                this.data.columns[col] = updateFn(this.data.columns[col]);
+            } else if (col == -1) { // row header
+                while (this.data.rows.length <= row) {
+                    this.data.rows.push({cells: []});
+                }
+                this.data.rows[row] = updateFn(this.data.rows[row]);
+            } else {
+
+                while (this.data.rows.length <= row) {
+                    this.data.rows.push({cells: []});
+                }
+                while (this.data.rows[row].cells.length <= col) {
+                    this.data.rows[row].cells.push(null);
+                }
+
+                this.data.rows[row].cells[col] = updateFn(this.data.rows[row].cells[col]);
+            }
+        }
+    }
+
+    #updateCellValue(col, row, value) {
+        console.log("Cell edited: " + col + ", " + row + ", value: " + value);
+
+        this.#updateData(col, row, (cell) => {
+            if (row == -1 || col == -1) {
+                cell.name = value;
+                return cell;
+            } else {
+                if (cell instanceof Object) {
+                    cell.data = value;
+                    return cell;
+                } else {
+                    return value;
+                }
+            }
+        });
+    }
+
+    
+    /**
+     * Updates grid data with new cell properties 
+     * @param {*} col 
+     * @param {*} row 
+     * @param {*} properties 
+     */
+    #updateCellProperties(col, row, properties) {
+        console.log("Cell props changed: " + col + ", " + row + "");
+        this.#updateData(col, row, (cell) => {
+            
+            if (!(cell instanceof Object)) { // only cells can be a string and not an object
+                cell = {data: cell};
+            }
+
+            for (const property in properties) {
+                cell[property] = properties[property];
+            }
+            return cell;
+        });
+        console.log(this.#data);
+    }
+
+    
+    /**
+     * Updates grid cell to match new properties
+     * @param {HTMLElement} cell 
+     * @param {*} properties 
+     */
+    #updateCellVisual(col, row, cell, properties) {
+
+        if (properties.data != null) {
+            cell.innerText = properties.data;
+        }
+
+        if (properties.background != null) {
+            cell.style.background = properties.background;
+        }
+
+        if (properties.color != null) {
+            cell.style.color = properties.color;
+        }
+
+        if (properties.align != null) {
+            cell.style.textAlign = properties.align;
+        }
+
+        if (properties.disabled != null) {
+            cell.disabled = properties.disabled;
+        }
+
+        if (properties.type) {
+            if (properties.type == "boolean") {
+                cell.innerHTML = "";
+                let checkbox = this.ownerDocument.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.checked = cell.innerText;
+                cell.appendChild(checkbox);
+
+                checkbox.onchange = (event) => {
+                    this.#updateCellValue(col, row, checkbox.checked);
+                }
+            } else if (properties.type == "number") {
+
+            } else if (properties.type == "xx") {
+
+            }
+        }
+
+    }
+
 }
 
 window.customElements.define("ox-grid", OxGrid);

@@ -89,7 +89,17 @@
                     body: JSON.stringify(data)
                 });
 
-                fetch(request).then((resp) => console.log(resp));
+                fetch(request).then((resp) => {
+                    if (resp.ok) {
+                        return resp.text();
+                    } else {
+                        throw resp;
+                    }
+                }).then((id) => {
+                    grid.data._id = id;
+                }).catch((err) => {
+                    console.error(err)
+                });
 
             }            
             
@@ -110,7 +120,7 @@
                 }).then((json) => {
                     console.log(json);
                     document.getElementById("grid").setData(json);
-                }).catch((err) => console.log(resp));
+                }).catch((err) => console.log(err));
             }
 
             function localLoad() {
