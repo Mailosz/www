@@ -4,17 +4,71 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="../css/switch.css">
-    
+    <title>UI</title>
+    <link rel="stylesheet" href="../css/ui/ui.css">
+    <link rel="stylesheet" href="../css/ui/switch.css">
+
+    <script type="module" src="../js/ui/controls/OxList.js"></script>
 </head>
 <body>
 
-    <div class="switch" onclick="event.currentTarget.classList.toggle('checked');">
-        <div class="switch-indicator"></div>
-    </div>
+    <h1>Switches</h1>
+    <p>
+        <div class="switch" onclick="event.currentTarget.classList.toggle('checked');">
+            <div class="switch-indicator"></div>
+        </div>
+    </p>
+    <p>
+        <label><input type="checkbox" class="switch">This is an option</label>
+        <label><input type="checkbox" class="switch">This is second option</label>
+    </p>
+    <p>
+        <label><input type="radio" class="switch" name="group-1">Switch radio 1</label>
+        <label><input type="radio" class="switch" name="group-1">Switch radio 2</label>
+        <label><input type="radio" class="switch" name="group-1">Switch radio 3</label>
+    </p>
+    <p>
+        <label class="switch-button"><input type="checkbox">Switch button 1</label>
+        <label class="switch-button"><input type="checkbox">Switch button 2</label>
+        <label class="switch-button"><input type="checkbox">Switch button 3</label>
+    </p>
+    <p>
+        <label class="switch-button"><input type="radio" name="group-2">Switch radio 1</label>
+        <label class="switch-button"><input type="radio" name="group-2">Switch radio 2</label>
+        <label class="switch-button"><input type="radio" name="group-2">Switch radio 3</label>
+    </p> 
 
-    <label><input type="checkbox" class="switch">This is an option</label>
+    <p>
+        <button class="switch" onclick="event.target.classList.toggle('checked')"></button>&emsp;
+        <button class="switch-button" onclick="event.target.classList.toggle('checked')">Switch button</button>
+    </p>
+    <p>
+        <label><input type="checkbox" class="switch" disabled>Disabled</label>
+        <label class="switch-button"><input type="checkbox" disabled>Switch button 1</label>
+    </p>
+    <h1>Buttons</h1>
+    <p>
+        <button>Button</button>
+        <input type="button" value="Input">
+    </p>
+    <h1>Lists</h1>
+
+    <div>
+    <ox-list>
+        <div><img src="../res/img/a.png"/>Option 1</div>
+        <div><img src="../res/img/b.png"/>Option 2</div>
+        <div><img src="../res/img/c.png"/>Option 3</div>
+        <div><img src="../res/img/d.png"/>Option 4</div>
+        <div>Option 5</div>
+    </ox-list></div>
+
+    <!-- <select class="ribbon-select" multiple>
+        <option></option>
+        <option><img src="../res/img/b.png">Option 2</option>
+        <option><img src="../res/img/c.png">Option 3</option>
+        <option><img src="../res/img/d.png">Option 4</option>
+        <option>Option 5</option>
+    </select> -->
 
 </body>
 </html>

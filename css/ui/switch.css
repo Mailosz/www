@@ -1,0 +1,101 @@
+body {
+    --switch-light-accent-color: var(--light-accent-color, #afa);
+    --switch-accent-color: var(--accent-color, #3f3);
+    --strong-switch-accent-color: var(--strong-accent-color, green);
+
+    --switch-border-color: var(--border-color, #666);
+    --switch-border-width: var(--border-width, 2px);
+}
+
+input[type=checkbox].switch,
+input[type=radio].switch {
+    appearance: none;
+    font-size: medium;
+    margin: 0px 4px 2px 0px;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.switch {
+    width: 1.75em;
+    height: 1em;
+    border: var(--switch-border-width) var(--switch-border-color) solid;
+    border-radius: 0.5em;
+    position: relative;
+    background-color: lightgray;
+    transition: background-color 200ms, border-color 200ms;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+    .switch.checked, .switch:checked {
+        background-color: var(--switch-light-accent-color);
+        border-color: var(--strong-switch-accent-color);
+    }
+
+.switch::before {
+    content: ' ';
+    width: 0.5em;
+    height: 0.5em;
+    border-radius: 0.25em;
+    position: absolute;
+    right: calc(0.25em - var(--border-width));
+    top: calc(0.25em - var(--border-width));
+    background-color: white;
+    border: var(--border-width) solid var(--switch-border-color);
+    pointer-events: none;
+    user-select: all;
+    box-sizing: border-box;
+    transition: background-color 200ms, border-color 200ms, left 200ms, right 200ms;
+}
+    .switch.checked::before, .switch:checked::before {
+        right: calc(1em - var(--border-width));
+        background-color: var(--switch-accent-color);
+        border-color: var(--dark-accent-color);
+    }
+
+
+
+
+    
+.switch-button {
+    border: var(--switch-border-width) solid var(--switch-border-color);
+    background-color: #eee;
+    border-radius: 4px;
+    padding: 2px 4px;
+    display: inline-block;
+}
+
+.switch-button:has(:checked),
+.switch-button.checked {
+    border: 2px solid var(--strong-switch-accent-color);
+    background-color: var(--switch-light-accent-color);
+}
+
+.switch:not([disabled]):hover,
+.switch-button:not(:has([disabled])):hover {
+    filter: brightness(1.1);
+}
+
+.switch:not([disabled]):active,
+.switch-button:not(:has([disabled])):active {
+    filter: brightness(0.9);
+}
+
+.switch[disabled],
+.switch-button:has([disabled]) {
+    filter: saturate(0) brightness(1.5) contrast(0.7);
+} 
+
+
+.switch-button>input {
+    display: none;
+}
+
+.switch:focus,
+.switch-button:focus,
+.switch-button:focus-visible {
+    outline-offset: 2px;
+    outline-width: 2px;
+    outline-color: black;
+    outline-style: dashed;
+}

@@ -221,6 +221,8 @@ export class OxGrid extends OxControl {
         const topLeftHeader = this.ownerDocument.createElement("div");
         topLeftHeader.id = "top-left-header";
         topLeftHeader.part = "top-left-header";
+        const topLeftSlot = this.ownerDocument.createElement("slot");
+        topLeftHeader.appendChild(topLeftSlot);
         headerRow.appendChild(topLeftHeader);
         grid.appendChild(headerRow);
 
@@ -343,6 +345,12 @@ export class OxGrid extends OxControl {
         this.#selectedCell = cell;
         if (this.#selectedCell) {
             this.#selectedCell.classList.add("focused");
+        }
+
+        const event = new CustomEvent("cellselected", {detail: {cell: cell}});
+        this.dispatchEvent(event);
+        if (this.oncellselected) {
+            this.oncellselected(event);
         }
     }
 
@@ -506,6 +514,12 @@ export class OxGrid extends OxControl {
                 }
             }
         });
+
+        const event = new CustomEvent("valuechanged", {detail: {cellColumn: col, cellRow: row, value: value}});
+        this.dispatchEvent(event);
+        if (this.onvaluechanged) {
+            this.onvaluechanged(event);
+        }
     }
 
     
@@ -549,6 +563,10 @@ export class OxGrid extends OxControl {
 
         if (properties.color != null) {
             cell.style.color = properties.color;
+        }
+
+        if (properties.bold != null) {
+            cell.style.fontWeight = properties.bold ? 600 : 400;
         }
 
         if (properties.align != null) {
