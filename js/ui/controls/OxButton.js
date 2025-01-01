@@ -1,19 +1,6 @@
 import {OxControl} from "./OxControl.js";
 
-const template = /*html*/`
-    <div id="button-wrapper">
-        <div id="button-container" part="button">
-            <div id="content-container" part="content">
-                <slot>
-                </slot>
-            </div>
-            <div id="divider" part="divider"></div>
-            <div id="menu-opener" part="opener">
-
-            </div>
-        </div>
-    </div>
-`;
+const template = /*html*/`<slot></slot>`;
 
 const style = /*css*/`
     * {
@@ -21,167 +8,124 @@ const style = /*css*/`
     }
 
     :host {
-        display: inline-block;
-    }
-
-    #button-wrapper {
-        display: block;
-        width: 100%;
-        height: 100%;
-
+        border: var(--border-width) solid var(--border-color);
+        border-radius: 4px;
+        background-color: var(--button-background);
         cursor: pointer;
-        user-select: contain;
-        border: none;
-    }
-
-    #button-wrapper:hover>#button-container {
-        transform: scale(1.05)
-    }
-
-
-    #button-wrapper:active>#button-container {
-        transform: scale(0.95);
-        transition: transform 10ms;
-    }
-
-    /* not split */
-    #button-wrapper:not(.opener-split):hover {
-        filter: brightness(1.04);
-    }
-
-    #button-wrapper:not(.opener-split):active {
-        filter: brightness(0.9);
-    }
-
-    /* split */
-    #button-wrapper.opener-split #content-container:hover, 
-    #button-wrapper.opener-split #menu-opener:hover{
-        backdrop-filter: brightness(1.04);
-    }
-
-    #button-wrapper.opener-split #content-container:active, 
-    #button-wrapper.opener-split #menu-opener:active{
-        filter: brightness(0.9);
-    }
-
-    #button-container {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-items: stretch;
-        align-items: stretch;
-        box-shadow: 0 0 10px rgba(127,127,127,0.5);
-        background: var(--button-background, #eee);
-        transition: transform 300ms;
+        padding: 0.25em 0.5em;
+        display: inline flex;
         overflow: hidden;
-        border: inherit;
-    }
-
-    #content-container {
-        flex: 1;
-        display: flex;
+        justify-items: center;
         justify-content: center;
         align-items: center;
-        padding: 4px;
+        align-content: center;
+        vertical-align: text-bottom;
     }
 
-
-    #button-wrapper.opener-joint #content-container {
-        padding-right: 0;
+    ::slotted(*) {
+        min-inline-size: 0;
+        max-block-size: 100%;
     }
 
-
-    .opener-split #divider {
-        width: 1px;
-        height 100%;
-        background-color: #ddd;
+    :host([disabled]) {
+        filter: saturate(0) brightness(1.5) contrast(0.7);
+        cursor: inherit;
     }
 
-    #button-wrapper:not(.opener-split):not(.opener-joint) #menu-opener {
-        display: none;
+    
+    :host([checked]) {
+        border: var(--border-width) solid var(--strong-accent-color);
+        background-color: var(--light-accent-color);
     }
-
-    #menu-opener {
-        user-select:none;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-width: 1.5em;
+    
+    :host(:hover:not([disabled])) {
+        filter: brightness(1.1);
     }
-
-    #menu-opener::before {
-        content: '\\25BC';
+    
+    :host(:active:not([disabled])) {
+        filter: brightness(0.9);
     }
-
-    .opener-split #menu-opener {
-        min-width: 2.5em;
-    }
+    
 `;
 
 export class OxButton extends OxControl {
 
-    static observedAttributes = ["opener", "toggled", "mode"];
+    static observedAttributes = ["type", "group", "checked"];
+    #type = "default";
+    #group = null;
+    checked = null;
 
-    constructor(opts) {
+    static #groups = new Map();
+
+    constructor() {
         super();
+    
+        this.createShadowRoot(template, style, {mode: "open"});
 
-        const defaultOpts = {
-            split: false,
-            placement: null,
-            mode: "default",
-        };
-    
-        this.opts = {...defaultOpts, ...opts};
-    
-        const shadowRoot = this.attachShadow({ mode: "open"});
-        shadowRoot.innerHTML = template;
-    
-    
-        const styleSheet = new CSSStyleSheet();
-        styleSheet.replaceSync(style);
-    
-        shadowRoot.adoptedStyleSheets.push(styleSheet);
+        this.tabIndex = 0;
 
-        this.wrapper = shadowRoot.getElementById("button-wrapper");
-        //this.wrapper.addEventListener("mousedown", (event) => {if (event.detail > 1) {event.preventDefault()}}, {capture: true, passive: false});
+        this.addEventListener("click", (event) => {
+            if (this.#type == "toggle" || this.#type == "radio") {
+                if (this.#type == "radio" && this.#group) {
+                    const group = OxButton.#groups.get(this.#group);
+                    if (group) {
+                        for (const other of group) {
+                            other.removeAttribute("checked");
+                        }
+                    }
+                }
+                this.toggleAttribute("checked");
+            }
+        });
+
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
-        if (name == "opener") {
+        if (name === "type") {
 
-            if (newValue === true || newValue === "" || newValue == "joint") {
-                this.wrapper.classList.remove("opener-split");
-                this.wrapper.classList.add("opener-joint");
-            } else if (newValue == "split") {
-                this.wrapper.classList.remove("opener-joint");
-                this.wrapper.classList.add("opener-split");
-            } else {
-                this.wrapper.classList.remove("opener-joint");
-                this.wrapper.classList.remove("opener-split");
-            }
+            if (this.type != newValue) {
 
-            this.opts.opener = newValue;
-        } else if (name == "mode") {
-            let mode;
-            if (newValue == null || newValue == "default") {
-                mode = "default;"
-            } else if (newValue == "toggle") {
-                mode = "toggle;"
-            } else if (newValue == "menu") {
-                mode = "menu"
-            } else {
-                mode = "default";
-            }
-            if (mode != this.opts.mode) {
-                this.opts.mode = mode;
+                if (newValue === "default" || newValue === "button") {
+                    this.#type = "default";
+                } else if (newValue === "toggle" || newValue === "switch" || newValue === "checkbox") {
+                    this.#type = "toggle";
+                } else if (newValue === "radio") {
+                    this.#type = "radio";
+                }
 
-                this.#build();
             }
+        } else if (name === "group") {
+            if (oldValue !== newValue) {
+                this.changeGroup(newValue);
+            }
+        } else if (name === "checked") {
+            const event = new Event("change");
+            this.dispatchEvent(event);
+            this.onchange(event);
         }
     }
 
-    #build() {
-        
+    changeGroup(groupName) {
+        if (this.#group) {
+            const group = OxButton.#groups.get(this.#group);
+            if (group) {
+                group.delete(this);
+                if (group.size === 0) {
+                    OxButton.#groups.delete(this.#group);
+                }
+            }
+        }
+
+        this.#group = groupName;
+
+        if (this.#group) {
+            let group = OxButton.#groups.get(this.#group);
+            if (group === undefined) {
+                group = new Set();
+                OxButton.#groups.set(this.#group, group);
+            }
+            group.add(this);
+        }
     }
 
 }

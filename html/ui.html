@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../css/ui/switch.css">
 
     <script type="module" src="../js/ui/controls/OxList.js"></script>
+    <script type="module" src="../js/ui/controls/OxButton.js"></script>
 </head>
 <body>
 
@@ -50,6 +51,25 @@
     <p>
         <button>Button</button>
         <input type="button" value="Input">
+    </p>
+    <p>
+        <ox-button>Simple button</ox-button>
+        <ox-button style="height: 1.5em"><img src="../res/img/a.png"/></ox-button>
+        <ox-button style="width: 1.5em"><img src="../res/img/a.png"/></ox-button>
+
+    </p>
+    <p>
+        <ox-button type="toggle">Toggle button</ox-button>
+        <ox-button type="toggle" checked>Toggle button</ox-button>
+    </p>
+    <p>
+        <ox-button type="radio" group="group-1">Radio button 1</ox-button>
+        <ox-button type="radio" group="group-1">Radio button 2</ox-button>
+        <ox-button type="radio" group="group-1">Radio button 3</ox-button>
+    </p>
+    <p>
+        <ox-button disabled>Disabled</ox-button>
+        <ox-button disabled checked>Disabled selected</ox-button>
     </p>
     <h1>Lists</h1>
 

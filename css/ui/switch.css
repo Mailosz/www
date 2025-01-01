@@ -90,12 +90,3 @@ input[type=radio].switch {
 .switch-button>input {
     display: none;
 }
-
-.switch:focus,
-.switch-button:focus,
-.switch-button:focus-visible {
-    outline-offset: 2px;
-    outline-width: 2px;
-    outline-color: black;
-    outline-style: dashed;
-}

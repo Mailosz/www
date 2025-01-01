@@ -7,6 +7,7 @@ html {
     --strong-accent-color: green;
 
     --border-color: #666;
+    --button-background: #eee;
     --border-width: 2px;
 }
 
@@ -21,4 +22,14 @@ button:hover, input[type=button]:hover, input[type=submit]:hover, input[type=res
 
 button:active, input[type=button]:active, input[type=submit]:active, input[type=reset]:active {
     filter: brightness(0.9);
+}
+
+
+ox-button:focus-visible,
+.switch:focus-visible,
+.switch-button:focus-visible {
+    outline-offset: 2px;
+    outline-width: 2px;
+    outline-color: black;
+    outline-style: dashed;
 }
