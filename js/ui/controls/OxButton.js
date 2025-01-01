@@ -8,9 +8,9 @@ const style = /*css*/`
     }
 
     :host {
-        border: var(--border-width) solid var(--border-color);
+        border: var(--border-width, 2px) solid var(--border-color, #666);
         border-radius: 4px;
-        background-color: var(--button-background);
+        background-color: var(--button-background, #eee);
         cursor: pointer;
         padding: 0.25em 0.5em;
         display: inline flex;
@@ -19,7 +19,7 @@ const style = /*css*/`
         justify-content: center;
         align-items: center;
         align-content: center;
-        vertical-align: text-bottom;
+        vertical-align: baseline;
     }
 
     ::slotted(*) {
@@ -33,9 +33,9 @@ const style = /*css*/`
     }
 
     
-    :host([checked]) {
-        border: var(--border-width) solid var(--strong-accent-color);
-        background-color: var(--light-accent-color);
+    :host(:state(checked)) {
+        border: var(--border-width, 2px) solid var(--strong-accent-color, green);
+        background-color: var(--light-accent-color, #afa);
     }
     
     :host(:hover:not([disabled])) {
@@ -53,7 +53,8 @@ export class OxButton extends OxControl {
     static observedAttributes = ["type", "group", "checked"];
     #type = "default";
     #group = null;
-    checked = null;
+    #checked = null;
+    #internals = null;
 
     static #groups = new Map();
 
@@ -62,19 +63,31 @@ export class OxButton extends OxControl {
     
         this.createShadowRoot(template, style, {mode: "open"});
 
+        this.#internals = this.attachInternals();
         this.tabIndex = 0;
 
         this.addEventListener("click", (event) => {
-            if (this.#type == "toggle" || this.#type == "radio") {
-                if (this.#type == "radio" && this.#group) {
-                    const group = OxButton.#groups.get(this.#group);
-                    if (group) {
-                        for (const other of group) {
-                            other.removeAttribute("checked");
+            if (this.#type == "toggle" || this.#type == "radio" || this.#type == "radio-toggle") {
+                if (this.#type === "toggle") {
+                    this.#setCheckedByUser(!this.checked);
+                } else {
+                    if (this.#group) {
+                        const group = OxButton.#groups.get(this.#group);
+                        if (group) {
+                            for (const other of group) {
+                                if (other != this) {
+                                    other.checked = false;
+                                }
+                            }
                         }
+                    } 
+
+                    if (this.#type === "radio-toggle") {
+                        this.#setCheckedByUser(!this.checked);
+                    } else {
+                        this.#setCheckedByUser(true);
                     }
                 }
-                this.toggleAttribute("checked");
             }
         });
 
@@ -91,6 +104,8 @@ export class OxButton extends OxControl {
                     this.#type = "toggle";
                 } else if (newValue === "radio") {
                     this.#type = "radio";
+                } else if (newValue === "radio-toggle") {
+                    this.#type = "radio-toggle";
                 }
 
             }
@@ -99,10 +114,39 @@ export class OxButton extends OxControl {
                 this.changeGroup(newValue);
             }
         } else if (name === "checked") {
+            this.#checked = true;
+            this.#checkedChanged();
+        }
+    }
+
+    set checked(value) {
+        if (value != this.#checked) {
+            this.#checked = value == true;
+
             const event = new Event("change");
             this.dispatchEvent(event);
-            this.onchange(event);
+            
+            this.#checkedChanged();
         }
+    }
+
+    #checkedChanged() {
+        if (this.#checked) this.#internals.states.add("checked");
+        else this.#internals.states.delete("checked");
+    }
+
+    #setCheckedByUser(value) {
+        if (value != this.#checked) {
+
+            this.checked = value;
+            
+            const event = new Event("input");
+            this.dispatchEvent(event);
+        }
+    }
+
+    get checked() {
+        return this.#checked;
     }
 
     changeGroup(groupName) {

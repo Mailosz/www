@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Grid</title>
     <!-- <link rel="stylesheet" href="css/grid.css"> -->
     <script type="module" src="../js/ui/controls/OxGrid.js"></script>
-    <link rel="stylesheet" href="../css/switch.css">
+    <script type="module" src="../js/ui/controls/OxButton.js"></script>
+    <link rel="stylesheet" href="../css/ui/switch.css">
     <style>
         
     </style>
@@ -34,7 +35,8 @@
         <span>&emsp;</span>
         <button onclick="console.log(document.getElementById('grid').data)">Show data</button>
         <span>&emsp;</span>
-        <label class="switch-button"><input id="bold-button" type="checkbox" onchange="updateSelectionProperties(event.target.checked ? {bold: 'true'} : {bold: 'false'})"><b>b</b></label>
+        <ox-button id="bold-button" type="checkbox" oninput="updateSelectionProperties(event.target.checked ? {bold: 'true'} : {bold: 'false'})"><b>b</b></ox-button>
+        <!-- <label class="switch-button"><input id="bold-button" type="checkbox" onchange="updateSelectionProperties(event.target.checked ? {bold: 'true'} : {bold: 'false'})"><b>b</b></label> -->
         <label class="switch-button"><input id="italic-button" type="checkbox" onchange="updateSelectionProperties(event.target.checked ? {italic: 'true'} : {italic: 'false'})"><i>i</i></label>
         <label class="switch-button"><input id="underline-button" type="checkbox" onchange="updateSelectionProperties(event.target.checked ? {underline: 'true'} : {underline: 'false'})"><u>u</u></label>
         <label class="switch-button"><input id="align-left-button" type="radio" name="align-group" onclick="updateSelectionProperties({align: 'left'})">left</label>
@@ -50,6 +52,7 @@
         <script>
 
             function updateSelectionProperties(properties) {
+                console.log("Fired!");
                 const grid = document.getElementById("grid");
                 if (!grid.selectedCell) {
                     return;
@@ -111,31 +114,6 @@
 
                 }
             }
-
-            const boldbutton = document.getElementById("bold-button");
-            const italicbutton = document.getElementById("italic-button");
-            const underlinebutton = document.getElementById("underline-button");
-            const alignLeftbutton = document.getElementById("align-left-button");
-            const alignCenterbutton = document.getElementById("align-center-button");
-            const alignRightbutton = document.getElementById("align-right-button");
-            const textColorInput = document.getElementById("text-color-input");
-            const bgColorInput = document.getElementById("bg-color-input");
-            grid.oncellselected = (event) => {
-                const style = window.getComputedStyle(event.detail.cell);
-
-
-                boldbutton.checked = style.fontWeight > 400;
-                italicbutton.checked = style.fontStyle != "normal";
-                underlinebutton.checked = style.textDecorationLine != "none";
-
-                alignLeftbutton.checked = true; //event.detail.cell.style.textAlign == "left";
-                alignCenterbutton.checked = style.textAlign == "center";
-                alignRightbutton.checked = style.textAlign == "right";
-
-                textColorInput.value = style.color;
-                bgColorInput.value = style.backgroundColor;
-            }
-
             
             document.body.onload = () => {
                 const grid = document.getElementById("grid");
@@ -177,6 +155,30 @@
                     ]
                 }]
             });
+
+
+                const boldbutton = document.getElementById("bold-button");
+                const italicbutton = document.getElementById("italic-button");
+                const underlinebutton = document.getElementById("underline-button");
+                const alignLeftbutton = document.getElementById("align-left-button");
+                const alignCenterbutton = document.getElementById("align-center-button");
+                const alignRightbutton = document.getElementById("align-right-button");
+                const textColorInput = document.getElementById("text-color-input");
+                const bgColorInput = document.getElementById("bg-color-input");
+                grid.oncellselected = (event) => {
+                    const style = window.getComputedStyle(event.detail.cell);
+
+                    boldbutton.checked = style.fontWeight > 400;
+                    italicbutton.checked = style.fontStyle != "normal";
+                    underlinebutton.checked = style.textDecorationLine != "none";
+
+                    alignLeftbutton.checked = true; //event.detail.cell.style.textAlign == "left";
+                    alignCenterbutton.checked = style.textAlign == "center";
+                    alignRightbutton.checked = style.textAlign == "right";
+
+                    textColorInput.value = style.color;
+                    bgColorInput.value = style.backgroundColor;
+                }
             }
             
 
