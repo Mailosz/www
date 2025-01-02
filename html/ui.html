@@ -10,6 +10,7 @@
 
     <script type="module" src="../js/ui/controls/OxList.js"></script>
     <script type="module" src="../js/ui/controls/OxButton.js"></script>
+    <script type="module" src="../js/ui/controls/OxItem.js"></script>
 </head>
 <body>
 
@@ -63,6 +64,9 @@
         <ox-button type="toggle" checked>Toggle button</ox-button>
     </p>
     <p>
+        <a href="#id" class="button">Link button</a>
+    </p>
+    <p>
         <ox-button type="radio" group="group-1">Radio button 1</ox-button>
         <ox-button type="radio" group="group-1">Radio button 2</ox-button>
         <ox-button type="radio" group="group-1">Radio button 3</ox-button>
@@ -75,12 +79,38 @@
     <p>
         <ox-button disabled>Disabled</ox-button>
         <ox-button disabled checked>Disabled selected</ox-button>
+        <input type="button" disabled value="Input button">
+        <ox-item class="button" disabled toggle checked>Item</ox-item>
     </p>
+    <div>
+        <ox-item class="button" label="Item 1" toggle>
+            <img src="../res/img/a.png"/>
+        </ox-item>
+        <ox-item class="button" label="Item 2" toggle checked>
+            <img src="../res/img/b.png"/>
+        </ox-item>
+        <ox-item class="button">Item button</ox-item>
+        <ox-item class="button" label="Label"></ox-item>
+        <ox-item class="button" label="Toggle" toggle></ox-item>
+    </div>
     <h1>Lists</h1>
+    <div style="display: flex;">
+        <ox-item label="Item 1" toggle group="g-1">
+            <img src="../res/img/a.png"/>
+        </ox-item>
+        <ox-item label="Item 2" toggle checked group="g-1">
+            <img src="../res/img/b.png"/>
+        </ox-item>
+        <ox-item label="Item 3" toggle group="g-1">
+            <img src="../res/img/c.png"/>
+        </ox-item>
+    </div>
+    <div>
 
+    </div>
     <div>
     <ox-list>
-        <div><img src="../res/img/a.png"/>Option 1</div>
+        <div>Option 1</div>
         <div><img src="../res/img/b.png"/>Option 2</div>
         <div><img src="../res/img/c.png"/>Option 3</div>
         <div><img src="../res/img/d.png"/>Option 4</div>
