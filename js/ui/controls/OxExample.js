@@ -93,6 +93,10 @@ const style = /*css*/`
             background-image: url("../../../res/img/fullscreen.png");
         }
 
+        .fullscreen #fullscreen-button {
+            background-image: url("../../../res/img/small.png");
+        }
+
         .spacer {
             flex: 10;
         }
