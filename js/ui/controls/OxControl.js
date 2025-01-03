@@ -39,7 +39,7 @@ export class OxControl extends HTMLElement {
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
-        console.log(`Attribute ${name} has changed.`);
+        console.log(`Attribute ${name} has changed from "${oldValue}" to "${newValue}".`);
     }
 
 }

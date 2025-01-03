@@ -4,42 +4,61 @@ import {StringTokenizer, StringTokenizerLanguageService} from "../../StringToken
 
 
 const template = /*html*/`
-<div id="code-box"></div>
+<div id="container">
+    <div id="code-box"></div>
+</div>
+<div id="line-counters-box" style="height: 50px;"></div>
 <link rel="stylesheet">
-<div id="line-counters-box" contenteditable="false"></div>
 `;
+//<div id="line-counters-box" contenteditable="false"></div>
 
 const style = /*css*/`
 
 
     :host {
-        display: flex;
-        flex-direction: row-reverse;
-
+        display: block;
+        position: relative;
 
         background: rgba(127,127,127,0.1);
         font-family: monospace;
         border: 1px solid black;
-        position: relative;
-        
-        /*justify-content: stretch;
-        align-items: stretch;
-        justify-items: stretch;
-        grid-template-columns: [rownum] 2em auto;*/
 
         counter-reset: row-num 0;
         --line-counter-width: 2em;
-        --line-counter-background: rgba(127,127,127,0.2);
+        --line-counter-background: #ccc;
         --line-counter-border: 2px solid gray;
 
         --selected-line-background: rgba(127,127,127,0.1);
+
+        display: block;
+        overflow: hidden;
+    }
+
+    #container {
+        height: 100%;
+        width: 100%;
+        position: relative;
+        padding: 0;
+
+        position: relative;
+        overflow: auto;
+    }
+
+    #line-counters-box {
+        width: var(--line-counter-width, 2em);
+        background-color: var(--line-counter-background);
+        border-right: var(--line-counter-border);
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 50px;
     }
     
     #code-box {
         display: block;
+        position: relative;
         flex: 1;
-        padding: 4px 0;
-        overflow-x: auto;
+        padding: 0.25em 0;
         white-space: pre;
         min-height: 1em;
     }
@@ -49,34 +68,32 @@ const style = /*css*/`
     }
 
     #code-box>div {
+        display: block;
+        list-style-position: outside;
         min-height: 1.1em;
-        padding: 0 4px;
+        padding: 0 0.25em 0 0;
+        counter-increment: row-num;
     }
 
     #code-box>div::before {
-        counter-increment: row-num;
         content: counter(row-num);
         width: var(--line-counter-width);
         text-align: right;
-        display: block;
+        display: inline-block;
+        margin-right: 0.25em;
         
-        position: absolute;
+        position: sticky;
         left: 0;
+        z-index: 2;
     }
 
         #code-box>div:hover {
             background: var(--selected-line-background);
         }
 
-        #code-box>div:hover::before {
+        #code-box>div:hover::marker {
             background: rgba(127,127,127,0.3);
         }
-
-    #line-counters-box {
-        width: var(--line-counter-width);
-        background: var(--line-counter-background);
-        border-right: var(--line-counter-border);
-    }
 `;
 
 export class OxCode extends OxControl {
@@ -84,6 +101,7 @@ export class OxCode extends OxControl {
     static observedAttributes = ["tokenizer-language", "contenteditable", "code-style"];
 
     tokenizerLanguage = null;
+    tokenizationDelay = 1000;
 
     #tokenizationTimeout = null;
 
@@ -93,6 +111,10 @@ export class OxCode extends OxControl {
         this.createShadowRoot(template, style, {delegatesFocus: true, slotAssignment: "manual"});
 
         this.spellcheck = false;
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
 
         const codeBox = this.shadowRoot.querySelector("#code-box");
 
@@ -101,13 +123,33 @@ export class OxCode extends OxControl {
          */
         codeBox.onbeforeinput = (event) => {this.#handleInput(event);}
 
-        const code = this.innerHTML;
+        const code = this.textContent;
         this.#createCodeBox(code);
 
+        const container = this.shadowRoot.querySelector("#container");
+        const lineCounters = this.shadowRoot.querySelector("#line-counters-box");
+        new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                lineCounters.style.height = entry.contentBoxSize[0].blockSize + "px";
+            }
+        }).observe(container);
 
     }
 
-    setCode() {
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (name == "tokenizer-language") {
+            StringTokenizerLanguageService.getLanguageAsync(newValue).then((language) => {
+                this.tokenizerLanguage = language;
+                this.tokenizeCode();
+            });
+        } else if (name == "contenteditable") {
+            this.shadowRoot.querySelector("#code-box").contentEditable = newValue;
+        } else if (name == "code-style") {
+            this.shadowRoot.querySelector("link").href = newValue;
+        }
+    }
+
+    setCode(newValue) {
         this.#createCodeBox(newValue);
     }
 
@@ -124,25 +166,27 @@ export class OxCode extends OxControl {
         // recolorizing after a time
         const ranges = event.getTargetRanges();
         clearTimeout(this.#tokenizationTimeout);
-        setTimeout(() => {
-            let firstNode = null;
-            for (const range of ranges) {
-                let currentNode = range.startContainer;
-                while (currentNode != null) {
-                    if ("DIV" == currentNode.nodeName) {
-                        if (firstNode == null || firstNode.compareDocumentPosition(currentNode) & Node.DOCUMENT_POSITION_PRECEDING) {
-                            firstNode = currentNode;
+        if (this.tokenizerLanguage) {
+            setTimeout(() => {
+                let firstNode = null;
+                for (const range of ranges) {
+                    let currentNode = range.startContainer;
+                    while (currentNode != null) {
+                        if ("DIV" == currentNode.nodeName) {
+                            if (firstNode == null || firstNode.compareDocumentPosition(currentNode) & Node.DOCUMENT_POSITION_PRECEDING) {
+                                firstNode = currentNode;
+                            }
+                            break;
                         }
-                        break;
+                        currentNode = currentNode.parentElement;
                     }
-                    currentNode = currentNode.parentElement;
                 }
-            }
-
-            if (firstNode != null) {
-                this.tokenizeCode(firstNode);
-            }
-        }, 1000);
+    
+                if (firstNode != null) {
+                    this.tokenizeCode(firstNode);
+                }
+            }, this.tokenizationDelay);
+        }
     }
 
     #isWhitespace(c) {
@@ -197,7 +241,7 @@ export class OxCode extends OxControl {
         }
 
         let codeBox = this.shadowRoot.querySelector("#code-box");
-        codeBox.innerHTML = "";
+        codeBox.textContent = "";
         for (const line of lines){    
             let linePadding = whitespacePadding;
             for (let i = 0; i < whitespacePadding; i++) {
@@ -208,7 +252,7 @@ export class OxCode extends OxControl {
                 }
             }        
             const lineElement = document.createElement("div");
-            lineElement.innerHTML = line.substring(linePadding) + "\n";
+            lineElement.textContent = line.substring(linePadding) + "\n";
             codeBox.appendChild(lineElement);
         }
 
@@ -223,9 +267,10 @@ export class OxCode extends OxControl {
      */
     tokenizeCode(startingFrom) {
 
-        //TODO: keep selection
         const codeBox = this.shadowRoot.querySelector("#code-box");
 
+        if (!this.tokenizerLanguage) return;
+        
         const tokenizer = new StringTokenizer(this.tokenizerLanguage);
 
         let lineElement;
@@ -346,21 +391,6 @@ export class OxCode extends OxControl {
         }
         //
     }
-
-    
-    attributeChangedCallback(name, oldValue, newValue) {
-        if (name == "tokenizer-language") {
-            StringTokenizerLanguageService.getLanguageAsync(newValue).then((language) => {
-                this.tokenizerLanguage = language;
-                this.tokenizeCode();
-            });
-        } else if (name == "contenteditable") {
-            this.shadowRoot.querySelector("#code-box").contentEditable = newValue;
-        } else if (name == "code-style") {
-            this.shadowRoot.querySelector("link").href = newValue;
-        }
-    }
-
 
 }
 
