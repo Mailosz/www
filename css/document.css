@@ -1,0 +1,174 @@
+/* markboxes */
+
+.sample:not(.fullscreen) {
+    padding: 2px;
+}
+
+main .warning,
+main .info,
+main .alert, 
+main .success, 
+main .mark {
+    margin: 1em 0;
+    padding: 1em var(--main-padding);
+
+}
+
+main {
+    line-height: 1.5;
+}
+
+
+/* headers */
+h1 {
+    font-size: 4em;
+    font-weight: 100;
+    margin-top: 1em;
+    margin-bottom: 0.25em;
+    line-height: 1;
+}
+h2 {
+    font-size: 3em;
+    font-weight: 200;
+    margin-top: 1em;
+    margin-bottom: 0.25em;
+}
+h3 {
+    font-size: 2em;
+    font-weight: 400;
+    margin-top: 1em;
+    margin-bottom: 0.25em;
+}
+h4 {
+    font-size: 1.5em;
+    font-weight: 500;
+    margin-top: 1em;
+    margin-bottom: 0.25em;
+}
+h5 {
+    font-size: 1.25em;
+    font-weight: 600;
+    margin-top: 1em;
+    margin-bottom: 0.25em;
+}
+h6 {
+    font-size: 1em;
+    font-weight: 800;
+    margin-top: 1em;
+    margin-bottom: 0.25em;
+}
+
+hr {
+    margin: 2em 0;
+    border: 2px solid #999;
+}
+
+/* MARK */
+
+mark {
+    outline: 2px solid var(--light-accent-color, yellow);
+    background-color: var(--light-accent-color, yellow);
+    border-radius: 2px;
+}
+
+mark.green {
+    outline-color: lightgreen;
+    background-color: lightgreen;
+    color: darkgreen;
+}
+
+mark.red {
+    outline-color: lightcoral;
+    background-color: lightcoral;
+    color: maroon;
+}
+
+mark.yellow {
+    outline-color: #ffa;
+    background-color: #ffa;
+    color: #660;
+}
+
+mark.orange {
+    outline-color: lightsalmon;
+    background-color: lightsalmon;
+    color: brown;
+}
+
+mark.blue {
+    outline-color: lightblue;
+    background-color: lightblue;
+    color: darkblue;
+}
+
+
+mark.gray {
+    outline-color: lightgray;
+    background-color: lightgray;
+    color: black;
+}
+
+/* blocks */
+
+img {
+    display: block;
+}
+
+main>img, section>img, article>img, figure>img, aside>img {
+    margin: 0;
+    width: 100%;
+    object-fit: contain;
+    object-position: center;
+    min-height: 4em;
+}
+
+figure {
+    clear: both;
+    margin: 1em 0;
+    background-color: #ddd;
+}
+
+aside {
+    background-color: #ddd;
+}
+
+p {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    text-align: justify;
+    text-justify: newspaper;
+}
+
+/* LISTS */
+
+ol {
+    padding-left: 1.5em;
+    counter-reset: list-counter;
+    line-height: 2;
+}
+
+ol>li {
+    counter-increment: list-counter;
+}
+
+ol ol>li::marker {
+    content: counters(list-counter, ".") ". ";
+}
+
+
+ul {
+    padding-left: 1.5em;
+    line-height: 2;
+}
+
+dl {
+
+}
+
+dt {
+    margin: 20px 0px 4px 0px;
+    font-weight: 600;
+}
+dd {
+    margin: 4px 0px 20px 0px;
+}

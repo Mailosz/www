@@ -67,7 +67,7 @@ const style = /*css*/`
 
 export class OxView extends OxControl {
 
-    static observedAttributes = ["multiple"];
+    static observedAttributes = [];
 
     constructor() {
         super();

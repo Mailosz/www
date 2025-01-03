@@ -1,0 +1,14 @@
+html {
+    /* --light-accent-color: #8af;
+    --accent-color: #68f;
+    --strong-accent-color: #349; */
+    --light-accent-color: #afa;
+    --accent-color: #3f3;
+    --strong-accent-color: green;
+    --text-color: black;
+
+    --border-color: #666;
+    --button-background: #eee;
+    --border-width: 2px;
+    --border-radius: 4px;
+}

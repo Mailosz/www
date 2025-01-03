@@ -3,7 +3,6 @@ code {
 }
 
 .sample {
-    background-color: lightgreen;
     position: relative;
     display: flex;
     flex-direction: column;
