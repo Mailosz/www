@@ -27,15 +27,15 @@ export class OxControl extends HTMLElement {
     }
 
     connectedCallback() {
-        console.log("Custom element added to page.");
+        console.log(`Custom element added (${this.constructor.name})`);
     }
 
     disconnectedCallback() {
-        console.log("Custom element removed from page.");
+        console.log(`Custom element removed (${this.constructor.name})`);
     }
 
     adoptedCallback() {
-        console.log("Custom element moved to new page.");
+        console.log(`Custom element moved to new document (${this.constructor.name})`);
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
