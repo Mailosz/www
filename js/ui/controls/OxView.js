@@ -79,6 +79,10 @@ export class OxView extends OxControl {
 
     }
 
+    connectedCallback() {
+        super.connectedCallback();
+    }
+
     attributeChangedCallback(name, oldValue, newValue) {
 
     }

@@ -15,6 +15,7 @@ table.seamless {
 tr:first-child {
     position: sticky;
     left: 0px;
+    z-index: 0;
 }
 
 tbody>tr {
@@ -48,10 +49,12 @@ thead {
     top: 0px;
     background: #ddd;
     box-sizing: border-box;
+    z-index: 2;
 }
 
 tfoot {
     position: sticky;
     bottom: 0px;
     background: #ddd;
+    z-index: 1;
 }

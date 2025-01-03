@@ -18,6 +18,32 @@ main {
     line-height: 1.5;
 }
 
+:target {
+    outline: 0.1em;
+    outline-offset: 0;
+    outline-color: rgba(from var(--accent-color,orange) r g b / 0.2);
+    outline-style: solid;
+    border-radius: 1px;
+    background-color: rgba(from var(--accent-color,orange) r g b / 0.2);
+    display: inline-block;
+    quotes: '\2B9E' '\2B9C';
+    
+}
+
+:target::before {
+    content: open-quote;
+    color: var(--accent-color,orange);
+    position: absolute;
+    text-align: right;
+    transform: translateX(-100%);
+}
+
+:target::after {
+    position: absolute;
+    content: close-quote;
+    color: var(--accent-color,orange);
+}
+
 
 /* headers */
 h1 {
@@ -35,13 +61,13 @@ h2 {
 }
 h3 {
     font-size: 2em;
-    font-weight: 400;
+    font-weight: 300;
     margin-top: 1em;
     margin-bottom: 0.25em;
 }
 h4 {
     font-size: 1.5em;
-    font-weight: 500;
+    font-weight: 400;
     margin-top: 1em;
     margin-bottom: 0.25em;
 }
@@ -144,7 +170,7 @@ p {
 ol {
     padding-left: 1.5em;
     counter-reset: list-counter;
-    line-height: 2;
+    line-height: 1.75;
 }
 
 ol>li {
@@ -158,7 +184,7 @@ ol ol>li::marker {
 
 ul {
     padding-left: 1.5em;
-    line-height: 2;
+    line-height: 1.75;
 }
 
 dl {
@@ -171,4 +197,8 @@ dt {
 }
 dd {
     margin: 4px 0px 20px 0px;
+}
+
+figcaption, blockquote, q {
+    font-style: italic;
 }

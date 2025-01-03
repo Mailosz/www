@@ -127,7 +127,7 @@ const style = /*css*/`
 
 export class OxExample extends OxControl {
 
-    static observedAttributes = ["preview", "editable", "autorun"];
+    static observedAttributes = ["editable", "autorun"];
 
     constructor() {
         super();
@@ -156,17 +156,7 @@ export class OxExample extends OxControl {
 
     attributeChangedCallback(name, oldValue, newValue) {
         super.attributeChangedCallback(name, oldValue, newValue);
-        if (name === "preview") {
-            if (newValue == "only") {
-
-            }
-
-            this.shadowRoot.appendChild(new DocBuilder(this.ownerDocument)
-                .tag("iframe")
-                .id("viewer")
-                .attr("part", "viewer")
-            );
-        } else if (name === "editable") {
+        if (name === "editable") {
             const codeBox = this.shadowRoot.getElementById("code-box");
             codeBox.setAttribute("contenteditable", newValue);
         } else if (name === "autorun") {

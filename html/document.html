@@ -10,28 +10,18 @@
     <link rel="stylesheet" href="../css/document.css">
     <script type="module" src="../js/ui/controls/OxCode.js"></script>
     <script type="module" src="../js/ui/controls/OxExample.js"></script>
+    <script type="module" src="../js/ui/controls/OxOutline.js"></script>
     <script type="module">
-        import {LoremIpsum} from "../js/ui/LoremIpsum.js";
         import {DocumentOutline} from "../js/ui/DocumentOutline.js";
-        import {CodeBox} from "../js/codeBox/CodeBox.js";
-        import {MakeSamples} from "../js/sampleMaker/SampleMaker.js";
-
-        MakeSamples();
 
         LoremIpsum.registerCustomElement();
-        CodeBox.registerCustomElement();
 
-
-        document.body.onload = (event) => {
-            new DocumentOutline(document.getElementById("the-document"), document.getElementById("the-outline"));
-        };
     </script>
 </head>
 <body>
-    <div id="the-outline">
 
-    </div>
     <main id="the-document">
+        <ox-outline for="section"></ox-outline>
         <section>
         <h1>Title of the document</h1>
         <p>Quick introduction to the theme of the document. Some more introduction. And finally the final of an introduction.</p>
@@ -71,6 +61,15 @@
         <h2>Some text</h2>
         <p>This is a <mark>text about something</mark> very important. <mark class="green">This is also a text.</mark> This is a text about something very important. <mark class="red">Oh no, it's repeating!</mark> This is also a text. <mark class="orange">This</mark> is a text about <mark class="gray">something very important. Oh well.</mark> This is a text about something very important. This text is still very important. This too. This not. <mark class="blue">This is a text about something very important.</mark> <mark class="yellow">This is a text about something very important.</mark></p>
         <p>This is <i>some italic text</i>, and <b>some bold one</b>, and now <u>an underline</u>.</p>
+        <p></p>
+        <blockquote>
+            This is some very nice block quote. This is some very nice block quote. This is some very nice block quote. This is some very nice block quote. 
+        </blockquote>
+        <p><q>This is also a quote. </q></p>
+        <details>
+            <summary>This is expandable area</summary>
+            This is some text. This is some text. This is some text. This is some text. This is some text. This is some text. This is some text. This is some text. This is some text. This is some text. This is some text. This is some text. This is some text. 
+        </details>
         <h2>A lot of lists</h2>
         <h3>Unordered lists</h3>
         <ul>
@@ -177,13 +176,21 @@
         <hr>
         <p><lorem-ipsum></p>
         <h2>Fourth important point</h2>
+        <h3>Deeper...</h3>
+        <p>Text text text text. Text text text text. Text text text text.</p>
+        <h4>Deeper...</h4>
+        <p>Text text text text. Text text text text. Text text text text.</p>
+        <h5>Deeper...</h5>
+        <p>Text text text text. Text text text text. Text text text text.</p>
+        <h6>Deeper...</h6>
+        <p>Text text text text. Text text text text. Text text text text.</p>
     </section>
     <section>
         <h1>This shall be the next article</h1>
         <p>Albeit a short one</p>
     </section>
-    <section>
-        <h1>Tables</h1>
+    <section id="third-section">
+        <h1 id="tables">Tables</h1>
         <p><lorem-ipsum></lorem-ipsum></p>
         <aside class="right"><table>
             <thead><tr><th colspan="3">Table</th></tr><tr><td>Col 1</td><td>Col 2</td><td>Col 3</td></tr></thead>
@@ -202,10 +209,15 @@
                 <tr><td>Val 1</td><td>Val 2</td><td>Val 3</td></tr>
                 <tr><td>Val 4</td><td>Val 5</td><td>Val 6</td></tr>
                 <tr><td>Val 7</td><td>Val 8</td><td>Val 9</td></tr>
+                <tr><td>Val 10</td><td>Val 11</td><td>Val 12</td></tr>
+                <tr><td>Val 13</td><td>Val 14</td><td>Val 15</td></tr>
             </tbody>
         </table>
         <p><lorem-ipsum></lorem-ipsum></p>
     </section>
+    <div class="wide">
+        <img src="../res/backgrounds/Las.jpg" style="display: block; width: 100%;">Test
+    </div>
     </main>
 </body>
 </html>

@@ -13,6 +13,14 @@ body {
     min-height: 100vh;
 }
 
+:is(main,section,article)>.wide {
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin-left: 0;
+    margin-right: 0;
+}
+
 @media (min-width: 1200px) {
     html {
         background-color: #f8f8f8;
@@ -31,47 +39,35 @@ body {
 }
 
 main {
-    
-    /* --main-padding: min(5vw, 24px); */
-
-    background-color: #ffffff;
+    background-color: white;
     margin: auto;
     box-sizing: border-box;
     padding: 40px 0;
-    
 }
 
 /* main padding */
-:is(main, header, footer, section, article, figure, aside)>:is(ul,ol,dl,p,h1,h2,h3,h4,h5,h6,table) {
+:is(main, header, footer, section, article, figure, aside)>:is(ul,ol,dl,p,h1,h2,h3,h4,h5,h6,table,blockquote,details) {
     margin-left: var(--main-padding);
     margin-right: var(--main-padding);
-}
-
-table {
-    margin-top: 1em;
-    margin-bottom: 1em;
 }
 
 :is(main, header, footer, section, article, figure, aside)>:is(table) {
     width: calc(100% - var(--main-padding, 0) * 2);
 }
 
-figure {
-    clear: both;
-    margin: 1em 0;
-}
-
-figcaption {
-    padding: 1em;
-    text-align: center;
-    font-style: italic;
-}
-
-aside {
-    padding: 0;
-}
-
 @media (min-width: 800px) {
+
+    aside.left>:is(ul,ol,dl,p,h1,h2,h3,h4,h5,h6,table,blockquote,details) {
+        margin-right: 1em;
+    }
+    
+    aside.right>:is(ul,ol,dl,p,h1,h2,h3,h4,h5,h6,table,blockquote,details) {
+        margin-left: 1em;
+    }
+
+    :is(aside.left, aside.right)>:is(table) {
+        width: calc(100% - var(--main-padding, 0) - 1em);
+    }
         
     aside.left {
         width: 50%;
@@ -91,4 +87,28 @@ aside {
         margin-left: -1em;
     }
 
+}
+
+
+
+table {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+
+
+
+figure {
+    clear: both;
+    margin: 1em 0;
+}
+
+figcaption, blockquote {
+    padding: 1em;
+    text-align: center;
+}
+
+aside {
+    padding: 0;
 }
