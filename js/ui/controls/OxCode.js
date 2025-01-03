@@ -41,6 +41,7 @@ const style = /*css*/`
         padding: 4px 0;
         overflow-x: auto;
         white-space: pre;
+        min-height: 1em;
     }
 
     #code-box:focus {
@@ -101,9 +102,8 @@ export class OxCode extends OxControl {
         codeBox.onbeforeinput = (event) => {this.#handleInput(event);}
 
         const code = this.innerHTML;
-        if (code.length > 0) {
-            this.#createCodeBox(code);
-        }
+        this.#createCodeBox(code);
+
 
     }
 
@@ -175,12 +175,12 @@ export class OxCode extends OxControl {
         const lines = code.split('\n');
 
         //remove first empty line
-        if (lines.length > 0 && lines[0].trimStart().length == 0) {
+        if (lines.length > 1 && lines[0].trimStart().length == 0) {
             lines.shift();
         }
 
         //remove last empty line
-        if (lines.length > 0 && lines[lines.length - 1].trimStart().length == 0) {
+        if (lines.length > 1 && lines[lines.length - 1].trimStart().length == 0) {
             lines.pop();
         }
 
