@@ -33,6 +33,10 @@ const style = /*css*/`
         background: var(--light-accent-color);
     }
 
+    :host([disabled]) {
+        pointer-events: none;
+    }
+
 `;
 
 export class OxItem extends OxControl {
@@ -52,7 +56,28 @@ export class OxItem extends OxControl {
         this.createShadowRoot(template, style, {mode: "open"});
 
         this.#internals = this.attachInternals();
+        this.tabIndex = 0;
     }
+
+    connectedCallback() {
+        super.connectedCallback();
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (name === "label") {
+            this.shadowRoot.getElementById("label").innerText = newValue;
+        } else if (name === "toggle") {
+            this.isToggle = true;
+        } else if (name === "checked") {
+            this.isChecked = true;
+        } else if (name === "group") {
+            this.groupName = newValue;
+        } else if (name === "disabled") {
+            this.isDisabled = true;
+        }
+    }
+
+
 
     get label() {
         return this.getAttribute("label");
@@ -87,7 +112,15 @@ export class OxItem extends OxControl {
     }
 
     set isDisabled(value) {
-        this.#isDisabled = value;
+        if (value !== this.#isDisabled) {
+            this.#isDisabled = value;
+
+            if (value) {
+                this.tabIndex = -1;
+            } else {
+                this.tabIndex = 0;
+            }
+        }
     }
 
     get isToggle() {
@@ -130,21 +163,6 @@ export class OxItem extends OxControl {
                 OxItem.#groups.set(this.#groupName, group);
             }
             group.add(this);
-        }
-    }
-
-
-    attributeChangedCallback(name, oldValue, newValue) {
-        if (name === "label") {
-            this.shadowRoot.getElementById("label").innerText = newValue;
-        } else if (name === "toggle") {
-            this.isToggle = true;
-        } else if (name === "checked") {
-            this.isChecked = true;
-        } else if (name === "group") {
-            this.groupName = newValue;
-        } else if (name === "disabled") {
-            this.isDisabled = true;
         }
     }
 

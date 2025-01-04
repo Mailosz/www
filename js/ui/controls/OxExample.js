@@ -181,7 +181,8 @@ export class OxExample extends OxControl {
     }
 
     changeFullscreen() {
-        this.shadowRoot.getElementById("example").classList.toggle("fullscreen");
+        const example = this.shadowRoot.getElementById("example");
+        example.classList.toggle("fullscreen");
     }
 
 }

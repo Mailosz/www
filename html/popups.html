@@ -41,7 +41,7 @@
         }
     </style>
 </head>
-<body>
+<body oncontextmenu="showContextPopup(event)">
     <main>
         <p>Click anywhere to open the popup.</p>
         <p>Click anywhere to open the popup.</p>
@@ -125,47 +125,30 @@
         <p>Click anywhere to open the popup.</p>
         <p>Click anywhere to open the popup.</p>
         <p>Click anywhere to open the popup.</p>
+
+        <ox-popup id="context-popup" dismissable="true" placement="right top">
+            Context menu
+        </ox-popup>
     </main>
     
 
 
     <script type="module">
-        import {Popup} from "../js/ui/Popup.js";
         import {OxPopup} from "../js/ui/controls/OxPopup.js";
         import {DocBuilder} from "../js/utils/DocBuilder.js";
 
-        function showPopup(event) {
+    
+        function showContextPopup(event) {
+            console.log(event);
 
-            let builder = new DocBuilder(document);
-            let content = builder.tag("div").children(
-                builder.text("This is a popup's content"),
-                builder.tag("br").id("hej"),
-                builder.tag("input").id("input-id").class("input-class").attr("value", "test").attr("placeholder", "test"),
-                builder.tag("br"),
-                builder.tag("button").innerText("Open sub popup").event("click", (event) => {
+            const contextPopup = document.getElementById("context-popup");
+            contextPopup.open({anchor: {x: event.clientX, y: event.clientY}});
 
-                    let subcontent = document.createElement("div");
-                    subcontent.appendChild(document.createTextNode("This is a subpopup"));
-                    subcontent.appendChild(document.createElement("br"));
-
-                    let b =  document.createElement("button");
-                    b.innerText = "Close";
-                    b.onclick = (event) => Popup.getPopupOfElement(event.target).hide();
-                    subcontent.appendChild(b);
-
-                    let subpopup = new Popup(subcontent, {keyboardDismissable: ["Enter", "Escape"], blocksInput: false, pointerDismissable: false});
-                    subpopup.show(event.target, "center bottomOut");
-                })
-            ).getTag();
-            
-            let popup = new Popup(content, {pointerDismissable: false, blurDismissable: false});
-            // popup.show(event.target, "rightIn bottomOut");
-            popup.show(null, "center center");
             event.preventDefault();
         }
 
-        // document.getElementById("showPopupFlyout").addEventListener("click", showPopup);
-        // document.getElementById("showPopupFixed").addEventListener("click", showPopup);
+        window.showContextPopup = showContextPopup;
+
     </script>
 </body>
 </html>

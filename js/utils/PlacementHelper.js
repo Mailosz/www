@@ -38,7 +38,7 @@ export class PlacementHelper {
      * @returns {Point} Computed position of an element
      */
     static computePosition(element, anchor, placement, options) {
-
+        
         // read placement string
         let horizontalPlacement = "center";
         let verticalPlacement = "center";

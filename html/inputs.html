@@ -6,27 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="css/main.css">
-    <script type="module">
-        import {LoremIpsum} from "../js/ui/LoremIpsum.js";
-        import {DocumentOutline} from "../js/ui/DocumentOutline.js";
-        import {CodeBox} from "../js/codeBox/CodeBox.js";
-        import {MakeSamples} from "../js/sampleMaker/SampleMaker.js";
-
-        MakeSamples();
-
-        LoremIpsum.registerCustomElement();
-        CodeBox.registerCustomElement();
-
-
-        document.body.onload = (event) => {
-            new DocumentOutline(document.getElementById("the-document"), document.getElementById("the-outline"));
-        };
-    </script>
 </head>
 <body>
-    <div id="the-outline">
-
-    </div>
     <main id="the-document">
         <h1>Title of the document</h1>
         <p>Quick introduction to the theme of the document.</p>

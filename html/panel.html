@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel</title>
+    <script type="module" src="../js/ui/controls/OxPanel.js"></script>
+    <script type="module" src="../js/ui/controls/OxItem.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+        }
+
+        ox-panel {
+            background-color: aliceblue;
+        }
+
+        ox-panel ox-panel {
+            background-color: aquamarine;
+        }
+
+        ox-panel ox-panel::part(start) {
+            background-color: bisque;
+        }
+
+        ox-panel ox-panel::part(end) {
+            background-color: greenyellow;
+        }
+    </style>
+</head>
+<body>
+    <ox-panel style="height: 100vh">
+        <ox-panel orientation="horizontal" slot="start">
+            <ox-item slot="start" label="Item 1" toggle group="g-1">
+                <img src="../res/img/a.png"/>
+            </ox-item>
+            <ox-item slot="start" label="Item 2" toggle checked group="g-1">
+                <img src="../res/img/b.png"/>
+            </ox-item>
+            <ox-item slot="start" label="Item 3" toggle group="g-1">
+                <img src="../res/img/c.png"/>
+            </ox-item>
+            <ox-item slot="start" label="Item 4" toggle group="g-1" disabled>
+                <img src="../res/img/d.png"/>
+            </ox-item>
+            <div>Top </div>
+            <div slot="end">Top right</div>
+        </ox-panel>
+        <div>Content</div>
+        <ox-panel horizontal slot="end">
+            <div slot="start">Bottom left</div>
+            <div>Bottom </div>
+            <div slot="end">Bottom right</div>
+        </ox-panel>
+    </ox-panel>
+</body>
+</html>
