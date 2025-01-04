@@ -3,98 +3,68 @@ import { UsefulUtils } from '../../utils/UsefulUtils.js';
 import { OxControl } from './OxControl.js';
 
 const template = /*html*/`
-    <dialog id="popup-wrapper">
-        <div id="popup-container" part="container">
-            <div id="popup-bar">
-                <div id="popup-title" part="title">
-                    <slot name="title"></slot>
-                </div>
-                <button id="popup-close-button" part="close"></button>
-            </div>
-            <div id="popup-content" part="content">
-                <slot></slot>
-            </div>
+    <dialog id="wrapper">
+        <div id="container" part="container">
+            <slot></slot>
         </div>
     </dialog>
 `;
 
 const style = /*css*/`
 
-    :host {
-        --open-animation: open-animation 200ms;
-        --close-animation: close-animation 8000ms;
-        display: contents;
-    }
-
-    @keyframes open-animation {
-        0% {opacity: 0.2; transform: translateY(10px); filter: blur(10px);}
-        100% {opacity: 1; transform: translateY(0);}
-    }
-
-    @keyframes close-animation {
-        0% {opacity: 1; transform: translateY(0);}
-        100% {opacity: 0; transform: translateY(10px); filter: blur(10px);}
-    }
-
-
-    dialog[open]>#popup-container, #popup-wrapper:popover-open>#popup-container {
-        animation: var(--open-animation);
-    }
-
-    /*#popup-wrapper.opened:not(:popover-open):not([open])>#popup-container*/
-    #popup-wrapper.closing {
-        animation: var(--open-animation);
-        display: block;
-        pointer-events: none;
-    }
-
-    #popup-title {
-        flex: 1;
-    }
-
-    #popup-bar {
-        display: flex;
-        content-justify: stretch;
-    }
-
-    #popup-container {
-        position: fixed;
-        background-color: white;
-
-        border: 1px solid black;
-        box-shadow: 0 0 20px rgba(127,127,127,0.7);
-    }
-
-    #popup-content {
-        padding: 10px;
-    }
-
     [popover], dialog {
         border: none;
         padding: 0;
     }
 
-    #popup-close-button {
-        border: 0;
-        width: 2em;
-        height: 2em;
-        background: none;
-    }
-    #popup-close-button::before {
-        content: '╳';
-    }
-    #popup-close-button:hover {
-        background: rgba(127,127,127,0.5);
-    }
-    #popup-close-button:active {
-        background: rgba(127,127,127,1);
+    :host {
+        display: contents;
     }
 
+    #wrapper {
+        transition-property: opacity, overlay, display;
+        transition-duration: 0.4s;
+        transition-behavior: allow-discrete;
+
+        opacity: 0;
+    }
+
+    #wrapper:modal::backdrop {
+        background-color: transparent;
+        transition: background-color 0.4s;
+    }
+
+    :host([open]) #wrapper {
+        opacity: 1;
+        @starting-style {
+            opacity: 0;
+        }
+    }
+
+    :host([open]) #wrapper::backdrop {
+        background-color: rgba(127,127,127, 0.1);
+        @starting-style {
+            background-color: transparent;
+        }
+    }
+
+    #container {
+        position: fixed;
+        transition: filter 0.4s, transform 0.4s;
+        filter: blur(5px);
+        transform: translateY(10px);
+        padding: 1em;
+    }
+
+    :host([open]) #container {
+        filter: blur(0);
+        transform: translateY(0);
+    }
 `;
 
 export class OxPopup extends OxControl {
 
-    static observedAttributes = ["modal", "placement", "dismissable", "anchor", "closable", "movable"];
+    static observedAttributes = ["modal", "placement", "dismissable", "anchor", "open"];
     #changedInertness = false;
     constructor(opts) {
         super();
@@ -103,8 +73,6 @@ export class OxPopup extends OxControl {
             modal: false,
             placement: null,
             dismissable: false,
-            closable: false,
-            movable: false,
             anchor: null
         };
 
@@ -112,121 +80,30 @@ export class OxPopup extends OxControl {
 
         this.createShadowRoot(template, style);
 
+        this.#isDismissableChanged();
+    }
 
-        this.wrapper = this.shadowRoot.getElementById("popup-wrapper");
-        this.container = this.shadowRoot.getElementById("popup-container");
+    connectedCallback() {
+        super.connectedCallback();
 
-        this.wrapper.onclick = (event) => {
-            if (event.target == this.wrapper) {
+        const wrapper = this.shadowRoot.getElementById("wrapper");
+
+        wrapper.onclick = (event) => {
+            if (event.target == wrapper) {
                 if (this.opts.dismissable) {
                     this.close();
                 }
             }
         }
 
-        const closeButton = this.shadowRoot.getElementById("popup-close-button");
-        closeButton.onclick = (event)=>{
-            event.preventDefault();
-            this.close();
-        };
-
-        this.#isClosableChanged();
-        this.#isMovableChanged();
-        this.#isDismissableChanged();
-    }
-
-    #isDismissableChanged() {
-        const wrapper = this.shadowRoot.getElementById("popup-wrapper");
-        if (this.opts.dismissable) {
-            wrapper.popover = "auto";
-        } else {
-            wrapper.popover = "manual";
-        }
-    }
-
-    #isClosableChanged() {
-        const closeButton = this.shadowRoot.getElementById("popup-close-button");
-        if (this.opts.closable) {
-            closeButton.style.display = "block";
-        } else {
-            closeButton.style.display = "none";
-        }
-    }
-
-    #isMovableChanged() {
-        const popupBar = this.shadowRoot.getElementById("popup-bar");
-        if (this.opts.movable) {
-            popupBar.style.cursor = "move";
-            popupBar.onpointerdown = this.#startMove.bind(this);
-            popupBar.onpointermove = this.#move.bind(this);
-        } else {
-            popupBar.onpointerdown = null;
-            popupBar.onpointermove = null;
-        }
-    }
-
-   /**
-     * 
-     * @param {PointerEvent} event 
-     */
-    #startMove(event) {
-        if (event.target.id == "popup-close-button") {
-            return;
-        }
-        const popupBar = this.shadowRoot.getElementById("popup-bar");
-        popupBar.setPointerCapture(event.pointerId);
-        event.preventDefault();
-    }
-
-    /**
-     * 
-     * @param {PointerEvent} event 
-     */
-    #move(event) {
-        if (event.pressure >= 0.5) {
-            const rect = this.container.getBoundingClientRect();
-            let x = rect.x + event.movementX;
-            let y = rect.y + event.movementY;
-        
-            this.container.style.left = x + "px";
-            this.container.style.top = y + "px";
-        }
-    }
-
-    open(opts) {
-        this.opts = {...this.opts, ...opts};
-        this.wrapper.classList.add("opened");
-        
-        if (this.opts.modal == "true") {
-            this.wrapper.showModal();
-        } else {
-            this.wrapper.showPopover();
-        }
-
-        if (this.opts.placement != false) {
-            this.wrapper.style.position = "fixed";
-
-            let anchor = null;
-            if (this.opts.anchor != null) {
-                if (anchor instanceof HTMLElement) {
-                    anchor = this.opts.anchor;
-                } else {
-                    anchor = document.getElementById(this.opts.anchor);
-                }
+        wrapper.ontoggle = (event) => {
+            if (event.newState) {
+                
+            } else {
+                this.removeAttribute("open");
             }
-
-            PlacementHelper.placeElement(this.container, anchor, this.opts.placement, {keepInside: this.wrapper});
-
         }
 
-    }
-
-    close() {
-        // this.wrapper.togglePopover(false);       
-        this.wrapper.classList.add("closing");
-        this.wrapper.onanimationend = (event) => this.wrapper.classList.remove("closing");
-        this.wrapper.close();
-        this.wrapper.hidePopover();
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -239,13 +116,60 @@ export class OxPopup extends OxControl {
             this.#isDismissableChanged();
         } else if (name == "anchor") {
             this.opts.anchor = newValue;
-        } else if ( name == "closable") {
-            this.opts.closable = newValue;
-            this.#isClosableChanged();
-        } else if (name == "movable") {
-            this.opts.movable = newValue;
-            this.#isMovableChanged();
+        } else if (name === "open") {
+            if (oldValue !== newValue && newValue !== null) {
+                this.open();
+            }
         }
+    }
+
+    #isDismissableChanged() {
+        const wrapper = this.shadowRoot.getElementById("wrapper");
+        if (this.opts.dismissable) {
+            wrapper.popover = "auto";
+        } else {
+            wrapper.popover = "manual";
+        }
+    }
+
+    open(opts) {
+        const wrapper = this.shadowRoot.getElementById("wrapper");
+        const container = this.shadowRoot.getElementById("container");
+        this.opts = {...this.opts, ...opts};
+
+        if (!this.hasAttribute("open")) {
+            this.setAttribute("open", "");
+        }
+        
+        if (this.opts.modal == "true") {
+            wrapper.showModal();
+        } else {
+            wrapper.showPopover();
+        }
+
+        if (this.opts.placement != false) {
+            wrapper.style.position = "fixed";
+
+            let anchor = null;
+            if (this.opts.anchor != null) {
+                if (typeof this.opts.anchor === 'string' || this.opts.anchor instanceof String) {
+                    anchor = document.querySelector(this.opts.anchor);
+                } else {
+                    anchor = this.opts.anchor;
+                }
+            }
+
+            PlacementHelper.placeElement(container, anchor, this.opts.placement, {keepInside: wrapper});
+
+        }
+
+    }
+
+    close() {
+        const wrapper = this.shadowRoot.getElementById("wrapper");
+
+        wrapper.close();
+        wrapper.hidePopover();
     }
 
 }
