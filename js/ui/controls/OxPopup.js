@@ -19,29 +19,26 @@ const style = /*css*/`
 
     :host {
         display: contents;
+        --transition-time: 400ms;
     }
 
     #wrapper {
-        transition-property: opacity, overlay, display;
-        transition-duration: 0.4s;
+        transition-property: overlay, display;
+        transition-duration: var(--transition-time, 400ms);
         transition-behavior: allow-discrete;
-
-        opacity: 0;
-    }
-
-    #wrapper:modal::backdrop {
-        background-color: transparent;
-        transition: background-color 0.4s;
     }
 
     :host([open]) #wrapper {
-        opacity: 1;
-        @starting-style {
-            opacity: 0;
-        }
+
     }
 
-    :host([open]) #wrapper::backdrop {
+    #wrapper::backdrop {
+        background-color: transparent;
+        transition-property: background-color;
+        transition-duration: var(--transition-time, 400ms);
+    }
+
+    :host([open]) #wrapper:modal::backdrop {
         background-color: rgba(127,127,127, 0.1);
         @starting-style {
             background-color: transparent;
@@ -50,15 +47,21 @@ const style = /*css*/`
 
     #container {
         position: fixed;
-        transition: filter 0.4s, transform 0.4s;
-        filter: blur(5px);
-        transform: translateY(10px);
+        transition-property: opacity, transform;
+        transition-duration: var(--transition-time, 400ms);
         padding: 1em;
+
+        transform: translateY(10px);
+        opacity: 0;
     }
 
-    :host([open]) #container {
-        filter: blur(0);
+    #wrapper[open] #container, #wrapper:popover-open #container {
+        opacity: 1;
         transform: translateY(0);
+        @starting-style {
+            opacity: 0;
+            transform: translateY(10px);
+        }
     }
 `;
 
@@ -98,7 +101,7 @@ export class OxPopup extends OxControl {
 
         wrapper.ontoggle = (event) => {
             if (event.newState) {
-                
+
             } else {
                 this.removeAttribute("open");
             }
@@ -148,7 +151,7 @@ export class OxPopup extends OxControl {
         }
 
         if (this.opts.placement != false) {
-            wrapper.style.position = "fixed";
+            wrapper.style.position = "absolute";
 
             let anchor = null;
             if (this.opts.anchor != null) {

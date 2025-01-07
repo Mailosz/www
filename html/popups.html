@@ -7,9 +7,14 @@
     <title>Popups test</title>
     <link rel="stylesheet" href="../css/main.css">
     <style>
+        ox-popup {
+            --transition-time: 250ms;
+        }
+
         ox-popup::part(container) {
             background: white;
             border: 2px solid #555;
+            box-shadow: 0 0 10px rgba(127,127,127,0.5);
         }
 
         .popup-backdrop:focus-within>.popup {
@@ -17,28 +22,6 @@
             border: 1px red solid;
         }
 
-        button {
-            border: 1px solid #888;
-            border-radius: 8px;
-            background-color: lightblue;
-            padding: 4px 20px;
-        }
-
-        button:hover {
-            background-color: lightskyblue;
-        }
-
-        button:active {
-            background-color: blue;
-        }
-
-        ox-popup::part(close) {
-            
-        }
-
-        ox-popup::part(content) {
-            
-        }
     </style>
 </head>
 <body oncontextmenu="showContextPopup(event)">
@@ -126,7 +109,7 @@
         <p>Click anywhere to open the popup.</p>
         <p>Click anywhere to open the popup.</p>
 
-        <ox-popup id="context-popup" dismissable="true" placement="right top">
+        <ox-popup id="context-popup" modal="true" dismissable="true" placement="right top">
             Context menu
         </ox-popup>
     </main>

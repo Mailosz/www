@@ -21,10 +21,9 @@ const style = /*css*/`
 
     }
 
-    ::part(selected) {
+    #current {
         font-weight: 600;
-        background: AccentColor; 
-        color: AccentColorText;
+        background: var(--light-accent-color, lightblue); 
     }
 
     #container {

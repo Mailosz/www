@@ -12,3 +12,6 @@ ox-upload:active  {
     background: #ddd;
 }
 
+iframe[is=auto-size] {
+    box-sizing: content-box;
+}

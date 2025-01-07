@@ -5,11 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HTML elements preview</title>
     <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/style.green.css">
     <script type="module" src="../js/ui/controls/Notification.js"></script>
     <script type="module" src="../js/ui/controls/OxButton.js"></script>
     <script type="module" src="../js/ui/controls/OxUpload.js"></script>
     <script type="module" src="../js/ui/controls/OxGrid.js"></script>
     <script type="module" src="../js/ui/controls/OxPaging.js"></script>
+    <script type="module" src="../js/ui/controls/AutoSizeIframe.js"></script>
     <style>
         /* ox-button {
             background-color: aqua;
@@ -42,7 +44,11 @@
     </style>
 </head>
 <body>
+    
     <main>
+        <section>
+        <iframe is="auto-size" srcdoc="<script>setInterval(() => {const el = document.createElement('p'); el.innerText = 'test'; document.body.appendChild(el);}, 2000);</script><p>TestTestTestTestTestTestTestTestTestTestTestTestTestTestTest</p><p>Test</p><p>Test</p><p>Test</p><p>Test</p><p>Test</p><p>Test</p><p>Test</p><p>Test</p>"></iframe>
+        </iframe>
         <div class="toolbox">
         <ox-button opener="split" class="opener">
             <a>Przycisk</a>
@@ -53,6 +59,7 @@
         <ox-button>
             <img src="../res/img/a.png" style="object-fit:contain">
         </ox-button>
+    </section>
     </div>
         <p>Test</p>
         <p>Test</p>

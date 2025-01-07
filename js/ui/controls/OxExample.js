@@ -1,5 +1,6 @@
 import {OxControl} from "./OxControl.js";
 import {DocBuilder} from "../../utils/DocBuilder.js";
+import {AutoSizeIframe} from "./AutoSizeIframe.js";
 
 
 const template = /*html*/`
@@ -11,7 +12,7 @@ const template = /*html*/`
             <button id="orientation-button" part="orientation-button" title="Orientation"></button>
             <button id="fullscreen-button" part="fullscreen-button" title="Fullscreen"></button>
         </div>
-        <iframe id="preview"></viewer>
+        <iframe id="preview" is="auto-size"></viewer>
     </div>
 `;
 
@@ -24,10 +25,9 @@ const style = /*css*/`
         background-color: aliceblue;
     }
 
-    #example {
+    :host([horizontal]) #example {
         display: flex;
         justify-content: stretch;
-
         flex-direction: column;
     }
 
@@ -106,6 +106,7 @@ const style = /*css*/`
         background-color: white;
         border: var(--border-width) solid var(--border-color);
         flex: 1;
+        width: 100%;
     }
 
 
