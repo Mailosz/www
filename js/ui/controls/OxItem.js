@@ -2,8 +2,8 @@ import {OxControl} from "./OxControl.js";
 
 
 const template = /*html*/`
-    <div id="content" part="content">
-        <slot></slot>
+    <div id="icon" part="icon">
+        <slot name="icon" id="icon-slot"></slot>
     </div>
     <div id="label" part="label"></div>
 `;
@@ -21,11 +21,18 @@ const style = /*css*/`
         flex: 1;
     }
 
-    :part(content) {
-
+    #icon {
+        display: contents;
     }
 
-    :part(label) {
+    #icon img, #icon ::slotted(img) {
+        object-fit: inherit;
+        object-position: inherit;
+        max-width: 100%;
+        max-height: 100%;
+    }
+
+    #label {
         margin: auto;
     }
 
@@ -41,7 +48,7 @@ const style = /*css*/`
 
 export class OxItem extends OxControl {
 
-    static observedAttributes = ["label", "toggle", "checked", "group", "disabled"];
+    static observedAttributes = ["label", "toggle", "checked", "group", "disabled", "icon"];
 
     #isToggle = false;
     #isChecked = false;
@@ -53,7 +60,7 @@ export class OxItem extends OxControl {
     constructor() {
         super();
         
-        this.createShadowRoot(template, style, {mode: "open"});
+        this.createShadowRoot(template, style, {mode: "open", "slotAssignment": "named"});
 
         this.#internals = this.attachInternals();
         this.tabIndex = 0;
@@ -74,6 +81,20 @@ export class OxItem extends OxControl {
             this.groupName = newValue;
         } else if (name === "disabled") {
             this.isDisabled = true;
+        } else if (name === "icon") {
+            if (newValue != null) {
+                const img = this.ownerDocument.createElement("img");
+                img.src = newValue;
+                this.append(img);
+
+                // const iconSlot = this.shadowRoot.getElementById("icon-slot");
+                // iconSlot.assign(img);
+    
+                const icon = this.shadowRoot.getElementById("icon");
+                icon.innerHTML = "";
+                icon.appendChild(img);
+            }
+
         }
     }
 

@@ -13,6 +13,13 @@ html {
     --border-radius: 4px;
 }
 
+:focus-visible {
+    outline-offset: 2px;
+    outline-width: 2px;
+    outline-color: invert;
+    outline-style: dashed;
+}
+
 /* BUTTONS */
 
 .button, button, input[type=button], input[type=submit], input[type=reset] {
@@ -44,10 +51,27 @@ html {
         background-color: var(--light-accent-color, #afa);
     }
 
+/* arranges buttons in a single toolbar */
+.toolbar {
+    display: inline-flex;
+    justify-content: start;
+    align-items: stretch;
+    gap: 0;
+}
 
-:focus-visible {
-    outline-offset: 2px;
-    outline-width: 2px;
-    outline-color: black;
-    outline-style: dashed;
+    .toolbar>:is(ox-button):not(:first-child) {
+        border-left: none;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    .toolbar>:is(ox-button):not(:last-child) {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+/* INPUTS */
+
+input {
+    accent-color: var(--accent-color, inherit);
 }

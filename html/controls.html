@@ -11,6 +11,7 @@
     <script type="module" src="../js/ui/controls/OxUpload.js"></script>
     <script type="module" src="../js/ui/controls/OxGrid.js"></script>
     <script type="module" src="../js/ui/controls/OxPaging.js"></script>
+    <script type="module" src="../js/ui/controls/OxModal.js"></script>
     <script type="module" src="../js/ui/controls/AutoSizeIframe.js"></script>
     <style>
         /* ox-button {
@@ -19,23 +20,6 @@
             width: 100px;
             height: 100px;
         } */
-
-        .toolbox {
-            height: 40px;
-            display: flex;
-            justify-content: start;
-            align-items: stretch;
-            gap: 0;
-        }
-
-        .toolbox ox-button::part(button) {
-            box-shadow: none;
-            border: 1px solid darkgray;
-        }
-
-        .toolbox ox-button:not(:first-child)::part(button) {
-            
-        }
 
         ox-paging {
             font-size: 20px;
@@ -47,20 +31,34 @@
     
     <main>
         <section>
-        <iframe is="auto-size" srcdoc="<script>setInterval(() => {const el = document.createElement('p'); el.innerText = 'test'; document.body.appendChild(el);}, 2000);</script><p>TestTestTestTestTestTestTestTestTestTestTestTestTestTestTest</p><p>Test</p><p>Test</p><p>Test</p><p>Test</p><p>Test</p><p>Test</p><p>Test</p><p>Test</p>"></iframe>
-        </iframe>
-        <div class="toolbox">
-        <ox-button opener="split" class="opener">
-            <a>Przycisk</a>
-        </ox-button>
-        <ox-button opener="joint">
-            <a>Przycisk</a>
-        </ox-button>
-        <ox-button>
-            <img src="../res/img/a.png" style="object-fit:contain">
-        </ox-button>
+        <!-- <iframe is="auto-size" srcdoc="<script>setInterval(() => {const el = document.createElement('p'); el.innerText = 'test'; document.body.appendChild(el);}, 2000);</script><p>TestTestTestTestTestTestTestTestTestTestTestTestTestTestTest</p><p>Test</p><p>Test</p><p>Test</p><p>Test</p><p>Test</p><p>Test</p><p>Test</p><p>Test</p>"></iframe>
+        </iframe> -->
+        <div class="toolbar">
+            <ox-button opener="split" class="opener">
+                <a>Przycisk</a>
+            </ox-button>
+            <ox-button opener="joint">
+                <a>Przycisk</a>
+            </ox-button>
+            <ox-button>
+                <img src="../res/img/a.png" style="object-fit:contain">
+            </ox-button>
+        </div>
+        <div class="toolbar">
+                &emsp;
+                <ox-button opener="split" class="opener">
+                    <a>Przycisk</a>
+                </ox-button>
+                <ox-button opener="joint">
+                    <a>Przycisk</a>
+                </ox-button>
+                <ox-button>
+                    <img src="../res/img/a.png" style="object-fit:contain">
+                </ox-button>
+            </div>
+        </div>
     </section>
-    </div>
+
         <p>Test</p>
         <p>Test</p>
         

@@ -8,46 +8,55 @@
     <!-- <link rel="stylesheet" href="css/grid.css"> -->
     <script type="module" src="../js/ui/controls/OxGrid.js"></script>
     <script type="module" src="../js/ui/controls/OxButton.js"></script>
+    <script type="module" src="../js/ui/controls/OxPanel.js"></script>
+    <link rel="stylesheet" href="../css/ui/ui.css">
     <link rel="stylesheet" href="../css/ui/switch.css">
     <style>
         
     </style>
 </head>
 <body>
-    <main>
-        <div style="display: inline-block;">
-            <span>Local</span><br>
-            <button onclick="window.localStorage['grid'] = JSON.stringify(document.getElementById('grid').data);">Save</button>
-            <button onclick="localLoad()">Load</button>
+    <ox-panel>
+        <div slot="start">
+            <div style="display: inline-block;">
+                <span>Local</span><br>
+                <button onclick="window.localStorage['grid'] = JSON.stringify(document.getElementById('grid').data);">Save</button>
+                <button onclick="localLoad()">Load</button>
+            </div>
+            <span>&emsp;</span>
+            <div style="display: inline-block;">
+                <span>Database</span><br>
+                <button onclick="saveToDatabase();">Save</button>
+                <button onclick="loadFromDatabase();">Load</button>
+            </div>
+            <span>&emsp;</span>
+            <div style="display: inline-block;">
+                <span>Name</span><br>
+                <input id="grid-name-input" value="default" style="width: 80px">
+            </div>
+    
+            <span>&emsp;</span>
+            <button onclick="console.log(document.getElementById('grid').data)">Show data</button>
+            <span>&emsp;</span>
+            <ox-button id="bold-button" type="checkbox"><b>b</b></ox-button>
+            <!-- <label class="switch-button"><input id="bold-button" type="checkbox" onchange="updateSelectionProperties(event.target.checked ? {bold: 'true'} : {bold: 'false'})"><b>b</b></label> -->
+            <ox-button id="italic-button" type="checkbox"><i>i</i></ox-button>
+            <ox-button id="underline-button" type="checkbox"><u>u</u></ox-button>
+            <div class="toolbar">
+                <ox-button id="align-left-button" type="radio" group="align-group" onclick="updateSelectionProperties({align: 'left'})">left</ox-button>
+                <ox-button id="align-center-button" type="radio" group="align-group" onclick="updateSelectionProperties({align: 'center'})">center</ox-button>
+                <ox-button id="align-right-button" type="radio" group="align-group" onclick="updateSelectionProperties({align: 'right'})">right</ox-button>
+            </div>
+            <label>Text:<input id="text-color-input" type="color"></label>
+            <label>Bg:<input id="bg-color-input" type="color"></label>
         </div>
-        <span>&emsp;</span>
-        <div style="display: inline-block;">
-            <span>Database</span><br>
-            <button onclick="saveToDatabase();">Save</button>
-            <button onclick="loadFromDatabase();">Load</button>
-        </div>
-        <span>&emsp;</span>
-        <div style="display: inline-block;">
-            <span>Name</span><br>
-            <input id="grid-name-input" value="default" style="width: 80px">
-        </div>
-
-        <span>&emsp;</span>
-        <button onclick="console.log(document.getElementById('grid').data)">Show data</button>
-        <span>&emsp;</span>
-        <ox-button id="bold-button" type="checkbox" oninput="updateSelectionProperties(event.target.checked ? {bold: 'true'} : {bold: 'false'})"><b>b</b></ox-button>
-        <!-- <label class="switch-button"><input id="bold-button" type="checkbox" onchange="updateSelectionProperties(event.target.checked ? {bold: 'true'} : {bold: 'false'})"><b>b</b></label> -->
-        <label class="switch-button"><input id="italic-button" type="checkbox" onchange="updateSelectionProperties(event.target.checked ? {italic: 'true'} : {italic: 'false'})"><i>i</i></label>
-        <label class="switch-button"><input id="underline-button" type="checkbox" onchange="updateSelectionProperties(event.target.checked ? {underline: 'true'} : {underline: 'false'})"><u>u</u></label>
-        <label class="switch-button"><input id="align-left-button" type="radio" name="align-group" onclick="updateSelectionProperties({align: 'left'})">left</label>
-        <label class="switch-button"><input id="align-center-button" type="radio" name="align-group" onclick="updateSelectionProperties({align: 'center'})">center</label>
-        <label class="switch-button"><input id="align-right-button" type="radio" name="align-group" onclick="updateSelectionProperties({align: 'right'})">right</label>
-        <label>Text:<input id="text-color-input" type="color"></label>
-        <label>Bg:<input id="bg-color-input" type="color"></label>
-        <br><br>
         <ox-grid id="grid" editable="true">
             <span>test</span>
         </ox-grid>
+    </ox-panel>
+        
+        
+
         
         <script>
 
@@ -158,8 +167,11 @@
 
 
                 const boldbutton = document.getElementById("bold-button");
+                boldbutton.oninput = (event) =>{updateSelectionProperties(event.target.checked ? {bold: 'true'} : {bold: 'false'})};
                 const italicbutton = document.getElementById("italic-button");
+                italicbutton.oninput = (event) =>updateSelectionProperties(event.target.checked ? {italic: 'true'} : {italic: 'false'});
                 const underlinebutton = document.getElementById("underline-button");
+                underlinebutton.oninput = (event) =>updateSelectionProperties(event.target.checked ? {underline: 'true'} : {underline: 'false'});
                 const alignLeftbutton = document.getElementById("align-left-button");
                 const alignCenterbutton = document.getElementById("align-center-button");
                 const alignRightbutton = document.getElementById("align-right-button");

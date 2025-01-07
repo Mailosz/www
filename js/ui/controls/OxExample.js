@@ -107,6 +107,7 @@ const style = /*css*/`
         border: var(--border-width) solid var(--border-color);
         flex: 1;
         width: 100%;
+        min-height: 100px;
     }
 
 

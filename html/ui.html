@@ -8,13 +8,13 @@
     <link rel="stylesheet" href="../css/ui/ui.css">
     <link rel="stylesheet" href="../css/ui/switch.css">
 
-    <script type="module" src="../js/ui/controls/OxList.js"></script>
     <script type="module" src="../js/ui/controls/OxButton.js"></script>
     <script type="module" src="../js/ui/controls/OxItem.js"></script>
 </head>
 <body>
-
-    <h1>Switches</h1>
+    <h2>Inputs</h2>
+    <p><label><input type="checkbox">Checkbox</label><label><input type="checkbox" checked>Checked checkbox</label><label><input type="checkbox" id="indeterminate-checkbox">Indeterminate</label><label><input type="checkbox" disabled>Disabled</label><label><input type="checkbox" checked disabled>Checked disabled</label></p>
+    <h2>Switches</h2>
     <p>
         <div class="switch" onclick="event.currentTarget.classList.toggle('checked');">
             <div class="switch-indicator"></div>
@@ -48,7 +48,7 @@
         <label><input type="checkbox" class="switch" disabled>Disabled</label>
         <label class="switch-button"><input type="checkbox" disabled>Switch button 1</label>
     </p>
-    <h1>Buttons</h1>
+    <h2>Buttons</h2>
     <p>
         <button>Button</button>
         <input type="button" value="Input">
@@ -96,30 +96,89 @@
     <h1>Lists</h1>
     <div style="display: flex;">
         <ox-item label="Item 1" toggle group="g-1">
-            <img src="../res/img/a.png"/>
+            <img slot="icon" src="../res/img/a.png"/>
         </ox-item>
-        <ox-item label="Item 2" toggle checked group="g-1">
-            <img src="../res/img/b.png"/>
+        <ox-item label="Item 2" toggle checked group="g-1" icon="../res/img/b.png">
+            <ox-item label="Item A" toggle group="g-2" icon="../res/img/a.png"></ox-item>
+            <ox-item label="Item B" toggle checked group="g-2" icon="../res/img/b.png"></ox-item>
+            <ox-item label="Item C" toggle group="g-2" icon="../res/img/c.png"></ox-item>
+            <ox-item label="Item D" toggle group="g-2" icon="../res/img/d.png" disabled></ox-item>
         </ox-item>
-        <ox-item label="Item 3" toggle group="g-1">
-            <img src="../res/img/c.png"/>
-        </ox-item>
-        <ox-item label="Item 4" toggle group="g-1" disabled>
-            <img src="../res/img/d.png"/>
-        </ox-item>
-    </div>
-    <div>
+        <ox-item label="Item 3" toggle group="g-1" icon="../res/img/c.png">
 
+        </ox-item>
+        <ox-item label="Item 4" toggle group="g-1" icon="../res/img/d.png" disabled>
+
+        </ox-item>
     </div>
-    <div>
-    <ox-list>
-        <div>Option 1</div>
-        <div><img src="../res/img/b.png"/>Option 2</div>
-        <div><img src="../res/img/c.png"/>Option 3</div>
-        <div><img src="../res/img/d.png"/>Option 4</div>
-        <div><img src="../res/img/d.png"/>Option 4</div>
-        <div>Option 5</div>
-    </ox-list></div>
+    <h2>Menus</h2>
+    <style>
+        .menu {
+            
+        }
+
+        .menu ox-item:focus {
+            background-color: var(--light-accent-color, lightblue);
+        }
+
+        .menu ox-item {
+            background-color: #ddd;
+            display: flex;
+            flex-direction: row;
+            height: 32px
+        }
+
+        .menu ox-item::part(icon) {
+            padding: 4px;
+            flex: 0;
+            object-fit: contain;
+        }
+
+        .menu ox-item::part(label) {
+            text-align: left;
+            margin: 0 0 0 8px;
+        }
+
+            .submenu {
+                position: absolute;
+                border: 1px solid black;
+                box-shadow: 0 0  10px rgba(127,127,127, 0.5);
+                z-index: 10;
+            }
+
+
+        .menu ox-item:hover {
+            filter: brightness(1.1);
+        }
+
+        .menu ox-item:active {
+            filter: brightness(0.9);
+        }
+    </style>
+    <p>
+        <div style="max-width: 300px;" class="menu">
+            <ox-item label="Item 1" toggle group="g-1">
+                <img slot="icon" src="../res/img/a.png"/>
+            </ox-item>
+            <ox-item label="Item 2" toggle checked group="g-1" icon="../res/img/b.png" onclick="submenuClick(event.target)">
+                <ox-item label="Item A" toggle group="g-2" icon="../res/img/a.png"></ox-item>
+                <ox-item label="Item B" toggle checked group="g-2" icon="../res/img/b.png"></ox-item>
+                <ox-item label="Item C" toggle group="g-2" icon="../res/img/c.png"></ox-item>
+                <ox-item label="Item D" toggle group="g-2" icon="../res/img/d.png" disabled></ox-item>
+            </ox-item>
+            <ox-item label="Item 3" toggle group="g-1" icon="../res/img/c.png">
+    
+            </ox-item>
+            <ox-item label="Item 4" toggle group="g-1" icon="../res/img/d.png">
+    
+            </ox-item>
+        </div>
+    </p>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p></p>
 
     <!-- <select class="ribbon-select" multiple>
         <option></option>
@@ -128,6 +187,28 @@
         <option><img src="../res/img/d.png">Option 4</option>
         <option>Option 5</option>
     </select> -->
+    <script>
+        document.getElementById("indeterminate-checkbox").indeterminate = true;
 
+        function submenuClick(item) {
+            console.log("jus")
+            let child = item.firstElementChild;
+            let submenu = null;
+            while (child != null) {
+                if (!child.slot) {
+                    if (submenu == null) {
+                        submenu = document.createElement("div");
+                        submenu.classList.add("submenu");
+                    }
+                    submenu.appendChild(child.cloneNode());
+                }
+                child = child.nextSibling;
+            }
+            if (submenu) {
+                item.insertAdjacentElement("beforebegin", submenu)
+                
+            }
+        }
+    </script>
 </body>
 </html>

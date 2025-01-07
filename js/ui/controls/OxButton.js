@@ -69,23 +69,12 @@ export class OxButton extends OxControl {
         this.addEventListener("click", (event) => {
             if (this.#type == "toggle" || this.#type == "radio" || this.#type == "radio-toggle") {
                 if (this.#type === "toggle") {
-                    this.#setCheckedByUser(!this.checked);
+                    this.#checkedByUser(!this.checked);
                 } else {
-                    if (this.#group) {
-                        const group = OxButton.#groups.get(this.#group);
-                        if (group) {
-                            for (const other of group) {
-                                if (other != this) {
-                                    other.checked = false;
-                                }
-                            }
-                        }
-                    } 
-
                     if (this.#type === "radio-toggle") {
-                        this.#setCheckedByUser(!this.checked);
+                        this.#checkedByUser(!this.checked);
                     } else {
-                        this.#setCheckedByUser(true);
+                        this.#checkedByUser(true);
                     }
                 }
             }
@@ -122,6 +111,17 @@ export class OxButton extends OxControl {
     set checked(value) {
         if (value != this.#checked) {
             this.#checked = value == true;
+            
+            if (this.#checked === true && this.#group) {
+                const group = OxButton.#groups.get(this.#group);
+                if (group) {
+                    for (const other of group) {
+                        if (other != this) {
+                            other.checked = false;
+                        }
+                    }
+                }
+            } 
 
             const event = new Event("change");
             this.dispatchEvent(event);
@@ -135,7 +135,7 @@ export class OxButton extends OxControl {
         else this.#internals.states.delete("checked");
     }
 
-    #setCheckedByUser(value) {
+    #checkedByUser(value) {
         if (value != this.#checked) {
 
             this.checked = value;
