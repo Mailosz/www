@@ -49,6 +49,12 @@
             </div>
             <label>Text:<input id="text-color-input" type="color"></label>
             <label>Bg:<input id="bg-color-input" type="color"></label>
+            <div class="toolbar">
+                <ox-button id="text-type-button" type="radio" group="type-group">abc</ox-button>
+                <ox-button id="number-type-button" type="radio" group="type-group">123</ox-button>
+                <ox-button id="boolean-type-button" type="radio" group="type-group">&#x2611;</ox-button>
+                <ox-button id="calendar-type-button" type="radio" group="type-group">&#x1F5D3;</ox-button>
+            </div>
         </div>
         <ox-grid id="grid" editable="true">
             <span>test</span>
@@ -126,44 +132,44 @@
             
             document.body.onload = () => {
                 const grid = document.getElementById("grid");
-                grid.setData({
-                columns: [{
-                    name: "First"
-                },{
-                    name: "Second"
-                },{
-                    name: "Third"
-                },{
-                    name: "xyz"
-                }],
-                rows: [{
-                    id: 1,
-                    name: "Row",
-                    cells: [
-                        "abc", "def", "ghi", "jkl", {data: "noe dit", disabled: true}
-                    ]
-                },{
-                    id: 2,
-                    cells: [
-                        "123", "456", {"data": "789", "background": "lightblue", "color": "red", "skip": 0}, "012"
-                    ]
-                },{
-                    id: 3,
-                    cells: [
-                        "xyz", "qwe", {"type": "boolean", "data": true}
-                    ]
-                },{
-                    id: 4,
-                    cells: [
-                        "123", null, "789", null
-                    ]
-                },{
-                    id: 6,
-                    cells: [
-                        "aaa", "aaa", null, "jkl", null, "555"
-                    ]
-                }]
-            });
+                    grid.setData({
+                    columns: [{
+                        name: "First"
+                    },{
+                        name: "Second"
+                    },{
+                        name: "Third"
+                    },{
+                        name: "xyz"
+                    }],
+                    rows: [{
+                        id: 1,
+                        name: "Row",
+                        cells: [
+                            "abc", "def", "ghi", "jkl", {data: "noe dit", disabled: true}
+                        ]
+                    },{
+                        id: 2,
+                        cells: [
+                            "123", "456", {"data": "789", "background": "lightblue", "color": "red", "skip": 0}, "012"
+                        ]
+                    },{
+                        id: 3,
+                        cells: [
+                            "xyz", "qwe", {"type": "boolean", "data": true}
+                        ]
+                    },{
+                        id: 4,
+                        cells: [
+                            "123", null, "789", null
+                        ]
+                    },{
+                        id: 6,
+                        cells: [
+                            "aaa", "aaa", null, "jkl", null, "555"
+                        ]
+                    }]
+                });
 
 
                 const boldbutton = document.getElementById("bold-button");
@@ -177,6 +183,17 @@
                 const alignRightbutton = document.getElementById("align-right-button");
                 const textColorInput = document.getElementById("text-color-input");
                 const bgColorInput = document.getElementById("bg-color-input");
+                
+                const textTypeButton = document.getElementById("text-type-button");
+                const numberTypeButton = document.getElementById("number-type-button");
+                const booleanTypeButton = document.getElementById("boolean-type-button");
+                const calendarTypeButton = document.getElementById("calendar-type-button");
+
+                textTypeButton.onclick = (event) => updateSelectionProperties(event.target.checked ? {type: "text"} : null);
+                numberTypeButton.onclick = (event) => updateSelectionProperties(event.target.checked ? {type: "number"} : {});
+                booleanTypeButton.onclick = (event) => updateSelectionProperties(event.target.checked ? {type: "boolean"} : {});
+                calendarTypeButton.onclick = (event) => updateSelectionProperties(event.target.checked ? {type: "date"} : {});
+
                 grid.oncellselected = (event) => {
                     const style = window.getComputedStyle(event.detail.cell);
 
@@ -190,6 +207,16 @@
 
                     textColorInput.value = style.color;
                     bgColorInput.value = style.backgroundColor;
+
+                    const cellData = grid.getCellData(event.detail.cell.cellColumn, event.detail.cell.cellRow);
+                
+                    textTypeButton.checked = true;
+                    if (cellData instanceof Object) {
+                        numberTypeButton.checked = cellData.type == "number";
+                        booleanTypeButton.checked = cellData.type == "boolean";
+                        calendarTypeButton.checked = cellData.type == "date";
+                    }
+
                 }
             }
             

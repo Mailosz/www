@@ -75,3 +75,7 @@ html {
 input {
     accent-color: var(--accent-color, inherit);
 }
+
+input:indeterminate {
+    accent-color: gray;
+}

@@ -10,8 +10,9 @@
 
     <script type="module" src="../js/ui/controls/OxButton.js"></script>
     <script type="module" src="../js/ui/controls/OxItem.js"></script>
+    <script type="module" src="../js/ui/controls/OxMenu.js"></script>
 </head>
-<body>
+<body onload="document.getElementById('menu-menu').open();">
     <h2>Inputs</h2>
     <p><label><input type="checkbox">Checkbox</label><label><input type="checkbox" checked>Checked checkbox</label><label><input type="checkbox" id="indeterminate-checkbox">Indeterminate</label><label><input type="checkbox" disabled>Disabled</label><label><input type="checkbox" checked disabled>Checked disabled</label></p>
     <h2>Switches</h2>
@@ -112,51 +113,8 @@
         </ox-item>
     </div>
     <h2>Menus</h2>
-    <style>
-        .menu {
-            
-        }
-
-        .menu ox-item:focus {
-            background-color: var(--light-accent-color, lightblue);
-        }
-
-        .menu ox-item {
-            background-color: #ddd;
-            display: flex;
-            flex-direction: row;
-            height: 32px
-        }
-
-        .menu ox-item::part(icon) {
-            padding: 4px;
-            flex: 0;
-            object-fit: contain;
-        }
-
-        .menu ox-item::part(label) {
-            text-align: left;
-            margin: 0 0 0 8px;
-        }
-
-            .submenu {
-                position: absolute;
-                border: 1px solid black;
-                box-shadow: 0 0  10px rgba(127,127,127, 0.5);
-                z-index: 10;
-            }
-
-
-        .menu ox-item:hover {
-            filter: brightness(1.1);
-        }
-
-        .menu ox-item:active {
-            filter: brightness(0.9);
-        }
-    </style>
     <p>
-        <div style="max-width: 300px;" class="menu">
+        <ox-menu style="max-width: 300px;" id="menu-menu">
             <ox-item label="Item 1" toggle group="g-1">
                 <img slot="icon" src="../res/img/a.png"/>
             </ox-item>
@@ -174,11 +132,11 @@
             </ox-item>
         </div>
     </p>
-    <p></p>
-    <p></p>
-    <p></p>
-    <p></p>
-    <p></p>
+    <p>Test</p>
+    <p>Test</p>
+    <p>Test</p>
+    <p>Test</p>
+    <p>Test</p>
 
     <!-- <select class="ribbon-select" multiple>
         <option></option>
@@ -187,7 +145,8 @@
         <option><img src="../res/img/d.png">Option 4</option>
         <option>Option 5</option>
     </select> -->
-    <script>
+    <script defer>
+        
         document.getElementById("indeterminate-checkbox").indeterminate = true;
 
         function submenuClick(item) {
@@ -205,7 +164,7 @@
                 child = child.nextSibling;
             }
             if (submenu) {
-                item.insertAdjacentElement("beforebegin", submenu)
+                item.insertAdjacentElement("afterend", submenu)
                 
             }
         }

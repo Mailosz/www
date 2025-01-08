@@ -240,6 +240,48 @@ export class OxGrid extends OxControl {
         }
     }
 
+
+    getCellData(col, row) {
+        if (row == -1) {
+            if (this.#data.columns.length > col) {
+                return this.#data.columns[col];
+            }
+        } else if (this.#data.rows.length > row) {
+            if (col == -1) {
+                return this.#data.rows[row];
+            } else if (this.#data.rows[row].cells.length > col) {
+                return this.#data.rows[row].cells[col];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 
+     * @param {*} col 
+     * @param {*} row 
+     * @returns {Object|String|null} Cell text (dat, name or id) or null
+     */
+    #getCellText(col, row) {
+        if (row == -1) {
+            if (this.#data.columns.length > col) {
+                return this.#data.columns[col].name;
+            }
+        } else if (this.#data.rows.length > row) {
+            if (col == -1) {
+                return this.#data.rows[row].name;
+            } else if (this.#data.rows[row].cells.length > col) {
+                const cellData = this.#data.rows[row].cells[col];
+                if (cellData instanceof Object) {
+                    return cellData.data;
+                } else {
+                    return cellData;
+                }
+            }
+        }
+        return null;
+    }
+
     attributeChangedCallback(name, oldValue, newValue) {
         if (name == "contenteditable") {
             this.editable = newValue == "true";
@@ -259,7 +301,7 @@ export class OxGrid extends OxControl {
         const editBox = document.createElement("div");
         editBox.classList.add("edit-box");
         editBox.contentEditable = true;
-        editBox.innerText = text ?? cell.innerText;
+        editBox.innerText = text ?? "";
 
         const confirm = () => {
             const newValue = editBox.innerText;
@@ -317,7 +359,7 @@ export class OxGrid extends OxControl {
         }
 
         cell.ondblclick = (event) => {
-           this.#editCell(col, row, cell);
+           this.#editCell(col, row, cell, this.#getCellText(col, row));
         };
 
 
@@ -474,6 +516,7 @@ export class OxGrid extends OxControl {
      * @param {*} properties 
      */
     updateCellProperties(cell, properties) {
+        if (cell == null || properties == null) return;
         let col = -1;
         let row = -1;
         console.time("szukaj");
@@ -489,9 +532,10 @@ export class OxGrid extends OxControl {
         }
         console.timeEnd("szukaj");
         console.log("col: " + col + ", row: " + row);
+        console.log(properties);
 
-        this.#computeCellVisual(col, row, cell, properties);
         this.#updateCellProperties(col, row, properties);
+        this.#computeCellVisual(col, row, cell, properties);
     }
 
     /**
@@ -622,8 +666,10 @@ export class OxGrid extends OxControl {
         }
 
         if (properties.type) {
+            console.log("update type")
             if (row == -1) {
                 if (this.#data.columns.length > col) {
+                    const cellData = this.#data.columns[col];
                     this.#computeCellDataPresentation(col, row, cell, cellData, cellData.name);
                 } else {
                     console.error(`Col ${col} too big`);
@@ -631,11 +677,12 @@ export class OxGrid extends OxControl {
                 }
             } else if (this.#data.rows.length > row) {
                 if (col == -1) {
+                    const cellData = this.#data.rows[row];
                     this.#computeCellDataPresentation(col, row, cell, cellData, cellData.name);
                 } else if (this.#data.rows[row].cells.length > col) {
                     const cellData = this.#data.rows[row].cells[col];
                     if (cellData instanceof Object) {
-                        this.#computeCellDataPresentation(col, row, cell, cellData, cellData.value);
+                        this.#computeCellDataPresentation(col, row, cell, cellData, cellData.data);
                     } else {
                         this.#resetCellDataPresentation(cell, cellData);
                     }
@@ -648,8 +695,6 @@ export class OxGrid extends OxControl {
                 console.error(`Row ${row} too big`);
                 console.log(this.#data);
             }
-            
-            
         }
 
     }
@@ -659,16 +704,27 @@ export class OxGrid extends OxControl {
             cell.innerHTML = "";
             let checkbox = this.ownerDocument.createElement("input");
             checkbox.type = "checkbox";
-            checkbox.checked = textValue;
             cell.appendChild(checkbox);
+            
+            if (textValue === true || textValue == "true") {
+                checkbox.checked = true;
+            } else if (textValue) {
+                if (!isNaN(textValue)) {
+                    if (textValue > 0) {
+                        checkbox.checked = true;
+                    }
+                } else if (textValue != "false") {
+                    checkbox.indeterminate = true;
+                }
+            }
 
             checkbox.onchange = (event) => {
                 this.#updateCellValue(col, row, checkbox.isChecked);
             }
         } else if (data.type == "number") {
-
-        } else if (data.type == "xx") {
-
+            this.#resetCellDataPresentation(cell, textValue);
+        } else if (data.type == "date") {
+            this.#resetCellDataPresentation(cell, textValue);
         } else {
             this.#resetCellDataPresentation(cell, textValue);
         }
