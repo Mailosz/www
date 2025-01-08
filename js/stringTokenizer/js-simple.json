@@ -1,0 +1,147 @@
+{
+	"default":{
+		"begin": [{
+			"on": ["keyword", "controlSymbols", "literal1End", "literal2End", "literal3End"]
+		},{
+			"on": "word",
+			"by": [" ", ""]
+		},{
+			"on": "lineComment",
+			"by": ["\n"]
+		},{
+			"on": "commentEnd",
+			"when": {
+				"commentLocation": "everywhere"
+			}
+		}],
+		"default": true
+	}, "word": {
+		"begin": [{
+			"on": ["default"],
+			"by": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "r", "s", "t", "u", "w", "x", "y", "z"]
+		}]
+	}, "keyword": {
+		"begin": [{
+			"on": ["default"],
+			"by": ["var", "let", "const", "if", "for", "while", "function", "this", "instanceof", "throw", "catch", "return", "break", "continue", "null"]
+		}]
+	}, "controlSymbols": {
+		"begin": [{
+			"on": ["default"],
+			"by": ["=", "{", "}", "(", ")", "[", "]", "+", "-", "==", "=>"]
+		}]
+	}, "literal1Start": {
+		"begin": [{
+			"on": ["default"],
+			"by": ["\""]
+		}]
+	}, "literal1": {
+		"begin": [{
+			"on": ["literal1Start", "literal1Specialchar"]
+		},{
+			"on": ["commentEnd"],
+			"when": {
+				"commentLocation": "literal1"
+			}
+		}]
+	}, "literal1Specialchar": {
+		"begin": [{
+			"on": ["literal1"],
+			"by": ["\\\""]
+		}]
+	}, "literal1End": {
+		"begin": [{
+			"on": ["literal1"],
+			"by": ["\""]
+		}]
+	}, "literal2Start": {
+		"begin": [{
+			"on": ["default"],
+			"by": ["'"]
+		}]
+	}, "literal2": {
+		"begin": [{
+			"on": ["literal2Start", "literal2Specialchar"]
+		},{
+			"on": ["commentEnd"],
+			"when": {
+				"commentLocation": "literal2"
+			}
+		}]
+	}, "literal2Specialchar": {
+		"begin": [{
+			"on": ["literal2"],
+			"by": ["\\'"]
+		}]
+	}, "literal2End": {
+		"begin": [{
+			"on": ["literal2"],
+			"by": ["'"]
+		}]
+	}, "literal3Start": {
+		"begin": [{
+			"on": ["default"],
+			"by": ["`"]
+		}]
+	}, "literal3": {
+		"begin": [{
+			"on": ["literal3Start", "literal3Specialchar"]
+		},{
+			"on": ["commentEnd"],
+			"when": {
+				"commentLocation": "literal3"
+			}
+		}]
+	}, "literal3Specialchar": {
+		"begin": [{
+			"on": ["literal3"],
+			"by": ["\\`"]
+		}]
+	}, "literal3End": {
+		"begin": [{
+			"on": ["literal3"],
+			"by": ["`"]
+		}]
+	}, "lineComment": {
+		"begin": [{
+			"everywhere": true,
+			"by": ["//"]
+		}]
+	}, "commentStart": {
+		"begin": [{
+			"everywhere": true,
+			"by": "/*",
+			"set": {
+				"commentLocation": "everywhere"
+			}
+		},{
+			"on": ["literal1"],
+			"by": "/*",
+			"set": {
+				"commentLocation": "literal1"
+			}
+		},{
+			"on": ["literal2"],
+			"by": "/*",
+			"set": {
+				"commentLocation": "literal2"
+			}
+		},{
+			"on": ["literal3"],
+			"by": "/*",
+			"set": {
+				"commentLocation": "literal3"
+			}
+		}]
+	}, "comment": {
+		"begin": {
+			"on": "commentStart"
+		}
+	}, "commentEnd": {
+		"begin": {
+			"on": "comment",
+			"by": "*/"
+		}
+	}
+
+}

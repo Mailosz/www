@@ -46,7 +46,7 @@ main {
 }
 
 /* main padding */
-:is(main, header, footer, section, article, figure, aside)>:is(ul,ol,dl,p,h1,h2,h3,h4,h5,h6,table,blockquote,details) {
+:is(main, header, footer, section, article, figure, aside)>:is(ul,ol,dl,p,h1,h2,h3,h4,h5,h6,table,blockquote,details,code) {
     margin-left: var(--main-padding);
     margin-right: var(--main-padding);
 }
@@ -57,11 +57,11 @@ main {
 
 @media (min-width: 800px) {
 
-    aside.left>:is(ul,ol,dl,p,h1,h2,h3,h4,h5,h6,table,blockquote,details) {
+    aside.left>:is(ul,ol,dl,p,h1,h2,h3,h4,h5,h6,table,blockquote,details,code) {
         margin-right: 1em;
     }
     
-    aside.right>:is(ul,ol,dl,p,h1,h2,h3,h4,h5,h6,table,blockquote,details) {
+    aside.right>:is(ul,ol,dl,p,h1,h2,h3,h4,h5,h6,table,blockquote,details,code) {
         margin-left: 1em;
     }
 

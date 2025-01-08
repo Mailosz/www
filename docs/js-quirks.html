@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/main.css">
     <title>JS quirks</title>
+    <script type="module" src="../js/ui/controls/OxCode.js"></script>
 </head>
 <body>
     <main>
@@ -17,26 +18,26 @@
         
         <h2>Object literals in lambda functions</h2>
         <p>Both lambda function's body and object literals use curly brackets in JS, so it is only natural, that compiler gets confused (it is JS, after all, we would expect nothing less). Consider:</p>
-        <code>
-// an object literal
-let obj1 = {a: 1, b: 2}
+        <ox-code tokenizer-language="../js/StringTokenizer/js-simple.json" code-style="../css/langs/js-lang.css" >
+            // an object literal
+            let obj1 = {a: 1, b: 2}
 
-// a simple identity lambda (returns value passed as its parameter)
-let lamda1 = (a) => a;
+            // a simple identity lambda (returns value passed as its parameter)
+            let lamda1 = (a) => a;
 
-// a fancier identity lambda (uses block statement to do the same thing)
-let lambda2 = (a) => {
-    return a;
-}
+            // a fancier identity lambda (uses block statement to do the same thing)
+            let lambda2 = (a) => {
+                return a;
+            }
 
-// doesn't work - compiler thinks that you are trying to use block statement and not an object literal
-let obj_lambda3 = (a, b) => {
-    a: a,
-    b: b
-}
-        </code>
+            // doesn't work - compiler thinks that you are trying to use block statement and not an object literal
+            let obj_lambda3 = (a, b) => {
+                a: a,
+                b: b
+            }
+        </ox-code>
         <p>Of course you can enclose the object literal with another set of brackets, and add return statement to make yourself clear, but that is ugly, and unnecessary verbose. Fortunately you can also use round brackets to do the same. Much cleaner and you don't need the return keyword:</p>
-        <code>
+        <ox-code tokenizer-language="../js/StringTokenizer/js-simple.json" code-style="../css/langs/js-lang.css" >
 //ugly method, but works
 let lambda1 = (a, b) => {
     return {a: a, b: b};
@@ -44,35 +45,41 @@ let lambda1 = (a, b) => {
 
 //nicer method, also works
 let lambda1 = (a, b) => (return {a: a, b: b});
-        </code>
-        <h2>What does the <del>fox say</del> <i>this</i> point to</h2>
+</ox-code>
+        <h2>What does <del>the fox say</del> <i>this</i> point to</h2>
         <p>JavaScript is a completely reasonable and well defined language. So if it sometimes doesn't work like you would expect it to - it's your fault (and common sense's) not its.</p>
-        <p>In object oriented languages the <strong>this</strong> keyword points to the object containing the current function. But JS is not an object language.</p>
+        <p>In object oriented languages the <strong>this</strong> keyword points to the object containing the current function. However JS is not an object language.</p>
         <p>But it would like to be. </p>
         <h2>Is it a duck?</h2>
         <p>JS is called a duck typing language. If it walks like a duck and quacks like a duck, it is a duck.</p>
         <p>But is it a string? Or a number? Array? Or an object? To make it easy JS gives you a simple and consistent way of checking that: the <strong>typeof</strong>strong> operator. Wait, no, it doesn't work.</p>
         <p>Ok, it kinda works, and maybe is even useful in some cases. But it is useless if you want to know if a variable holds a number. Consider this:</p>
-        <code>
+        <ox-code tokenizer-language="../js/StringTokenizer/js-simple.json" code-style="../css/langs/js-lang.css" >
             let value1 = 5;
             typeof value1 === "number" // works nice
 
             let value2 = new Number(5);
             typeof value2 === "object" // :(
-        </code>
+        </ox-code>
         <p>Technically it is correct, the two variables are different. One is aprimitive, and the second one is an object. But both</p>
 
         <p>For my own memory, here is a list of ways to check if a variable is of a specific type:</p>
-        <code>
+        <ox-code tokenizer-language="../js/StringTokenizer/js-simple.json" code-style="../css/langs/js-lang.css">
 let value;
 // boolean
 
 // array
 Array.isArray(value)
 
-// 
+// number
+Number.isNaN(value)
+// but not isNaN(value), because it behaves differently, and also returns true for booleans
 
-        </code>
+// object
+value instanceof Object // this excludes nulls
+typeof value === "object" // this includes nulls
+
+        </ox-code>
         <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
     </main>
 </body>

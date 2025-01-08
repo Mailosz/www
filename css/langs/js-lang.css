@@ -1,0 +1,7 @@
+.token.keyword { color: black; font-weight: 600;}
+.token.controlSymbols { color: darkblue; font-weight: 600;}
+.token.literal1Start, .token.literal2Start, .token.literal3Start  { color: brown; }
+.token.literal1, .token.literal2, .token.literal3 { color: maroon; }
+.token.literal1Specialchar, .token.literal2Specialchar, .token.literal3Specialchar { color: violet; }
+.token.literal1End, .token.literal2End, .token.literal3End { color: brown; }
+.token.lineComment, .token.commentStart, .token.commentEnd, .token.comment { color: green; }

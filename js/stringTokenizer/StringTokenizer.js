@@ -14,13 +14,15 @@ export class StringTokenizerLanguageService {
 		 * @type {Promise}
 		 */
 		try {
-			const promise = await StringTokenizerLanguageService.#cache[identifier];
+			const promise = StringTokenizerLanguageService.#cache[identifier];
 			if (promise) {
 				return promise;
 			}
 		} catch(ex) {
-
+			console.error(ex);
 		}
+
+		console.log("Cache miss")
 
 		const promise = fetch(src).then((response) => {
 			if (response.ok) {

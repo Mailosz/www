@@ -1,0 +1,74 @@
+{
+	"default":{
+		"begin": [],
+		"default": true,
+		"set": {
+			"html": true,
+			"css": false,
+			"js": false,
+			"quoted": null
+		}
+	}, "objectStart": {
+		"begin": [{
+			"on": ["default","objectValue","arrayStart"],
+			"by": "{"
+		}]
+	}, "object": {
+		"begin": [{
+			"on": "objectStart"
+		}]
+	}, "objectEnd": {
+		"begin": [{
+			"on": ["object", "objectValue"],
+			"by": "}"
+		}]
+	}, "nameStart": {
+		"begin": [{
+			"on": ["object", "objectComma"],
+			"by": "\""
+		}]
+	}, "name": {
+		"begin": [{
+			"on": ["nameStart"]
+		}]
+	}, "nameEnd": {
+		"begin": [{
+			"on": ["name"],
+			"by": "\""
+		}]
+	}, "pairSeparator": {
+		"begin": [{
+			"on": ["nameEnd"],
+			"by": ":"
+		}]
+	},"objectValue": {
+		"begin": [{
+			"on": ["pairSeparator"]
+		}]
+	},"arrayStart": {
+		"begin": [{
+			"on": ["default", "objectValue", "arrayComma"],
+			"by": "["
+		}]
+	},"arrayEnd": {
+		"begin": [{
+			"on": ["arrayStart", "arrayValue"],
+			"by": "]"
+		}]
+	}, "arrayComma": {
+		"begin": [{
+			"on": ["arrayEnd", "arrayValue"],
+			"by": ","
+		}]
+	}, "objectComma": {
+		"begin": [{
+			"on": ["objectValue"],
+			"by": ","
+		}]
+	}, "arrayValue": {
+		"begin": [{
+			"on": ["arrayStart", "arrayComma"]
+		}]
+	}
+
+}

@@ -9,72 +9,53 @@
                 background-color: rgba(127,127,127,0.3);
             }
         </style>
+        <link rel="stylesheet" href="../css/langs/js-lang.css">
     </head>
     <body>
         <!-- contenteditable="true" onkeyup="change(this);" -->
         <code class="script" >
-            <!-- &lt;!DOCTYPE html&gt;<br>
-            &lt;html&gt;<br>
-            &lt;!-- To jest komentarz --&gt;<br>
-                &lt;head&gt;<br>
-                    &lt;title>Koloryzowanie składni&lt;/title&gt;<br>
-                    &lt;meta charset="UTF-8"/&gt;<br>
-                    &lt;style&gt;<br>
-                    html,body {height: 100%; content: "&lt;br&gt;"} <br>
-                    &lt;/style&gt;<br>
-                &lt;/head&gt;<br>
-                &lt;body style="background-color: rgba(255,255,255,0.5); color: black"&gt;<br>
-                    &lt;input abc=&gt;
-                    &lt;input type=text autocomplete value="New \"hope \""&gt;<br>
-                    &lt;span id='identyf\'ikator'&gt; &amp;amp &amp;lt&lt;/span&gt;
-                    &lt;code&gt;<br>
-                        To jest napis &amp;copy;Miłosz.O<br>
-                    &lt;/code&gt;<br>
-                    &lt;input&gt;&lt;input&gt;&lt;input&gt;&lt;input&gt;
-                &lt;/body&gt;<br>
-                &lt;/html&gt;<br> -->
-                html {<br>
-                    width: 100%;<br>
-                    height: 100%;<br>
-                    padding: 0;<br>
-                    margin: 0;<br>
-                <br>
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;<br>
-                }<br>
-                <br>
-                body {<br>
-                    padding: 0;<br>
-                    margin: 0;<br>
-                    min-height: 100vh;<br>
-                }<br>
-                <br>
-                @media (min-width: 1200px) {<br>
-                    html {<br>
-                        background-color: #f8f8f8;<br>
-                    }<br>
-                    main {<br>
-                        box-shadow: 0px 0px 20px rgba(0,0,0,0.2);<br>
-                        max-width: 1024px;<br>
-                        --main-padding: 40px;<br>
-                    }<br>
-                } <br>
-                <br>
-                @media not (min-width: 1200px) {<br>
-                    main{<br>
-                        --main-padding: max(calc(10vw - 20px), 10px);<br>
-                    }<br>
-                }<br>
-                <br>
-                main {<br>
-                    <br>
-                    /** --main-padding: min(5vw, 24px); */<br>
-                <br>
-                    background-color: #ffffff;<br>
-                    margin: auto;<br>
-                    box-sizing: border-box;<br>
-                    padding: 40px var(--main-padding);<br>
-                    <br>
+            
+
+            let prepareFunction = (value) => {
+                if (!this.functionsAllowed) {
+                    throw "Functions are not allowed unless {allowFunctions: true} was specified in options. Only allow functions in languages from trusted sources.";
                 }
+    
+                if (value instanceof Function) {
+                    return value;
+                } else if (value instanceof String) {
+                    return new Function(value);
+                } else {
+                    return null;
+                }
+            }
+    
+            let arrayize = (data) => {
+                if (Array.isArray(data)){
+                    return data;
+                } else {
+                    return  [data];
+                }
+            }
+    
+            let appendToArray = (array, push) => {
+                if (array === undefined){
+                    array = [];
+                }
+    
+                array.push(push);
+                return array;
+            }
+    
+            let forElementOrArray = (elOrAr, func) => {
+                if (Array.isArray(elOrAr)){
+                    for (const el of elOrAr){
+                        func(el);
+                    }
+                } else {
+                    func(elOrAr);
+                }
+            }
         </code>
 
 
@@ -83,17 +64,17 @@
 
             async function colorizeAll() {
 
-                let language = await StringTokenizerLanguageService.getLanguageAsync("../js/StringTokenizer/css.json");
+                let language = await StringTokenizerLanguageService.getLanguageAsync("../js/StringTokenizer/js-simple.json");
 
                 let elems = document.getElementsByClassName("script");
 
                 for (let el of elems){
-                    colorizeInnerText(el, language);
+                    colorizeTextContent(el, language);
                 }
             }
 
-            function colorizeInnerText(element, language) {
-                let text = element.innerText.split('\n');
+            function colorizeTextContent(element, language) {
+                let text = element.textContent.split('\n');
                 element.innerHTML = "";
 
                 let tokenizer = new StringTokenizer(language);
@@ -106,13 +87,18 @@
                         let token = tokenizer.getNextToken();
 
                         let span = document.createElement("span");
-                        span.innerText = token.text;
+                        span.textContent = token.text;
                         span.classList.add("token");
                         if (token.data && token.data.color) {
                             span.style.color = token.data.color;
                         }
                         if (token.startData && token.startData.error) {
                             span.style.textDecoration = "1px wavy red underline";
+                        }
+                        if (token.data && token.data.class) {
+                            span.classList.add(token.data.class);
+                        } else {
+                            span.classList.add(token.state);
                         }
                         span.title = token.state + "\n";
 

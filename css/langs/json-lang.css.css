@@ -1,0 +1,15 @@
+.token.objectStart { color: black; font-weight: 600;}
+.token.object { color: blue;}
+.token.objectEnd { color: black; font-weight: 600;}
+
+.token.nameStart { color: maroon;}
+.token.name { color: goldenrod;}
+.token.nameEnd { color: maroon;}
+
+.token.pairSeparator { color: maroon;}
+.token.objectValue { color: blue;}
+.token.arrayValue { color: blue;}
+
+.token.arrayStart { color: goldenrod; font-weight: 600;}
+.token.arrayEnd { color: goldenrod; font-weight: 600;}
+.token.arrayComma { color: violet;}
