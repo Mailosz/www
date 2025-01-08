@@ -262,8 +262,13 @@ export class OxGrid extends OxControl {
         editBox.innerText = text ?? cell.innerText;
 
         const confirm = () => {
-            this.#updateCellValue(col, row, editBox.innerText);
-            cell.innerText = editBox.innerText;
+            const newValue = editBox.innerText;
+            const cellData = this.#updateCellValue(col, row, newValue);
+            if (cellData instanceof Object) {
+                this.#computeCellDataPresentation(col, row, cell, cellData, newValue);
+            } else {
+                this.#resetCellDataPresentation(cell, cellData);
+            }
         }
 
         editBox.onkeydown = (event) => {
@@ -289,9 +294,8 @@ export class OxGrid extends OxControl {
         }
     }
 
-    #createCell(col, row, text) {
+    #createCell(col, row) {
         const cell = document.createElement("div");
-        cell.innerText = text ?? "";
         cell.classList.add("cell");
         cell.style.gridRow = row + 2;
         cell.style.gridColumn = col + 2;
@@ -320,17 +324,35 @@ export class OxGrid extends OxControl {
         cell.onfocus = (event) => {
             this.#focusCell(cell);
         }
-        
 
         return cell;
     }
 
     #createColumnHeaderCell(col, columnData) {
-        const columnHeader = this.#createCell(col, -1, columnData?.name ?? "");
+        const columnHeader = this.#createCell(col, -1, columnData);
         columnHeader.classList.add("col-header");
         columnHeader.part = "column-header";
+        
+        if (columnData) {
+            this.#computeCellVisual(col, -1, columnHeader, columnData);
+            this.#computeCellDataPresentation(col, -1, columnHeader, columnData, columnData.name);
+        }
 
         return columnHeader;
+    }
+
+    #createRowHeaderCell(row, rowData) {
+
+        const rowHeader = this.#createCell(-1, row, rowData);
+        rowHeader.classList.add("row-header");
+        rowHeader.part = "row-header";
+
+        if (rowData) {
+            this.#computeCellVisual(-1, row, rowHeader, rowData);
+            this.#computeCellDataPresentation(-1, row, rowHeader, rowData, rowData.name ?? rowData.id);
+        }
+
+        return rowHeader;
     }
 
     /**
@@ -370,20 +392,20 @@ export class OxGrid extends OxControl {
         currentRow.classList.add("row");
 
         //row header
-        const rowHeader = this.#createCell(-1, rowNumber, rowData.name ?? rowData.id);
-        rowHeader.classList.add("row-header");
-        rowHeader.part = "row-header";
+        const rowHeader = this.#createRowHeaderCell(rowNumber, rowData);
         currentRow.appendChild(rowHeader);
 
         // insert data cells
-        for (const cell of rowData.cells) {
-            if (cell instanceof Object) {
-                const colNumber = currentRow.childElementCount - 1;
-                const element = this.#createCell(colNumber, rowNumber, "");
-                this.#updateCellVisual(colNumber, rowNumber, element, cell);
-                currentRow.appendChild(element);
+        for (const cellData of rowData.cells) {
+            const colNumber = currentRow.childElementCount - 1;
+            const cell = this.#createCell(colNumber, rowNumber);
+            currentRow.appendChild(cell);
+            
+            if (cellData instanceof Object) {
+                this.#computeCellVisual(colNumber, rowNumber, cell, cellData);
+                this.#computeCellDataPresentation(colNumber, rowNumber, cell, cellData, cellData.data);
             } else {
-                currentRow.appendChild(this.#createCell(currentRow.childElementCount - 1, rowNumber, cell));
+                this.#resetCellDataPresentation(cell, cellData);
             }
         }
 
@@ -468,22 +490,33 @@ export class OxGrid extends OxControl {
         console.timeEnd("szukaj");
         console.log("col: " + col + ", row: " + row);
 
-        this.#updateCellVisual(col, row, cell, properties);
+        this.#computeCellVisual(col, row, cell, properties);
         this.#updateCellProperties(col, row, properties);
     }
 
+    /**
+     * Ensures that the cell exists and updates its data
+     * @param {*} col 
+     * @param {*} row 
+     * @param {*} updateFn 
+     * @returns Updated cell
+     */
     #updateData(col, row, updateFn) {
         if (this.data) {
             if (row == -1) { // column header
                 while (this.data.columns.length <= col) {
                     this.data.columns.push({});
                 }
-                this.data.columns[col] = updateFn(this.data.columns[col]);
+                const cellData = updateFn(this.data.columns[col]);
+                this.data.columns[col] = cellData;
+                return cellData;
             } else if (col == -1) { // row header
                 while (this.data.rows.length <= row) {
                     this.data.rows.push({cells: []});
                 }
-                this.data.rows[row] = updateFn(this.data.rows[row]);
+                const cellData = updateFn(this.data.rows[row]);
+                this.data.rows[row] = cellData;
+                return cellData;
             } else {
 
                 while (this.data.rows.length <= row) {
@@ -493,15 +526,24 @@ export class OxGrid extends OxControl {
                     this.data.rows[row].cells.push(null);
                 }
 
-                this.data.rows[row].cells[col] = updateFn(this.data.rows[row].cells[col]);
+                const cellData = updateFn(this.data.rows[row].cells[col]); 
+                this.data.rows[row].cells[col] = cellData;
+                return cellData;
             }
         }
     }
 
+    /**
+     * Updates cell data
+     * @param {*} col 
+     * @param {*} row 
+     * @param {*} value 
+     * @returns Updated cell with all its properties, and new value
+     */
     #updateCellValue(col, row, value) {
         console.log("Cell edited: " + col + ", " + row + ", value: " + value);
 
-        this.#updateData(col, row, (cell) => {
+        const cellData = this.#updateData(col, row, (cell) => {
             if (row == -1 || col == -1) {
                 cell.name = value;
                 return cell;
@@ -520,6 +562,7 @@ export class OxGrid extends OxControl {
         if (this.onvaluechanged) {
             this.onvaluechanged(event);
         }
+        return cellData;
     }
 
     
@@ -528,10 +571,11 @@ export class OxGrid extends OxControl {
      * @param {*} col 
      * @param {*} row 
      * @param {*} properties 
+     * @returns Updated cell with all its properties
      */
     #updateCellProperties(col, row, properties) {
         console.log("Cell props changed: " + col + ", " + row + "");
-        this.#updateData(col, row, (cell) => {
+        const cellData = this.#updateData(col, row, (cell) => {
             
             if (!(cell instanceof Object)) { // only cells can be a string and not an object
                 cell = {data: cell};
@@ -542,7 +586,7 @@ export class OxGrid extends OxControl {
             }
             return cell;
         });
-        console.log(this.#data);
+        return cellData;
     }
 
     
@@ -551,7 +595,7 @@ export class OxGrid extends OxControl {
      * @param {HTMLElement} cell 
      * @param {*} properties 
      */
-    #updateCellVisual(col, row, cell, properties) {
+    #computeCellVisual(col, row, cell, properties) {
 
         if (properties.data != null) {
             cell.innerText = properties.data;
@@ -578,23 +622,60 @@ export class OxGrid extends OxControl {
         }
 
         if (properties.type) {
-            if (properties.type == "boolean") {
-                cell.innerHTML = "";
-                let checkbox = this.ownerDocument.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.checked = cell.innerText;
-                cell.appendChild(checkbox);
-
-                checkbox.onchange = (event) => {
-                    this.#updateCellValue(col, row, checkbox.checked);
+            if (row == -1) {
+                if (this.#data.columns.length > col) {
+                    this.#computeCellDataPresentation(col, row, cell, cellData, cellData.name);
+                } else {
+                    console.error(`Col ${col} too big`);
+                    console.log(this.#data);
                 }
-            } else if (properties.type == "number") {
+            } else if (this.#data.rows.length > row) {
+                if (col == -1) {
+                    this.#computeCellDataPresentation(col, row, cell, cellData, cellData.name);
+                } else if (this.#data.rows[row].cells.length > col) {
+                    const cellData = this.#data.rows[row].cells[col];
+                    if (cellData instanceof Object) {
+                        this.#computeCellDataPresentation(col, row, cell, cellData, cellData.value);
+                    } else {
+                        this.#resetCellDataPresentation(cell, cellData);
+                    }
+                } else {
+                    console.error(`Col ${col} too big`);
+                    console.log(this.#data);
+                }
 
-            } else if (properties.type == "xx") {
-
+            } else {
+                console.error(`Row ${row} too big`);
+                console.log(this.#data);
             }
+            
+            
         }
 
+    }
+
+    #computeCellDataPresentation(col, row, cell, data, textValue) {
+        if (data.type == "boolean") {
+            cell.innerHTML = "";
+            let checkbox = this.ownerDocument.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = textValue;
+            cell.appendChild(checkbox);
+
+            checkbox.onchange = (event) => {
+                this.#updateCellValue(col, row, checkbox.isChecked);
+            }
+        } else if (data.type == "number") {
+
+        } else if (data.type == "xx") {
+
+        } else {
+            this.#resetCellDataPresentation(cell, textValue);
+        }
+    }
+
+    #resetCellDataPresentation(cell, textValue) {
+        cell.innerText = textValue ?? "";
     }
 
 }
