@@ -329,10 +329,7 @@ export class OxGrid extends OxControl {
         cell.appendChild(editBox);
         editBox.focus();
         if (editBox.lastChild != null) {
-            document.getSelection().removeAllRanges();
-            const range = document.createRange();
-            range.setStart(editBox.lastChild, editBox.lastChild.length);
-            document.getSelection().addRange(range);
+            document.getSelection().setPosition(editBox.lastChild, editBox.lastChild.length)
         }
     }
 
