@@ -89,6 +89,10 @@ main {
 
 }
 
+aside {
+    display: flow-root; /* collapsing margin workaround */
+}
+
 
 
 table {
