@@ -719,7 +719,7 @@ export class OxGrid extends OxControl {
             }
 
             checkbox.onchange = (event) => {
-                this.#updateCellValue(col, row, checkbox.isChecked);
+                this.#updateCellValue(col, row, checkbox.checked);
             }
         } else if (data.type == "number") {
             this.#resetCellDataPresentation(cell, textValue);
