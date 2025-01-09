@@ -20,3 +20,4 @@
 .token.specialCharContent { color: violet;}
 .token.specialCharEnd { color: violet;}
 .token.specialChar { color: violet;}
+.token.cssStyle { color: limegreen;}

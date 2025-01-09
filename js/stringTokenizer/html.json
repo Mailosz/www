@@ -1,8 +1,14 @@
 {
 	"default":{
 		"begin": [{
-			"on": ["tagEnd","htmlCommentEnd", "specialCharEnd", "closingTagEnd"],
+			"on": ["htmlCommentEnd", "specialCharEnd", "closingTagEnd"],
 			"by": ""
+		},{
+			"on": ["tagEnd"],
+			"by": "",
+			"when": {
+				"css": false
+			}
 		},{
 			"on": ["specialCharStart","specialCharContent"],
 			"by": [" "],
@@ -16,6 +22,15 @@
 			"css": false,
 			"js": false,
 			"quoted": null
+		}
+	},
+	"cssStyle": {
+		"begin": {
+			"on": "tagEnd",
+			"by": "",
+			"when": {
+				"css": true
+			}
 		}
 	},
 	"tagStart": {
@@ -39,7 +54,13 @@
 		},
 		"data": {
 			"color": "blue"
-		}
+		},
+		"after": [{
+			"by": "style",
+			"then": {
+				"css": true
+			}
+		}]
 	},
 		"tagAttrSpace": {
 			"begin": [{
@@ -171,7 +192,7 @@
 	},
 	"closingTagStart": {
 		"begin": [{
-			"on": "default",
+			"on": ["default", "cssStyle"],
 			"by": "</"
 		},{
 			"on": ["specialCharStart","specialCharContent"],
@@ -180,6 +201,10 @@
 				"error": true
 			}
 		}],
+		"then": {
+			"css": false,
+			"js": false
+		},
 		"data": {
 			"color": "maroon"
 		}

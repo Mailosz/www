@@ -15,14 +15,20 @@
 			"variable-one": false,
 			"variable-two": "string-value",
 			"variable-three": {"f": "stateName"}, /* assigns to the variable the state name - that is in this example: "default-state" */
-			"variable-four": {"f": "stateContent"}, /* assigns to the variable the state content - the parsed text from the beginning of a state to its end */
-			"variable-five": {"f": "beginContent"}, /* assigns to the variable the parsed text that matched the element begin */
-			"variable-six": {"m": "stack", "v": "stacked-value"} /* stacks the value so that it hides - but not removes - any previous ones, and can be later popped */
+			"variable-four": {"f": "stateName"}, /
+			"variable-five": {"m": "stack", "v": "stacked-value"} /* stacks the value so that it hides - but not removes - any previous ones, and can be later popped */
 			
 		},
 		/* "data" is not used by the tokenizing engine, but the values here are present for other code */
 		"data": {
 			"description": "this value can be anything"
+		},
+		/* executed at the end - just before new state is selected */
+		"after": {
+			"by": ["text", "abcd"], // when token content is equal to one of the specified values
+			"then": {
+				"variable-four": {"f": "tokenContent"}, /* assigns to the variable the token content - the parsed text from the beginning of a state to its end */
+			}
 		}
 	},
 	/* this is other state's definition  */
@@ -35,7 +41,7 @@
 			"by": ["goto 1", "goto one"],
 			/* "then"" inside a begin rule means, that these variables will be set only if this particular rule is used to start the state */
 			"then": {
-				"number": true
+				"variable-one": {"f": "beginContent"} /* available in begin - assigns to the variable the parsed text that matched the element begin */
 			}
 		},{
 			/* this value must be set to true if there is no "on" value - this means that this begin is checked for every other state */

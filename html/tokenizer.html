@@ -678,19 +678,32 @@
 
             function colorizeTextContent(element, language) {
                 let text = element.textContent.split('\n');
-                element.innerHTML = "";
+                element.textContent = "";
                 console.time("Tokenizing time");
 
                 let tokenizer = new StringTokenizer(language);
+                let linesOfTokens = [];
                 for (const line of text) {
-                    tokenizer.resetText(line);
+                    tokenizer.resetText(line + "\n");
 
+                    const currentLine = [];
+                    while (!tokenizer.isFinished()) {
+                        
+                        let token = tokenizer.getNextToken();
+                        currentLine.push(token);
+
+                    }
+                    linesOfTokens.push(currentLine);
+                    
+                }
+                console.timeEnd("Tokenizing time");
+
+
+                for (const line of linesOfTokens) {
                     const lineElement = document.createElement("div");
 
-                        while (!tokenizer.isFinished()) {
-                        let token = tokenizer.getNextToken();
-
-                        let span = document.createElement("span");
+                    for (const token of line) {
+                        const span = document.createElement("span");
                         span.textContent = token.text;
                         span.classList.add("token");
                         if (token.data && token.data.color) {
@@ -734,13 +747,10 @@
                                 span.title += d + ": " + token.afterData[d] + "\n";
                             }
                         }
-
-
                         lineElement.appendChild(span);
                     }
                     element.appendChild(lineElement);
                 }
-                console.timeEnd("Tokenizing time");
             }
 
 
