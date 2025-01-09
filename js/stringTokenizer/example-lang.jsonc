@@ -1,7 +1,7 @@
 {
 	/* State name */
 	"default-state":{ 
-		/* defines when state begins */
+		/* defines when the state begins */
 		"begin": {
 			/* name of the state on which to test for this rule */
 			"on": "second-state",
@@ -11,9 +11,14 @@
 		/* this state is the default one (there can only be one; if no state has "default": true, then the first one is default) */
 		"default": true,
 		/* when the state is chosen these variables are set, and can later be used in conditional begins ("when" rule) */
-		"set": {
+		"then": {
 			"variable-one": false,
-			"variable-two": "string-value"
+			"variable-two": "string-value",
+			"variable-three": {"f": "stateName"}, /* assigns to the variable the state name - that is in this example: "default-state" */
+			"variable-four": {"f": "stateContent"}, /* assigns to the variable the state content - the parsed text from the beginning of a state to its end */
+			"variable-five": {"f": "beginContent"}, /* assigns to the variable the parsed text that matched the element begin */
+			"variable-six": {"m": "stack", "v": "stacked-value"} /* stacks the value so that it hides - but not removes - any previous ones, and can be later popped */
+			
 		},
 		/* "data" is not used by the tokenizing engine, but the values here are present for other code */
 		"data": {
@@ -28,8 +33,8 @@
 			"on": ["default-state", "second-state"],
 			/* array means that when any of these tokens is encountered then this state is chosen (longer tokens are checked first) */
 			"by": ["goto 1", "goto one"],
-			/* "set"" inside a begin rule means, that these variables will be set only if this particular rule is used to start the state */
-			"set": {
+			/* "then"" inside a begin rule means, that these variables will be set only if this particular rule is used to start the state */
+			"then": {
 				"number": true
 			}
 		},{
@@ -54,19 +59,19 @@
 				"importance": 5
 			},{
 				"on": "other-state",
-				/* when checks variables set by "set" and only changes state if their values coresponds to these */
+				/* when checks variables set by "then" and only changes state if their values coresponds to these */
 				"when": {
 					/* only when number = true */
 					"number": true,
 					/* this is AND so both checks must be fullfilled */
 					"variable-one": false
 				},
-				"set": {
+				"then": {
 					"number": false
 				}
 			}
 		],
-		/* state-parent is parent of this state - this means that it inherits all its "data", and "set" */
+		/* state-parent is parent of this state - this means that it inherits all its properties (like "data" and "then") except "begin" */
 		"parent": "state-parent",
 		
 		"data": {

@@ -8,7 +8,10 @@
                 "previous-state": ""
             }
         }],
-        "default": true
+        "default": true,
+        "then": {
+            "previous-state": ""
+        }
     },
     "mediaQuery": {
         "begin": {
@@ -100,19 +103,19 @@
         "begin": [{
             "by": "/*",
             "everywhere": true,
-            "set": {
+            "then": {
                 "previous-state": ""
             }
         },{
             "by": "/*",
             "on": "selector",
-            "set": {
+            "then": {
                 "previous-state": "selector"
             }
         },{
             "by": "/*",
             "on": "property",
-            "set": {
+            "then": {
                 "previous-state": "property"
             }
         }],

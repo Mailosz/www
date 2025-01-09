@@ -1,10 +1,9 @@
 {
 	"default":{
 		"begin": [{
-			"on": ["keyword", "controlSymbols", "literal1End", "literal2End", "literal3End"]
+			"on": ["controlSymbols", "literalEnd"]
 		},{
-			"on": "word",
-			"by": [" ", ""]
+			"on": "word-break"
 		},{
 			"on": "lineComment",
 			"by": ["\n"]
@@ -14,93 +13,95 @@
 				"commentLocation": "everywhere"
 			}
 		}],
-		"default": true
-	}, "word": {
+		"default": true,
+		"then": {
+			"literalType": "\"",
+			"commentLocation": "everywhere"
+		},
+		"after": {
+			"by": ["var", "let", "const", "if", "for", "while", "function", "this", "instanceof", "throw", "catch", "return", "break", "continue", "null", "export", "class", "try", "await", "async"],
+			"data": {
+				"class": "keyword"
+			}
+		}
+	}, "word-break": {
 		"begin": [{
 			"on": ["default"],
-			"by": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "r", "s", "t", "u", "w", "x", "y", "z"]
-		}]
-	}, "keyword": {
-		"begin": [{
-			"on": ["default"],
-			"by": ["var", "let", "const", "if", "for", "while", "function", "this", "instanceof", "throw", "catch", "return", "break", "continue", "null"]
+			"by": [".", " "]
 		}]
 	}, "controlSymbols": {
 		"begin": [{
 			"on": ["default"],
-			"by": ["=", "{", "}", "(", ")", "[", "]", "+", "-", "==", "=>"]
+			"by": ["=", "!", "{", "}", "(", ")", "[", "]", "+", "-", "==", "=>"]
 		}]
-	}, "literal1Start": {
+	}, "literalStart": {
 		"begin": [{
 			"on": ["default"],
-			"by": ["\""]
+			"by": ["\""],
+			"then": {
+				"literalType": "\""
+			}
+		},{
+			"on": ["default"],
+			"by": ["'"],
+			"then": {
+				"literalType": "'"
+			}
+		},{
+			"on": ["default"],
+			"by": ["`"],
+			"then": {
+				"literalType": "`"
+			}
 		}]
-	}, "literal1": {
+	}, "literal": {
 		"begin": [{
-			"on": ["literal1Start", "literal1Specialchar"]
+			"on": ["literalStart", "literalSpecialchar"]
 		},{
 			"on": ["commentEnd"],
 			"when": {
-				"commentLocation": "literal1"
+				"commentLocation": "literal"
 			}
 		}]
-	}, "literal1Specialchar": {
+	}, "literalSpecialchar": {
 		"begin": [{
-			"on": ["literal1"],
-			"by": ["\\\""]
-		}]
-	}, "literal1End": {
-		"begin": [{
-			"on": ["literal1"],
-			"by": ["\""]
-		}]
-	}, "literal2Start": {
-		"begin": [{
-			"on": ["default"],
-			"by": ["'"]
-		}]
-	}, "literal2": {
-		"begin": [{
-			"on": ["literal2Start", "literal2Specialchar"]
-		},{
-			"on": ["commentEnd"],
+			"on": ["literal"],
+			"by": ["\\\""],
 			"when": {
-				"commentLocation": "literal2"
+				"literalType": "\""
 			}
-		}]
-	}, "literal2Specialchar": {
-		"begin": [{
-			"on": ["literal2"],
-			"by": ["\\'"]
-		}]
-	}, "literal2End": {
-		"begin": [{
-			"on": ["literal2"],
-			"by": ["'"]
-		}]
-	}, "literal3Start": {
-		"begin": [{
-			"on": ["default"],
-			"by": ["`"]
-		}]
-	}, "literal3": {
-		"begin": [{
-			"on": ["literal3Start", "literal3Specialchar"]
 		},{
-			"on": ["commentEnd"],
+			"on": ["literal"],
+			"by": ["\\'"],
 			"when": {
-				"commentLocation": "literal3"
+				"literalType": "'"
+			}
+		},{
+			"on": ["literal"],
+			"by": ["\\`"],
+			"when": {
+				"literalType": "`"
 			}
 		}]
-	}, "literal3Specialchar": {
+	}, "literalEnd": {
 		"begin": [{
-			"on": ["literal3"],
-			"by": ["\\`"]
-		}]
-	}, "literal3End": {
-		"begin": [{
-			"on": ["literal3"],
-			"by": ["`"]
+			"on": ["literal"],
+			"by": ["\""],
+			"when": {
+				"literalType": "\""
+			}
+		},{
+			"on": ["literal"],
+			"by": ["'"],
+			"when": {
+				"literalType": "'"
+			}
+		},{
+			"on": ["literal"],
+			"by": ["`"],
+			"when": {
+				"literalType": "`"
+			}
 		}]
 	}, "lineComment": {
 		"begin": [{
@@ -111,26 +112,14 @@
 		"begin": [{
 			"everywhere": true,
 			"by": "/*",
-			"set": {
+			"then": {
 				"commentLocation": "everywhere"
 			}
 		},{
-			"on": ["literal1"],
+			"on": ["literal"],
 			"by": "/*",
-			"set": {
-				"commentLocation": "literal1"
-			}
-		},{
-			"on": ["literal2"],
-			"by": "/*",
-			"set": {
-				"commentLocation": "literal2"
-			}
-		},{
-			"on": ["literal3"],
-			"by": "/*",
-			"set": {
-				"commentLocation": "literal3"
+			"then": {
+				"commentLocation": "literal"
 			}
 		}]
 	}, "comment": {

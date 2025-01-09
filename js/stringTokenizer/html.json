@@ -11,7 +11,7 @@
 			}
 		}],
 		"default": true,
-		"set": {
+		"then": {
 			"html": true,
 			"css": false,
 			"js": false,
@@ -42,10 +42,10 @@
 		}
 	},
 		"tagAttrSpace": {
-			"begin": {
+			"begin": [{
 				"on": ["tagName", "tagAttrName", "tagAttrValue"],
 				"by": [" ", "\n"]
-			}
+			}]
 		},
 		"tagAttrName": {
 			"begin": {
@@ -86,7 +86,7 @@
 					"on": "tagAttrValue",
 					"by": "\""
 				},
-				"set":{
+				"then":{
 					"quoted": "double"
 				},
 				"data": {
@@ -118,7 +118,7 @@
 					"on": "tagAttrValue",
 					"by": "'"
 				},
-				"set":{
+				"then":{
 					"quoted": "single"
 				},
 				"data": {
