@@ -79,3 +79,44 @@ input {
 input:indeterminate {
     accent-color: gray;
 }
+
+
+/* WAIT-RING */
+@keyframes spinning {
+    0% {transform: rotate(0deg);}
+    100% {transform: rotate(360deg);}
+}
+
+.wait-ring {
+    transition: transform, display allow-discrete;
+    transition-duration: 2s;
+    transform: translateX(0px), scale(1);
+}
+
+.wait-ring.hidden {
+    display: none;
+    transform: translateX(50px), scale(0);
+}
+
+.wait-ring::before {
+    position: absolute;
+    display: block;
+    content: ' ';
+    left: auto;
+    top: auto;
+    width: 100px;
+    height: 100px;
+    padding: 20px;
+    aspect-ratio: 1 / 1;
+    border-radius: 100%;
+    background: conic-gradient(transparent 0%, transparent 10%, rgba(from var(--accent-color) r g b / 1) 100%);
+    background-size: 120%;
+    background-position: center;
+    background-repeat: no-repeat;
+    mask-image: radial-gradient(circle at center, transparent 0, transparent 50%, #000 50%);
+
+
+
+    animation: spinning 2s linear infinite;
+    backdrop-filter: blur(2px);
+}

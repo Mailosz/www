@@ -15,7 +15,7 @@
 			"variable-one": false,
 			"variable-two": "string-value",
 			"variable-three": {"f": "stateName"}, /* assigns to the variable the state name - that is in this example: "default-state" */
-			"variable-four": {"f": "stateName"}, /
+			"variable-four": {"f": "stateName"},
 			"variable-five": {"m": "stack", "v": "stacked-value"} /* stacks the value so that it hides - but not removes - any previous ones, and can be later popped */
 			
 		},

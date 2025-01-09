@@ -345,7 +345,11 @@ export class OxCode extends OxControl {
                 span.classList.add("token");
                 if (token.data && token.data.class) {
                     span.classList.add(token.data.class);
-                } else {
+                } else if (token.beginData && token.beginData.class) {
+                    span.classList.add(token.beginData.class);
+                }else if (token.afterData && token.afterData.class) {
+                    span.classList.add(token.afterData.class);
+                }{
                     span.classList.add(token.state);
                 }
                 if (token.startData && token.startData.error) {

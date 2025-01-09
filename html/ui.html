@@ -11,6 +11,7 @@
     <script type="module" src="../js/ui/controls/OxButton.js"></script>
     <script type="module" src="../js/ui/controls/OxItem.js"></script>
     <script type="module" src="../js/ui/controls/OxMenu.js"></script>
+    <script type="module" src="../js/ui/controls/OxLogin.js"></script>
 </head>
 <body onload="document.getElementById('menu-menu').open();">
     <h2>Inputs</h2>
@@ -132,6 +133,18 @@
             </ox-item>
         </div>
     </p>
+    <h2>Wait ring</h2>
+    <button onclick="document.getElementById('wait-ring').classList.toggle('hidden')">Toggle wait</button>
+    <div class="wait-ring" id="wait-ring"></div>
+    <p>Text text tet.</p>
+    <p>Text text tet.</p>
+    <p>Text text tet.</p>
+    <p>Text text tet.</p>
+    <p>Text text tet.</p>
+    <h2>Login</h2>
+    <div style="max-width: 300px; margin: auto; border: 1px solid #666; box-shadow: 0 0 10px rgba(127,127,127,0.5)">
+        <ox-login></ox-login>
+    </div>
     <p>Test</p>
     <p>Test</p>
     <p>Test</p>

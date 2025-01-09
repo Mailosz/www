@@ -39,8 +39,8 @@ export class StringTokenizer {
 		}
 		this.#state = this.#lang.states[state];
 		// compute values
-		for (const setter of this.#state.then) {
-			setter(this.#values);
+		for (const setter of this.#state.setters) {
+			setter(this.#values, {"stateName": () => this.#state.name});
 		}
 	}
 
