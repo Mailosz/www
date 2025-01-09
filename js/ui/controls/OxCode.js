@@ -1,6 +1,7 @@
 import { DocBuilder } from "../../utils/DocBuilder.js";
 import {OxControl} from "./OxControl.js";
-import {StringTokenizer, StringTokenizerLanguageService} from "../../StringTokenizer/StringTokenizer.js";
+import {StringTokenizerLanguageService} from "../../StringTokenizer/StringTokenizerLanguageService.js";
+import {StringTokenizer} from "../../StringTokenizer/StringTokenizer.js";
 
 
 const template = /*html*/`
