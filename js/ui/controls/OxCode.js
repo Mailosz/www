@@ -49,16 +49,16 @@ const style = /*css*/`
         background-color: var(--line-counter-background);
         border-right: var(--line-counter-border);
         position: absolute;
+        padding-right: 0.25em;
         left: 0;
         top: 0;
-        height: 50px;
     }
     
     #code-box {
         display: block;
         position: relative;
         flex: 1;
-        padding: 0.25em 0;
+        padding: 0.75em 0;
         white-space: pre;
         min-height: 1em;
     }
@@ -71,7 +71,7 @@ const style = /*css*/`
         display: block;
         list-style-position: outside;
         min-height: 1.1em;
-        padding: 0 0.25em 0 0;
+        padding: 0 1em 0 0;
         counter-increment: row-num;
     }
 
@@ -80,7 +80,7 @@ const style = /*css*/`
         width: var(--line-counter-width);
         text-align: right;
         display: inline-block;
-        margin-right: 0.25em;
+        margin-right: 0.75em;
         
         position: sticky;
         left: 0;
