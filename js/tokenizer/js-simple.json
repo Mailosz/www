@@ -3,7 +3,8 @@
 		"begin": [{
 			"on": ["controlSymbols", "literalEnd"]
 		},{
-			"on": "word-break"
+			"on": "word-break",
+			"by": {"regex": "\\w"}
 		},{
 			"on": "lineComment",
 			"by": ["\n"]
@@ -18,16 +19,23 @@
 			"literalType": "\"",
 			"commentLocation": "everywhere"
 		},
-		"after": {
-			"by": ["var", "let", "const", "if", "for", "while", "function", "this", "instanceof", "throw", "catch", "return", "break", "continue", "null", "export", "class", "try", "await", "async"],
+		"after": [{
+			"by": ["var", "let", "const", "if", "for", "while", "function", "this", "instanceof", "throw", "catch", "return", "break", "continue", "null", "export", "class", "try", "await", "async", "static"],
 			"data": {
 				"class": "keyword"
 			}
-		}
+		},{
+			"by": {"regex": "\\d+"},
+			"data": {
+				"class": "highlight"
+			}
+		}]
+
+
 	}, "word-break": {
 		"begin": [{
 			"on": ["default"],
-			"by": [".", " "]
+			"by": {"regex": "\\s"}
 		}]
 	}, "controlSymbols": {
 		"begin": [{

@@ -5,3 +5,4 @@
 .token.literalSpecialchar { color: violet; }
 .token.literalEnd { color: brown; }
 .token.lineComment, .token.commentStart, .token.commentEnd, .token.comment { color: green; }
+.token.highlight { color: lime !important }

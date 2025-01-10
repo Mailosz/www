@@ -151,22 +151,16 @@ export class StringTokenizer {
 
 		outer:
 			for (const matcher of matchers) {
-				if (pos + matcher.minLength > text.length) {
-					//this begin is too long
+
+				// checking in-depth if string matches new token start
+				matcher.matchedLength = matcher.match(text, pos);
+				if (matcher.matchedLength == -1) {
 					continue;
 				}
-				//checking in-depth if string matches new token start
-				for (let i = 0; i < matcher.matchText.length; i++){
-					// if characters don't match, then this is not the state you're looking for
-					if (matcher.matchText.charAt(i) !== text.charAt(pos + i)){
-						continue outer;
-					}
-				}
-				matcher.matchedLength = matcher.matchText.length;
 				//now checking all required values if they are set
 				if (matcher.when != null) {
 					for (const check in matcher.when){
-						if (values[check] !== matcher.when[check]){
+						if (values[check] != matcher.when[check]){
 							continue outer; // one of values not set
 						}
 					}

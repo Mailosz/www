@@ -32,7 +32,9 @@ export class StringTokenizerLanguageService {
 			}
 
 		}).then((json) =>{
+			console.time("Language parse");
 			const lang = new StringTokenizerLanguage(json);
+			console.timeEnd("Language parse");
 
 			return lang;
 		});
@@ -179,7 +181,7 @@ export class StringTokenizerLanguage {
 
 					let matchers;
 					if (begin.by !== undefined) {
-						matchers = parseMatchers(begin.by);
+						matchers = parseBy(begin.by, name);
 					} else {
 						if (begin.on === undefined) {
 							throw "Cannot have begin without any of 'on' or 'by'  (state \"" + name + "\")";
@@ -269,7 +271,7 @@ export class StringTokenizerLanguage {
 
 					let matchers;
 					if (after.by !== undefined) {
-						matchers = parseMatchers(after.by);
+						matchers = parseBy(after.by, name);
 					} else {
 						matchers = [emptyMatcher()];
 					}
@@ -290,6 +292,7 @@ export class StringTokenizerLanguage {
 					for (const matcher of matchers) {
 						matcher.setters = setters;
 						matcher.data = data;
+						matcher.when = when;
 						this.states[name].afters.push(matcher);
 					}
 					
@@ -372,7 +375,7 @@ export class StringTokenizerLanguage {
  * @returns 
  */
 function findSameMatcherIndex(list, a) { // TODO: better comparison
-	const index = list.findIndex((b) => a.matchText === b.matchText
+	const index = list.findIndex((b) => a.text === b.text
 	&& a.target == b.target 
 	&& a.when == b.when)
 	if (index != -1) {
@@ -386,22 +389,61 @@ function findSameMatcherIndex(list, a) { // TODO: better comparison
 function matcherSort(a, b) {
 	const impdif = b.importance - a.importance;
 	if (impdif == 0){
-		return b.matchText.length - a.matchText.length;
+		return b.text.length - a.text.length;
 	} else {
 		return impdif;
 	}
 }
 
 function emptyMatcher() {
-	return {matchText: "", minLength: 0, importance: 0};
+	return {match: () => 0, text: "", minLength: 0, importance: 0};
 }
 
-function parseMatchers(bys) {
+function parseBy(bys, stateName) {
 	const matchers = [];
 	forElementOrArray(bys, (by) => {
 		//TODO: accept objects
 
-		const matcher = {matchText: by, minLength: by.length, importance: by.length};
+		const matcher = {text: by, minLength: by.length};
+
+		if (typeof by == "object") {
+			if ("text" in by) {
+				matcher.match = function (text, pos) {
+					return text.startsWith(matcher.text, pos) ? matcher.text.length : -1;
+				}
+				if ("regex" in by) {
+					throw `Cannot set both "text" and "regex" in a single matcher (text = "${by.text}", regex = "${by.regex}", ,state ${stateName})`;
+				}
+			} else if ("regex" in by) {
+				const regex = new RegExp(by.regex, "y");
+				matcher.match = function (text, pos) {
+					regex.lastIndex = pos;
+					const result = regex.exec(text);
+					if (result == null) {
+						return -1;
+					} else {
+						return result[0].length;
+					}
+				}
+			}
+
+		} else {
+			matcher.match = function (text, pos) {
+				return text.startsWith(matcher.text, pos) ? matcher.text.length : -1;
+			}
+		}
+		if (matcher.text !== undefined) {
+			
+			// for (let i = 0; i < matcher.text.length; i++){
+			// 	// if characters don't match, then this is not the state you're looking for
+			// 	if (matcher.text.charAt(i) !== text.charAt(pos + i)){
+			// 		continue outer;
+			// 	}
+			// }
+		} else if (matcher.regex) {
+
+		}
+
 
 		matchers.push(matcher);
 	});
