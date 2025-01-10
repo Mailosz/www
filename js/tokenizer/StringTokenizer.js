@@ -9,7 +9,7 @@ export class StringTokenizer {
 	#pos = 0;
 	#tokenStart = 0;
 	#state = null;
-	#currentWatch = null;
+	lastMatcher = null;
 	#values = null;
 	#hasFinished = false;
 
@@ -24,7 +24,7 @@ export class StringTokenizer {
 		this.#pos = 0;
 		this.#tokenStart = 0;
 		this.#state = language.states[language.defaultState];
-		this.#currentWatch = {"beginData": {}};
+		this.lastMatcher = null;
 		this.#values = {};
 		this.#hasFinished = text == null; // if no text passed then the tokenizer is finished
 	}
@@ -52,43 +52,8 @@ export class StringTokenizer {
 		throw "Not implemented";
 	}
 
-
-	/**
-	 * Checks a single character
-	 * @param {String} text 
-	 * @param {*} values 
-	 * @param {*} state 
-	 * @param {Number} pos 
-	 * @returns 
-	 */
-	 #checkChar(text, values, state, pos) {
-		//let char = text.charAt(pos);
-
-		outer:
-			for (const watch of state.watchFor) {
-				if (pos + watch.start.length > text.length) {
-					//this begin is too long
-					continue;
-				}
-				//checking in-depth if string matches new token start
-				for (let i = 0; i < watch.start.length; i++){
-					// if characters don't match, then this is not the state you're looking for
-					if (watch.start.charAt(i) != text.charAt(pos + i)){
-						continue outer;
-					}
-				}
-				//now checking all required values if they are set
-				if (watch.when != null) {
-					for (const check in watch.when){
-						if (values[check] !== watch.when[check]){
-							continue outer; // one of values not set
-						}
-					}
-				}
-				//all characters same, found new state
-				return watch;
-			}
-			return null;
+	isFinished() {
+		return this.#hasFinished;
 	}
 
 	/**
@@ -119,54 +84,108 @@ export class StringTokenizer {
 		for (const setter of this.#state.setters) {
 			setter(this.#values, {"stateName": () => this.#state.name});
 		}
-		let token = {start: this.#tokenStart, beginData: this.#currentWatch.data, data: this.#state.data, afterData: {}, state: this.#state.name, values: this.#values};
+		
+		const matcher = this.#findMatch(this.#text, this.#pos, this.#state.watchFor, this.#values);
 
-		while (true) {
-			if (this.#pos >= this.#text.length) {
-				token.text = this.#text.substring(token.start);
-				token.end == this.#text.length;
-				this.#hasFinished = true;
-				break;
-			} else {
-				let watch = this.#checkChar(this.#text, this.#values, this.#state, this.#pos);
-				if (watch != null){
-					//finish token values
-					token.end = this.#pos;
-					token.text = this.#text.substring(token.start, token.end);
+		const token = {
+			start: this.#tokenStart, 
+			beginData: this.lastMatcher?.data, 
+			data: this.#state.data, 
+			afterData: {}, 
+			state: this.#state.name, 
+			values: this.#values
+		};
 
-					// ececute afters for previous state
-					for (const after of this.#state.afters) {
-						if (after.matchers.includes(token.text)) { //TODO: proper matching
-							for (const setter of after.setters) {
-								setter(this.#values, {"tokenContent": () => token.text});
-							}
-							token.afterData = {...token.afterData, ...after.data};
-						}
-					}
+		if (matcher === null) {
+			this.#hasFinished = true;
 
-					//change current state
-					this.#state = this.#lang.states[watch.target];
-					
-					// execute thens for new state's used begin
-					for (const setter of watch.setters) {
-						setter(this.#values, {"beginContent": () => this.#text.substring(this.#tokenStart, this.#pos)});
-					}
-					this.#currentWatch = watch;
-					
-					this.#tokenStart = this.#pos;
-					// no need to check it twice
-					this.#pos += watch.start.length;
-					break;
-				}
-				//check next character
-				this.#pos++;
+			token.end = this.#text.length;
+			token.text = this.#text.substring(token.start);
+
+			this.#computeAfters(token, this.#state);
+
+		} else {
+			this.#tokenStart = matcher.matchedPosition;
+			token.end = this.#tokenStart;
+			token.text = this.#text.substring(token.start, token.end);
+
+			this.#computeAfters(token, this.#state);
+
+			this.#state = this.#lang.states[matcher.target];
+			this.#pos = matcher.matchedPosition + matcher.matchedLength;
+			for (const setter of matcher.setters) {
+				setter(this.#values, {"beginContent": () => this.#text.substring(this.#tokenStart, this.#pos)});
 			}
-		} 
+			this.lastMatcher = matcher;
+		}
+
+		// TODO: afters
+
 		return token;
 
 	}
 
-	isFinished() {
-		return this.#hasFinished;
+	#findMatch(text, startPos, matchers, values) {
+		let pos = startPos;
+
+		while (pos < this.#text.length) {
+			const matcher = this.#findMatchAtPosition(text, pos, matchers, values); 
+			if (matcher) {
+				matcher.matchedPosition = pos;
+				return matcher;
+			}
+			pos++;
+		}
+		return null;
 	}
+
+	/**
+	 * Checks a single character
+	 * @param {String} text 
+	 * @param {*} values 
+	 * @param {*} state 
+	 * @param {Number} pos 
+	 * @returns 
+	 */
+	#findMatchAtPosition(text, pos, matchers, values) {
+
+		outer:
+			for (const matcher of matchers) {
+				if (pos + matcher.minLength > text.length) {
+					//this begin is too long
+					continue;
+				}
+				//checking in-depth if string matches new token start
+				for (let i = 0; i < matcher.matchText.length; i++){
+					// if characters don't match, then this is not the state you're looking for
+					if (matcher.matchText.charAt(i) !== text.charAt(pos + i)){
+						continue outer;
+					}
+				}
+				matcher.matchedLength = matcher.matchText.length;
+				//now checking all required values if they are set
+				if (matcher.when != null) {
+					for (const check in matcher.when){
+						if (values[check] !== matcher.when[check]){
+							continue outer; // one of values not set
+						}
+					}
+				}
+				//all characters same, found new state
+				return matcher;
+			}
+			return null;
+	}
+
+	#computeAfters(token, state) {
+
+		const after = this.#findMatchAtPosition(token.text, 0, state.afters, this.#values);
+		if (after && after.matchedLength === token.text.length) {
+			for (const setter of after.setters) {
+				setter(this.#values, {"tokenContent": () => token.text});
+			}
+			token.afterData = after.data;
+		}
+	}
+
 }

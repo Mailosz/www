@@ -167,21 +167,12 @@ export class StringTokenizerLanguage {
 			state.computed = this.#computeGroups(state, []);
 		}
 
-		/**
-		 * Returns the index of a matching state begin (same target and by values)
-		 * @param {*} list 
-		 * @param {*} watch 
-		 * @returns 
-		 */
-		const findSameWatch = (list, watch) => {
-			return list.findIndex((el) => el.start == watch.start && el.target == watch.target && el.when == watch.when);
-		}
 
 		const watchForEverywhere = [];
 		//compute begins and afters for every state
 		for (const name in language){
 
-			//where the state's start
+			//where the state starts
 			const begin = language[name].begin;
 			if (begin !== undefined){
 				forElementOrArray(begin, (begin) => {
@@ -193,7 +184,8 @@ export class StringTokenizerLanguage {
 						if (begin.on === undefined) {
 							throw "Cannot have begin without any of 'on' or 'by'  (state \"" + name + "\")";
 						}
-						matchers = [""];
+						// match everything matcher
+						matchers = [emptyMatcher()];
 					}
 
 					let when = null;
@@ -217,13 +209,14 @@ export class StringTokenizerLanguage {
 					} else {
 						importance = 0;
 					}
-					
-					let watches = [];
-					const targets = [name]; // previous idea was to apply this to many states at once - currently unused
-					for (const target of targets){
-						for (const start of matchers){
-							watches.push({start: start, target: target, data: data, setters: setters, when: when, importance: importance});
-						}
+
+					// apply values to matchers
+					for (const matcher of matchers){
+						matcher.when = when;
+						matcher.data = data;
+						matcher.setters = setters;
+						matcher.importance = importance;
+						matcher.target = name;
 					}
 
 					if (begin.on !== undefined) {
@@ -245,22 +238,22 @@ export class StringTokenizerLanguage {
 							}
 						}
 
-						for (const originState of where) {
-							for (const watch of watches) {
-								const ind = findSameWatch(originState.watchFor, watch);
+						for (const whereState of where) {
+							for (const matcher of matchers) {
+								const ind = findSameMatcherIndex(whereState.watchFor, matcher);
 								if (ind >= 0) {//duplicate
-									throw "Duplicate change (by: \"" + watch.start + "\", on: \"" + originState.name + "\") in state " + watch.target;
+									throw "Duplicate change (by: \"" + JSON.stringify(matcher) + "\", on: \"" + whereState.name + "\") in state " + matcher.target;
 	
-									originState.watchFor[ind].importance = Math.max(originState.watchFor[ind].importance, watch.importance);
-									originState.watchFor[ind].data = {...originState.watchFor[ind].data, ...watch.data};
+									whereState.watchFor[ind].importance = Math.max(whereState.watchFor[ind].importance, watch.importance);
+									whereState.watchFor[ind].data = {...whereState.watchFor[ind].data, ...watch.data};
 								} else {
-									originState.watchFor.push(watch);
+									whereState.watchFor.push(matcher);
 								}
 							}
 						}
 					} else {
 						if (begin.everywhere === true) {
-							watchForEverywhere.push(...watches);
+							watchForEverywhere.push(...matchers);
 						} else {
 							throw "A begin without 'on' value must have \"'everywhere': true\" set (state \"" + name + "\")";
 						}
@@ -272,22 +265,34 @@ export class StringTokenizerLanguage {
 			//setting after
 			const afterDefinition = language[name].after;
 			if (afterDefinition !== undefined) {
-				forElementOrArray(afterDefinition, (afterDefinition) => { 
+				forElementOrArray(afterDefinition, (after) => { 
 
-					const after = {matchers: null, setters: [], data: {}};
-
-					if (afterDefinition.by !== undefined) {
-						after.matchers = parseMatchers(afterDefinition.by);
+					let matchers;
+					if (after.by !== undefined) {
+						matchers = parseMatchers(after.by);
+					} else {
+						matchers = [emptyMatcher()];
 					}
 					
-					if (afterDefinition.then !== undefined) {
-						after.setters = parseSetters(afterDefinition.then, allowedVariables, name);
+					let setters = [];
+					if (after.then !== undefined) {
+						setters = parseSetters(after.then, allowedVariables, name);
 					}
-					if (afterDefinition.data !== undefined) {
-						after.data = afterDefinition.data;
+					let data = {};
+					if (after.data !== undefined) {
+						data = after.data;
+					}
+					let when = null;
+					if (begin.when !== undefined) {
+						when = begin.when;
+					}
+
+					for (const matcher of matchers) {
+						matcher.setters = setters;
+						matcher.data = data;
+						this.states[name].afters.push(matcher);
 					}
 					
-					this.states[name].afters.push(after);
 				});
 			}
 
@@ -306,7 +311,7 @@ export class StringTokenizerLanguage {
 					continue;
 				}
 
-				const ind = findSameWatch(state.watchFor, watch);
+				const ind = findSameMatcherIndex(state.watchFor, watch);
 				if (ind >= 0) {//duplicate
 					if (watch.importance > state.watchFor[ind].importance) {
 						console.info("'Everywhere' begin for state '" + watch.target + "' on state overrided explicit one for state '" + state.name + "' because of higher importance");
@@ -325,14 +330,7 @@ export class StringTokenizerLanguage {
 			} else {
 
 				//sorting watchFors by importance and length
-				state.watchFor.sort((a,b) => {
-					const impdif = b.importance - a.importance;
-					if (impdif == 0){
-						return b.start.length - a.start.length;
-					} else {
-						return impdif;
-					}
-				});
+				state.watchFor.sort(matcherSort);
 			}
 		}
 
@@ -367,8 +365,47 @@ export class StringTokenizerLanguage {
 	}
 }
 
-function parseMatchers(by) {
-	return arrayize(by);
+/**
+ * Returns the index of a matching state begin (same target and by values)
+ * @param {*} list 
+ * @param {*} watch 
+ * @returns 
+ */
+function findSameMatcherIndex(list, a) { // TODO: better comparison
+	const index = list.findIndex((b) => a.matchText === b.matchText
+	&& a.target == b.target 
+	&& a.when == b.when)
+	if (index != -1) {
+			console.log("Found same matchers: ", a, list[index]);
+		return index;
+	} else {
+		return -1;		
+	}
+}
+
+function matcherSort(a, b) {
+	const impdif = b.importance - a.importance;
+	if (impdif == 0){
+		return b.matchText.length - a.matchText.length;
+	} else {
+		return impdif;
+	}
+}
+
+function emptyMatcher() {
+	return {matchText: "", minLength: 0, importance: 0};
+}
+
+function parseMatchers(bys) {
+	const matchers = [];
+	forElementOrArray(bys, (by) => {
+		//TODO: accept objects
+
+		const matcher = {matchText: by, minLength: by.length, importance: by.length};
+
+		matchers.push(matcher);
+	});
+	return matchers;
 }
 
 function parseSetters(then, allowedVariables, stateName) {
