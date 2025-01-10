@@ -17,11 +17,12 @@
 			}
 		}],
 		"default": true,
-		"then": {
+		"init": {
 			"html": true,
 			"css": false,
 			"js": false,
-			"quoted": null
+			"quoteType": null,
+			"attrName": null
 		}
 	},
 	"cssStyle": {
@@ -64,8 +65,16 @@
 	},
 		"tagAttrSpace": {
 			"begin": [{
-				"on": ["tagName", "tagAttrName", "tagAttrValue"],
+				"on": "quotedAttrValueEnd"
+			},{
+				"on": ["tagName", "tagAttrName"],
 				"by": [" ", "\n"]
+			},{
+				"on": ["tagAttrValue","styleAttrPropertyName","styleAttrPropertyValue"],
+				"by": [" ", "\n"],
+				"when": {
+					"quoteType": null
+				}
 			}]
 		},
 		"tagAttrName": {
@@ -74,6 +83,11 @@
 			},
 			"data": {
 				"color": "darkblue"
+			},
+			"after": {
+				"then": {
+					"attrName": {"s": "tokenContent"}
+				}
 			}
 		},
 		"tagAttrEqSign": {
@@ -86,94 +100,80 @@
 			}
 		},
 		"tagAttrValue": {
+			"begin": [{
+				"on": ["tagAttrEqSign","quotedAttrValueStart", "specialChar"]
+			}]
+		},
+		"styleAttrPropertyName": {
+			"begin": [{
+				"importance": 1,
+				"on": ["quotedAttrValueStart", "specialChar"],
+				"when": {
+					"attrName": "style"
+				}
+			},{
+				"on": ["styleAttrPropertyEnd"]
+			}]
+		},
+		"styleAttrPropertySeparator": {
+			"begin": [{
+				"on": ["styleAttrPropertyName"],
+				"by": ":"
+			}]
+		},
+		"styleAttrPropertyValue": {
+			"begin": [{
+				"on": ["styleAttrPropertySeparator"]
+			}]
+		},
+		"styleAttrPropertyEnd": {
+			"begin": [{
+				"on": ["styleAttrPropertyValue"],
+				"by": ";"
+			}]
+		},
+		"quotedAttrValueStart": {
+			"begin": [{
+				"on": ["tagAttrEqSign"],
+				"by": ["\""],
+				"then": {
+					"quoteType": "\""
+				}
+			},{
+				"on": ["tagAttrEqSign"],
+				"by": ["'"],
+				"then": {
+					"quoteType": "'"
+				}
+			}]
+		},
+		"quotedAttrValueEnd": {
+			"begin": [{
+				"on": ["tagAttrValue","styleAttrPropertyName","styleAttrPropertyValue"],
+				"by": ["\""],
+				"when": {
+					"quoteType": "\""
+				}
+			},{
+				"on": ["tagAttrValue","styleAttrPropertyName","styleAttrPropertyValue"],
+				"by": ["'"],
+				"when": {
+					"quoteType": "'"
+				}
+			}],
+			"then": {
+				"quoteType": null
+			}
+		},
+		"specialChar": {
 			"begin": {
-				"on": ["tagAttrEqSign", "quoteEnd"]
+				"on": "tagAttrValue",
+				"by": ["\\a","\\c","\\d","\\e","\\f","\\g","\\h","\\i","\\j","\\k","\\l","\\m","\\n","\\o","\\p","\\r","\\s","\\t","\\u","\\w","\\v","\\q","\\x","\\y","\\z","\\'","\\\"","\\\\","\\@","\\#","\\;","\\*","\\&","\\^","\\%"]
 			},
 			"data": {
-				"color": "slateblue"
+				"color": "pink"
 			}
 		},
-		"quotedValue": {
-			"data": {
-				"color": "slateblue"
-			}
-		},
-			"quoteEnd": {
-
-			},
-			"doublyQuotedValueStart": {
-				"group": "quotedValue",
-				"begin": {
-					"on": "tagAttrValue",
-					"by": "\""
-				},
-				"then":{
-					"quoted": "double"
-				},
-				"data": {
-					"color": "goldenrod"
-				}
-			},
-				"doublyQuotedValueContent": {
-					"group": "quotedValue",
-					"begin": [{
-						"on": "doublyQuotedValueStart"
-					},{
-						"on": "specialChar",
-						"when": {"quoted": "double"}
-					}]
-				},
-				"doublyQuotedValueEnd": {
-					"group": ["quotedValue", "quoteEnd"],
-					"begin": {
-						"on": "doublyQuotedValueContent",
-						"by": "\""
-					},
-					"data": {
-						"color": "goldenrod"
-					}
-				},
-			"singlyQuotedValueStart": {
-				"group": "quotedValue",
-				"begin": {
-					"on": "tagAttrValue",
-					"by": "'"
-				},
-				"then":{
-					"quoted": "single"
-				},
-				"data": {
-					"color": "goldenrod"
-				}
-			},
-				"singlyQuotedValueContent": {
-					"group": "quotedValue",
-					"begin": [{
-						"on": "singlyQuotedValueStart"
-					},{
-						"on": "specialChar",
-						"when": {"quoted": "single"}
-					}]
-				},
-				"singlyQuotedValueEnd": {
-					"group": ["quotedValue", "quoteEnd"],
-					"begin": {
-						"on": "singlyQuotedValueContent",
-						"by": "'"
-					},
-					"data": {
-						"color": "goldenrod"
-					}
-				},
-				"specialChar": {
-					"begin": {
-						"on": "quotedValue",
-						"by": ["\\a","\\c","\\d","\\e","\\f","\\g","\\h","\\i","\\j","\\k","\\l","\\m","\\n","\\o","\\p","\\r","\\s","\\t","\\u","\\w","\\v","\\q","\\x","\\y","\\z","\\'","\\\"","\\\\","\\@","\\#","\\;","\\*","\\&","\\^","\\%"]
-					},
-					"data": {
-						"color": "pink"
-					}
-				},
 
 	"tagEnd": {
 		"begin": [{

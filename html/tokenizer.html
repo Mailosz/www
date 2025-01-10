@@ -14,11 +14,108 @@
                 white-space: pre;
             }
         </style>
-        <link rel="stylesheet" href="../css/langs/js-lang.css">
+        <link rel="stylesheet" href="../css/langs/html-lang.css">
     </head>
     <body>
         <!-- contenteditable="true" onkeyup="change(this);" -->
-        <code class="script" >
+        <code class="script" >&lt;body style="background-color: rgba(255,255,255,0.5); color: black"&gt;
+
+            &lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Samples&lt;/title&gt;
+    &lt;link rel="stylesheet" href="../css/samples.css"&gt;
+    &lt;link rel="stylesheet" href="../css/langs/html-lang.css"&gt;
+    &lt;script type="module" src="../js/ui/controls/OxCode.js"&gt;&lt;/script&gt;
+    &lt;style&gt;
+    
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;ox-code contenteditable="true" tokenizer-language="../js/tokenizer/html.json" code-style="../css/langs/html-lang.css" style="height: 200px; resize: both;"&gt;
+        &lt;!DOCTYPE html&gt;
+        &lt;html&gt;
+        &lt;!-- To jest komentarz --&gt;
+            &lt;head&gt;
+                &lt;title&gt;Koloryzowanie składni&lt;/title&gt;
+                &lt;meta charset="UTF-8"/&gt;
+                &lt;style&gt;
+                html,body {height: 100%; content: "&lt;br&gt;"} 
+                &lt;/style&gt;
+            &lt;/head&gt;
+            &lt;body style="background-color: rgba(255,255,255,0.5); color: black"&gt;
+                &lt;input abc=&gt;
+                &lt;input type=text autocomplete value="New \"hope \""&gt;
+                &lt;span id='identyf\'ikator'&gt; &amp;amp &amp;lt&lt;/span&gt;
+                &lt;code&gt;
+                    To jest napis &amp;copy;Miłosz.O
+                &lt;/code&gt;
+                &lt;input&gt;&lt;input&gt;&lt;input&gt;&lt;input&gt;
+            &lt;/body&gt;
+        &lt;/html&gt;
+    &lt;/ox-code&gt;
+    &lt;button id="recolorize"&gt;Recolorize&lt;/button&gt;
+    &lt;p&gt;&lt;/p&gt;
+    &lt;p&gt;&lt;/p&gt;
+    &lt;p&gt;&lt;/p&gt;
+    &lt;ox-code contenteditable="true" tokenizer-language="../js/tokenizer/css.json" code-style="../css/langs/css-lang.css"&gt;
+        html {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+        }
+        
+        @media (min-width: 1200px) {
+            html {
+                background-color: #f8f8f8;
+            }
+            main {
+                box-shadow: 0px 0px 20px rgba(0,0,0,0.2);
+                max-width: 1024px;
+                --main-padding: 40px;
+            }
+        } 
+        
+        @media not (min-width: 1200px) {
+            main{
+                --main-padding: max(calc(10vw - 20px), 10px);
+            }
+        }
+        
+        main {
+            
+            /* --main-padding: min(5vw, 24px); */
+        
+            background-color: #ffffff;
+            margin: auto;
+            box-sizing: border-box;
+            padding: 40px var(--main-padding);
+            
+        }
+        &lt;/ox-code&gt;
+
+
+    &lt;script type="module"&gt;
+        document.querySelector("#recolorize").onclick = () =&gt; {
+            let code = document.querySelector("ox-code").getCode();
+            console.log(code);
+        }
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+
 "te/* sdsd*/sdsds\"ndsdsdst"
 'te/* sdsd*/sdsds\'ndsdsdst'
 `te/* sdsd*/sdsds\`ndsdsdst`
@@ -668,7 +765,7 @@
 
             async function colorizeAll() {
 
-                let language = await StringTokenizerLanguageService.getLanguageAsync("../js/tokenizer/js-simple.json");
+                let language = await StringTokenizerLanguageService.getLanguageAsync("../js/tokenizer/html.json");
 
                 let elems = document.getElementsByClassName("script");
 

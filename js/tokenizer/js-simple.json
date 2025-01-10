@@ -24,14 +24,7 @@
 			"data": {
 				"class": "keyword"
 			}
-		},{
-			"by": {"regex": "\\d+"},
-			"data": {
-				"class": "highlight"
-			}
 		}]
-
-
 	}, "word-break": {
 		"begin": [{
 			"on": ["default"],
@@ -39,8 +32,8 @@
 		}]
 	}, "controlSymbols": {
 		"begin": [{
-			"on": ["default"],
-			"by": ["=", "!", "{", "}", "(", ")", "[", "]", "+", "-", "==", "=>"]
+			"on": ["default", "word-break"],
+			"by": ["=", "!", "{", "}", "(", ")", "[", "]", "+", "-", "==", "=>", ":", ";"]
 		}]
 	}, "literalStart": {
 		"begin": [{

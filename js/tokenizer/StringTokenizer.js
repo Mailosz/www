@@ -12,6 +12,7 @@ export class StringTokenizer {
 	lastMatcher = null;
 	#values = null;
 	#hasFinished = false;
+	#lastMatcher = null;
 
 	/**
 	 * 
@@ -24,8 +25,8 @@ export class StringTokenizer {
 		this.#pos = 0;
 		this.#tokenStart = 0;
 		this.#state = language.states[language.defaultState];
-		this.lastMatcher = null;
-		this.#values = {};
+		this.#lastMatcher = null;
+		this.#values = language.defaultValues;
 		this.#hasFinished = text == null; // if no text passed then the tokenizer is finished
 	}
 
@@ -80,6 +81,7 @@ export class StringTokenizer {
 	}
 
 	getNextToken() {
+
 		// execute state thens
 		for (const setter of this.#state.setters) {
 			setter(this.#values, {"stateName": () => this.#state.name});
@@ -92,8 +94,7 @@ export class StringTokenizer {
 			beginData: this.lastMatcher?.data, 
 			data: this.#state.data, 
 			afterData: {}, 
-			state: this.#state.name, 
-			values: this.#values
+			state: this.#state.name
 		};
 
 		if (matcher === null) {
@@ -104,6 +105,8 @@ export class StringTokenizer {
 
 			this.#computeAfters(token, this.#state);
 
+			token.values = this.#values;
+
 		} else {
 			this.#tokenStart = matcher.matchedPosition;
 			token.end = this.#tokenStart;
@@ -113,13 +116,13 @@ export class StringTokenizer {
 
 			this.#state = this.#lang.states[matcher.target];
 			this.#pos = matcher.matchedPosition + matcher.matchedLength;
-			for (const setter of matcher.setters) {
+
+			token.values = this.#values;
+			this.#lastMatcher = matcher;
+			for (const setter of this.#lastMatcher.setters) {
 				setter(this.#values, {"beginContent": () => this.#text.substring(this.#tokenStart, this.#pos)});
 			}
-			this.lastMatcher = matcher;
 		}
-
-		// TODO: afters
 
 		return token;
 
@@ -174,9 +177,10 @@ export class StringTokenizer {
 	#computeAfters(token, state) {
 
 		const after = this.#findMatchAtPosition(token.text, 0, state.afters, this.#values);
-		if (after && after.matchedLength === token.text.length) {
+		if (after) {
 			for (const setter of after.setters) {
-				setter(this.#values, {"tokenContent": () => token.text});
+				const tokenText = token.text;
+				setter(this.#values, {"tokenContent": () => tokenText});
 			}
 			token.afterData = after.data;
 		}

@@ -107,9 +107,11 @@ export class StringTokenizerLanguage {
 		}
 
 		// compute allowed values (set in a default state)
-		let allowedVariables = [];
-		if (language[this.defaultState].then !== undefined){
-			allowedVariables = Object.keys(language[this.defaultState].then);
+		this.defaultValues = {};
+		if ("init" in language[this.defaultState]) {
+			this.defaultValues = language[this.defaultState].init;
+		} else if ("then" in language[this.defaultState]) {
+			this.defaultValues = language[this.defaultState].then;
 		}
 
 
@@ -158,7 +160,7 @@ export class StringTokenizerLanguage {
 			//setting variables
 			const then = language[name].then;
 			if (then !== undefined) {
-				this.states[name].setters = parseSetters(then, allowedVariables, name);
+				this.states[name].setters = parseSetters(then, this.defaultValues, name);
 			}
 
 		}
@@ -181,7 +183,7 @@ export class StringTokenizerLanguage {
 
 					let matchers;
 					if (begin.by !== undefined) {
-						matchers = parseBy(begin.by, name);
+						matchers = parseBeginMatchers(begin.by, name);
 					} else {
 						if (begin.on === undefined) {
 							throw "Cannot have begin without any of 'on' or 'by'  (state \"" + name + "\")";
@@ -190,10 +192,7 @@ export class StringTokenizerLanguage {
 						matchers = [emptyMatcher()];
 					}
 
-					let when = null;
-					if (begin.when !== undefined) {
-						when = begin.when;
-					}
+					let when = parseWhen(begin.when, this.defaultValues, name);
 
 					let data = {};
 					if (begin.data !== undefined) {
@@ -202,7 +201,7 @@ export class StringTokenizerLanguage {
 
 					let setters = [];
 					if (begin.then !== undefined) {
-						setters = parseSetters(begin.then, allowedVariables, name);
+						setters = parseSetters(begin.then, this.defaultValues, name);
 					}
 
 					let importance;
@@ -271,23 +270,20 @@ export class StringTokenizerLanguage {
 
 					let matchers;
 					if (after.by !== undefined) {
-						matchers = parseBy(after.by, name);
+						matchers = parseAfterMatchers(after.by, name);
 					} else {
 						matchers = [emptyMatcher()];
 					}
 					
 					let setters = [];
 					if (after.then !== undefined) {
-						setters = parseSetters(after.then, allowedVariables, name);
+						setters = parseSetters(after.then, this.defaultValues, name);
 					}
 					let data = {};
 					if (after.data !== undefined) {
 						data = after.data;
 					}
-					let when = null;
-					if (begin.when !== undefined) {
-						when = begin.when;
-					}
+					let when = parseWhen(afterDefinition.when, this.defaultValues, name);
 
 					for (const matcher of matchers) {
 						matcher.setters = setters;
@@ -375,7 +371,7 @@ export class StringTokenizerLanguage {
  * @returns 
  */
 function findSameMatcherIndex(list, a) { // TODO: better comparison
-	const index = list.findIndex((b) => a.text === b.text
+	const index = list.findIndex((b) => a.comparator === b.comparator
 	&& a.target == b.target 
 	&& a.when == b.when)
 	if (index != -1) {
@@ -389,33 +385,36 @@ function findSameMatcherIndex(list, a) { // TODO: better comparison
 function matcherSort(a, b) {
 	const impdif = b.importance - a.importance;
 	if (impdif == 0){
-		return b.text.length - a.text.length;
+		return b.order - a.order;
 	} else {
 		return impdif;
 	}
 }
 
 function emptyMatcher() {
-	return {match: () => 0, text: "", minLength: 0, importance: 0};
+	return {match: () => 0, comparator: "", order: -1, importance: 0};
 }
 
-function parseBy(bys, stateName) {
+function parseBeginMatchers(bys, stateName) {
 	const matchers = [];
 	forElementOrArray(bys, (by) => {
-		//TODO: accept objects
 
-		const matcher = {text: by, minLength: by.length};
+		const matcher = {minLength: by.length};
 
 		if (typeof by == "object") {
 			if ("text" in by) {
 				matcher.match = function (text, pos) {
-					return text.startsWith(matcher.text, pos) ? matcher.text.length : -1;
+					return text.startsWith(by.text, pos) ? matcher.text.length : -1;
 				}
+				matcher.comparator = "text:" + by.text;
+				matcher.order = by.text.length;
 				if ("regex" in by) {
-					throw `Cannot set both "text" and "regex" in a single matcher (text = "${by.text}", regex = "${by.regex}", ,state ${stateName})`;
+					throw `Cannot set both "text" and "regex" in a single matcher (text = "${by.text}", regex = "${by.regex}", "begin.by" in state ${stateName})`;
 				}
 			} else if ("regex" in by) {
 				const regex = new RegExp(by.regex, "y");
+				matcher.comparator = "regex:" + by.regex;
+				matcher.order = 0.5;
 				matcher.match = function (text, pos) {
 					regex.lastIndex = pos;
 					const result = regex.exec(text);
@@ -428,26 +427,79 @@ function parseBy(bys, stateName) {
 			}
 
 		} else {
+			matcher.comparator = "text:" + by;
+			matcher.order = by.length;
 			matcher.match = function (text, pos) {
-				return text.startsWith(matcher.text, pos) ? matcher.text.length : -1;
+				return text.startsWith(by, pos) ? by.length : -1;
 			}
 		}
-		if (matcher.text !== undefined) {
-			
-			// for (let i = 0; i < matcher.text.length; i++){
-			// 	// if characters don't match, then this is not the state you're looking for
-			// 	if (matcher.text.charAt(i) !== text.charAt(pos + i)){
-			// 		continue outer;
-			// 	}
-			// }
-		} else if (matcher.regex) {
-
-		}
-
 
 		matchers.push(matcher);
 	});
 	return matchers;
+}
+
+function parseAfterMatchers(bys, stateName) {
+	const matchers = [];
+	forElementOrArray(bys, (by) => {
+
+		const matcher = { minLength: by.length};
+
+		if (typeof by == "object") {
+			if ("text" in by) {
+				matcher.match = function (text, pos) {
+					return text == by.text;
+				}
+				matcher.comparator = "text:" + by.text;
+				matcher.order = by.text.length;
+				if ("regex" in by) {
+					throw `Cannot set both "text" and "regex" in a single matcher, (text = "${by.text}", regex = "${by.regex}", "after.by" in state ${stateName})`;
+				}
+			} else if ("regex" in by) {
+				matcher.comparator = "regex:" + by.regex;
+				matcher.order = 0.5;
+				const regex = new RegExp(by.regex, "y");
+				matcher.match = function (text, pos) {
+					regex.lastIndex = pos;
+					const result = regex.exec(text);
+					if (result == null || result[0].length != text.length) {
+						return false;
+					} else {
+						return true;
+					}
+				}
+			}
+
+		} else {
+			matcher.comparator = "text:" + by;
+			matcher.order = by.length;
+			matcher.match = function (text, pos) {
+				return text.startsWith(by, pos) ? by.length : -1;
+			}
+		}
+
+		matchers.push(matcher);
+	});
+	return matchers;
+}
+
+function parseWhen(when, allowedVariables, stateName){
+
+	if (!when) return null;
+
+	if (when instanceof Object) {
+
+		for (const variableName in when) {
+			if (!(variableName in allowedVariables)) {
+				throw `Unallowed variable "${variableName}" in "when" (state ${stateName}). All values must be initialized on the default state.`;
+			}
+		}
+
+	} else {
+		throw `"when" value must be an object - instead is: ${when} (state ${stateName})`;
+	}
+
+	return when;
 }
 
 function parseSetters(then, allowedVariables, stateName) {
@@ -457,31 +509,31 @@ function parseSetters(then, allowedVariables, stateName) {
 			const variable = then[variableName];
 
 			//check for allowed variables
-			if (!allowedVariables.includes(variableName)) {
-				throw `Unallowed variable "${variableName}" (state ${stateName}). All values must be initialized on the default state.`;
+			if (!(variableName in allowedVariables)) {
+				throw `Unallowed variable "${variableName}" in "then" (state ${stateName}). All values must be initialized on the default state.`;
 			}
 
 			if (variable instanceof Object) {
 				console.log(variable, " is an object");
 
-				let setter;
+				let method;
 				if (variable.m === "stack") {
-					setter = function (variableName, value, values) { throw "Not implemented" }
+					method = function (variableName, value, values) { throw "Not implemented" }
 				} else if (variable.m === "queue") {
-					setter = function (variableName, value, values) { throw "Not implemented" }
+					method = function (variableName, value, values) { throw "Not implemented" }
 				} else if (variable.m === "pop") {
-					setter = function (variableName, value, values) { throw "Not implemented" }
+					method = function (variableName, value, values) { throw "Not implemented" }
 				} else if (variable.m === "deq") {
-					setter = function (variableName, value, values) { throw "Not implemented" }
+					method = function (variableName, value, values) { throw "Not implemented" }
 				} else if (variable.m === "set" || variable.m == null) {
-					setter = function (variableName, value, values) { values[variableName] = value; }
+					method = function (variableName, value, values) { values[variableName] = value; }
 				} else {
 					throw `Unknown method "${variable}"`;
 				}
 
-
+				let setter;
 				if ("v" in variable) {
-					setter = (values, specialValues) => setter(variableName, variable.v, values);
+					setter = (values, specialValues) => method(variableName, variable.v, values);
 					if ("c" in variable) {
 						throw `Cannot set both "v" and "c" in a single setter (v = "${variable.v}", c = "${variable.var}", ,state ${stateName})`;
 					} else if ("f" in variable) {
@@ -489,20 +541,21 @@ function parseSetters(then, allowedVariables, stateName) {
 					}
 				} else if ("c" in variable) {
 					//check for allowed variables
-					if (!allowedVariables.includes(variable.c)) {
-						throw `Unallowed variable "${variable.c}" (state ${stateName}). All values must be initialized on the default state.`;
+					if (!(variableName in allowedVariables)) {
+						throw `Unallowed variable "${variable.c}" in copy declaration (state ${stateName}). All values must be initialized on the default state.`;
 					}
 					const c = variable.c;
-					setter = (values, specialValues) => setter(variableName, values[c], values);
+					setter = (values, specialValues) => method(variableName, values[c], values);
 					if ("s" in variable) {
 						throw `Cannot set both "c" and "s" in a single setter (c = "${variable.c}", s = "${variable.s}", ,state ${stateName})`;
 					}
 				} else if ("s" in variable) {
 					setter = (values, specialValues) => {
 						if (variable.s in specialValues) {
-							setter(variableName, specialValues[variable.s](), values);
+							const special = specialValues[variable.s]();
+							method(variableName, special, values);
 						} else {
-							throw `No special value "${variable.s}" available (state: "${stateName}")`;
+							throw `No special value "${variable.s}" available, consider placing it in different stage (state: "${stateName}")`;
 						}
 					};
 				} else {
@@ -515,6 +568,8 @@ function parseSetters(then, allowedVariables, stateName) {
 				setters.push(setter);
 			}
 		}
+	} else {
+		throw `"then" value must be an object - instead is: ${when} (state ${stateName})`;
 	}
 	return setters;
 }

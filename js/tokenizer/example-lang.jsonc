@@ -10,6 +10,14 @@
 		},
 		/* this state is the default one (there can only be one; if no state has "default": true, then the first one is default) */
 		"default": true,
+		/* allowed only in the default state - sets the variables at the start of tokenization */
+		"init": {
+			"variable-one": false,
+			"variable-two": false,
+			"variable-thre": false,
+			"variable-four": false,
+			"variable-five": false,
+		},
 		/* when the state is chosen these variables are set, and can later be used in conditional begins ("when" rule) */
 		"then": {
 			"variable-one": false,
