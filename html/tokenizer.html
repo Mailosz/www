@@ -663,11 +663,11 @@
 
 
         <script type="module">
-            import {StringTokenizer, StringTokenizerLanguage, StringTokenizerLanguageService } from "../js/StringTokenizer/StringTokenizer.js";
+            import {StringTokenizer, StringTokenizerLanguage, StringTokenizerLanguageService } from "../js/tokenizer/StringTokenizer.js";
 
             async function colorizeAll() {
 
-                let language = await StringTokenizerLanguageService.getLanguageAsync("../js/StringTokenizer/js-simple.json");
+                let language = await StringTokenizerLanguageService.getLanguageAsync("../js/tokenizer/js-simple.json");
 
                 let elems = document.getElementsByClassName("script");
 

@@ -5,7 +5,7 @@ import {AutoSizeIframe} from "./AutoSizeIframe.js";
 
 const template = /*html*/`
     <div id="example">
-        <ox-code id="code-box" tokenizer-language="../js/StringTokenizer/html.json" code-style="../css/langs/html-lang.css"></ox-code>
+        <ox-code id="code-box" tokenizer-language="../js/tokenizer/html.json" code-style="../css/langs/html-lang.css"></ox-code>
         <div id="controls">
             <button id="run-button" part="run-button" title="Run"></button>
             <div class="spacer"></div>

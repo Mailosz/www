@@ -1,7 +1,6 @@
 import { DocBuilder } from "../../utils/DocBuilder.js";
 import {OxControl} from "./OxControl.js";
-import {StringTokenizerLanguageService} from "../../StringTokenizer/StringTokenizerLanguageService.js";
-import {StringTokenizer} from "../../StringTokenizer/StringTokenizer.js";
+import {StringTokenizer, StringTokenizerLanguageService} from "../../tokenizer/StringTokenizer.js";
 
 
 const template = /*html*/`
@@ -344,19 +343,16 @@ export class OxCode extends OxControl {
                 span.innerText = token.text;
                 span.tokenState = token.state;
                 span.classList.add("token");
+                span.classList.add(token.state);
                 if (token.data && token.data.class) {
                     span.classList.add(token.data.class);
-                } else if (token.beginData && token.beginData.class) {
+                }
+                if (token.beginData && token.beginData.class) {
                     span.classList.add(token.beginData.class);
-                }else if (token.afterData && token.afterData.class) {
+                }
+                if (token.afterData && token.afterData.class) {
                     span.classList.add(token.afterData.class);
-                }{
-                    span.classList.add(token.state);
                 }
-                if (token.startData && token.startData.error) {
-                    span.style.textDecoration = "1px wavy red underline";
-                }
-
                 lineElement.appendChild(span);
             }
             lineElement = lineElement.nextSibling;

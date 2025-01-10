@@ -18,7 +18,7 @@
         
         <h2>Object literals in lambda functions</h2>
         <p>Both lambda function's body and object literals use curly brackets in JS, so it is only natural, that compiler gets confused (it is JS, after all, we would expect nothing less). Consider:</p>
-        <ox-code tokenizer-language="../../js/StringTokenizer/js-simple.json" code-style="../../css/langs/js-lang.css" >
+        <ox-code tokenizer-language="../../js/tokenizer/js-simple.json" code-style="../../css/langs/js-lang.css" >
             // an object literal
             let obj1 = {a: 1, b: 2}
 
@@ -37,7 +37,7 @@
             }
         </ox-code>
         <p>Of course you can enclose the object literal with another set of brackets, and add return statement to make yourself clear, but that is ugly, and unnecessary verbose. Fortunately you can also use round brackets to do the same. Much cleaner and you don't need the return keyword:</p>
-        <ox-code tokenizer-language="../../js/StringTokenizer/js-simple.json" code-style="../../css/langs/js-lang.css" >
+        <ox-code tokenizer-language="../../js/tokenizer/js-simple.json" code-style="../../css/langs/js-lang.css" >
 //ugly method, but works
 let lambda1 = (a, b) => {
     return {a: a, b: b};
@@ -54,17 +54,16 @@ let lambda1 = (a, b) => (return {a: a, b: b});
         <p>JS is called a duck typing language. If it walks like a duck and quacks like a duck, it is a duck.</p>
         <p>But is it a string? Or a number? Array? Or an object? To make it easy JS gives you a simple and consistent way of checking that: the <strong>typeof</strong>strong> operator. Wait, no, it doesn't work.</p>
         <p>Ok, it kinda works, and maybe is even useful in some cases. But it is useless if you want to know if a variable holds a number. Consider this:</p>
-        <ox-code tokenizer-language="../../js/StringTokenizer/js-simple.json" code-style="../../css/langs/js-lang.css" >
+        <ox-code tokenizer-language="../../js/tokenizer/js-simple.json" code-style="../../css/langs/js-lang.css" >
             let value1 = 5;
             typeof value1 === "number" // works nice
 
             let value2 = new Number(5);
             typeof value2 === "object" // :(
         </ox-code>
-        <p>Technically it is correct, the two variables are different. One is aprimitive, and the second one is an object. But both</p>
-
+        <p>Technically it is correct, the two variables are different. One is aprimitive, and the second one is an object. But both are numbers. You can use built in window.isNaN function to tell if something is either a number or a boolean value (it returns true when you pass it a true or false value - why? Because of reasons). You can also use Number.isNaN, which despite being named exactly the same works of course differently, and returns true only on numbers.</p>
         <p>For my own memory, here is a list of ways to check if a variable is of a specific type:</p>
-        <ox-code tokenizer-language="../../js/StringTokenizer/js-simple.json" code-style="../../css/langs/js-lang.css">
+        <ox-code tokenizer-language="../../js/tokenizer/js-simple.json" code-style="../../css/langs/js-lang.css">
 let value;
 // boolean
 

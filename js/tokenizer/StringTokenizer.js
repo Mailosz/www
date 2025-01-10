@@ -1,4 +1,6 @@
+import { StringTokenizerLanguage, StringTokenizerLanguageService } from "./StringTokenizerLanguage.js";
 
+export { StringTokenizerLanguage, StringTokenizerLanguageService };
 
 
 export class StringTokenizer {
