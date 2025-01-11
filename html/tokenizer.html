@@ -788,6 +788,7 @@
                     while (!tokenizer.isFinished()) {
                         
                         let token = tokenizer.getNextToken();
+                        token.values = JSON.stringify(token.values);
                         currentLine.push(token);
 
                     }
@@ -818,10 +819,11 @@
                         }
                         span.title = token.state + "\n";
 
-                        if (Object.values(token.values).length > 0) {
+                        const tokenValues = JSON.parse(token.values);
+                        if (Object.values(tokenValues).length > 0) {
                             span.title += "\nValues:\n";
-                            for (const d in token.values) {
-                                span.title += d + ": " + token.values[d] + "\n";
+                            for (const d in tokenValues) {
+                                span.title += d + ": " + tokenValues[d] + "\n";
                             }
                         }
 

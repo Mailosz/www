@@ -9,7 +9,7 @@
             }
         }],
         "default": true,
-        "then": {
+        "set": {
             "previous-state": ""
         }
     },
@@ -103,19 +103,19 @@
         "begin": [{
             "by": "/*",
             "everywhere": true,
-            "then": {
+            "set": {
                 "previous-state": ""
             }
         },{
             "by": "/*",
             "on": "selector",
-            "then": {
+            "set": {
                 "previous-state": "selector"
             }
         },{
             "by": "/*",
             "on": "property",
-            "then": {
+            "set": {
                 "previous-state": "property"
             }
         }],

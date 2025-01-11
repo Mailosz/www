@@ -158,11 +158,20 @@ export class StringTokenizerLanguage {
 			}
 
 			//setting variables
-			const then = language[name].then;
-			if (then !== undefined) {
-				this.states[name].setters = parseSetters(then, this.defaultValues, name);
+			const set = language[name].set;
+			if (set !== undefined) {
+				this.states[name].setters = parseSetters(set, this.defaultValues, name);
 			}
-
+			//stacking variables
+			const stack = language[name].stack;
+			if (stack !== undefined) {
+				this.states[name].stackers = parseSetters(stack, this.defaultValues, name);
+			}
+			//stacking variables
+			const queue = language[name].stack;
+			if (queue !== undefined) {
+				this.states[name].queuers = parseSetters(queue, this.defaultValues, name);
+			}
 		}
 
 		// compute groups
@@ -200,8 +209,8 @@ export class StringTokenizerLanguage {
 					}
 
 					let setters = [];
-					if (begin.then !== undefined) {
-						setters = parseSetters(begin.then, this.defaultValues, name);
+					if (begin.set !== undefined) {
+						setters = parseSetters(begin.set, this.defaultValues, name);
 					}
 
 					let importance;
@@ -276,8 +285,8 @@ export class StringTokenizerLanguage {
 					}
 					
 					let setters = [];
-					if (after.then !== undefined) {
-						setters = parseSetters(after.then, this.defaultValues, name);
+					if (after.set !== undefined) {
+						setters = parseSetters(after.set, this.defaultValues, name);
 					}
 					let data = {};
 					if (after.data !== undefined) {
@@ -502,71 +511,48 @@ function parseWhen(when, allowedVariables, stateName){
 	return when;
 }
 
-function parseSetters(then, allowedVariables, stateName) {
-	const setters = [];
-	if (then instanceof Object) {
-		for (const variableName in then) {
-			const variable = then[variableName];
+function parseSetters(set, allowedVariables, stateName) {
+	const setters = {};
+	if (set instanceof Object) {
+		for (const variableName in set) {
 
 			//check for allowed variables
 			if (!(variableName in allowedVariables)) {
 				throw `Unallowed variable "${variableName}" in "then" (state ${stateName}). All values must be initialized on the default state.`;
 			}
 
-			if (variable instanceof Object) {
-				console.log(variable, " is an object");
+			const value = set[variableName];
 
-				let method;
-				if (variable.m === "stack") {
-					method = function (variableName, value, values) { throw "Not implemented" }
-				} else if (variable.m === "queue") {
-					method = function (variableName, value, values) { throw "Not implemented" }
-				} else if (variable.m === "pop") {
-					method = function (variableName, value, values) { throw "Not implemented" }
-				} else if (variable.m === "deq") {
-					method = function (variableName, value, values) { throw "Not implemented" }
-				} else if (variable.m === "set" || variable.m == null) {
-					method = function (variableName, value, values) { values[variableName] = value; }
+			let setter;
+			if (typeof value == "string" && value.startsWith("@")) {
+				if (value.startsWith(":",1)) {
+					console.log("v : " + value)
+					setter = (values, specialValues) => value;;
+				} else if (value.startsWith("copy:", 1)) {
+					console.log("copy : " + value)
+					const copyName = value.substring(6);
+					if (!(copyName in allowedVariables)) {
+						throw `Unallowed variable "${copyName}" in copy declaration (state ${stateName}). All values must be initialized on the default state.`;
+					}
+					setter = (values, specialValues) => values[copyName];
 				} else {
-					throw `Unknown method "${variable}"`;
-				}
-
-				let setter;
-				if ("v" in variable) {
-					setter = (values, specialValues) => method(variableName, variable.v, values);
-					if ("c" in variable) {
-						throw `Cannot set both "v" and "c" in a single setter (v = "${variable.v}", c = "${variable.var}", ,state ${stateName})`;
-					} else if ("f" in variable) {
-						throw `Cannot set both "v" and "s" in a single setter (v = "${variable.v}", s = "${variable.s}", ,state ${stateName})`;
-					}
-				} else if ("c" in variable) {
-					//check for allowed variables
-					if (!(variableName in allowedVariables)) {
-						throw `Unallowed variable "${variable.c}" in copy declaration (state ${stateName}). All values must be initialized on the default state.`;
-					}
-					const c = variable.c;
-					setter = (values, specialValues) => method(variableName, values[c], values);
-					if ("s" in variable) {
-						throw `Cannot set both "c" and "s" in a single setter (c = "${variable.c}", s = "${variable.s}", ,state ${stateName})`;
-					}
-				} else if ("s" in variable) {
+					const specialValue = value.substring(1);
+					console.log("special : " + specialValue)
 					setter = (values, specialValues) => {
-						if (variable.s in specialValues) {
-							const special = specialValues[variable.s]();
-							method(variableName, special, values);
+						if (specialValue in specialValues) {
+							const special = specialValues[specialValue]();
+							return special;
 						} else {
-							throw `No special value "${variable.s}" available, consider placing it in different stage (state: "${stateName}")`;
+							throw `No special value "${specialValue}" available, consider placing it in different stage (state: "${stateName}")`;
 						}
 					};
-				} else {
-					throw `No value definition set in a setter (no 'v', 'c' or 's') in state "${stateName}"`;
 				}
-				setters.push(setter);
 			} else {
-				console.log(variable, " is a primitive");
-				const setter = (values) => { values[variableName] = variable; };
-				setters.push(setter);
+				console.log("v : " + value)
+				setter = (values, specialValues) => value;
 			}
+
+			setters[variableName] = setter;
 		}
 	} else {
 		throw `"then" value must be an object - instead is: ${when} (state ${stateName})`;

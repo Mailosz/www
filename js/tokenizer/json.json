@@ -12,7 +12,14 @@
 		"begin": [{
 			"on": ["default","objectValue","arrayStart"],
 			"by": "{"
-		}]
+		}],
+		"set": {
+			"type": "@stack(tokenContent)",
+			"type": {"stack": {"special": "tokenContent"}}
+		},
+		"stack": {
+
+		}
 	}, "object": {
 		"begin": [{
 			"on": "objectStart"

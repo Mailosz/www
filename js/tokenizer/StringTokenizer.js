@@ -40,9 +40,7 @@ export class StringTokenizer {
 		}
 		this.#state = this.#lang.states[state];
 		// compute values
-		for (const setter of this.#state.setters) {
-			setter(this.#values, {"stateName": () => this.#state.name});
-		}
+		this.#setValues(this.#state, {"stateName": () => this.#state.name});
 	}
 
 	setPosition(pos) {
@@ -83,9 +81,7 @@ export class StringTokenizer {
 	getNextToken() {
 
 		// execute state thens
-		for (const setter of this.#state.setters) {
-			setter(this.#values, {"stateName": () => this.#state.name});
-		}
+		this.#setValues(this.#state, {"stateName": () => this.#state.name});
 		
 		const matcher = this.#findMatch(this.#text, this.#pos, this.#state.watchFor, this.#values);
 
@@ -119,9 +115,7 @@ export class StringTokenizer {
 
 			token.values = this.#values;
 			this.#lastMatcher = matcher;
-			for (const setter of this.#lastMatcher.setters) {
-				setter(this.#values, {"beginContent": () => this.#text.substring(this.#tokenStart, this.#pos)});
-			}
+			this.#setValues(this.#lastMatcher, {"beginContent": () => this.#text.substring(this.#tokenStart, this.#pos)});
 		}
 
 		return token;
@@ -178,11 +172,15 @@ export class StringTokenizer {
 
 		const after = this.#findMatchAtPosition(token.text, 0, state.afters, this.#values);
 		if (after) {
-			for (const setter of after.setters) {
-				const tokenText = token.text;
-				setter(this.#values, {"tokenContent": () => tokenText});
-			}
+			const tokenText = token.text;
+			this.#setValues(after, {"tokenContent": () => tokenText});
 			token.afterData = after.data;
+		}
+	}
+
+	#setValues(obj, specialValues) {
+		for (const variable in obj.setters) {
+			this.#values[variable] = obj.setters[variable](this.#values, specialValues);
 		}
 	}
 

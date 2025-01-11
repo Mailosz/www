@@ -19,13 +19,14 @@
 			"variable-five": false,
 		},
 		/* when the state is chosen these variables are set, and can later be used in conditional begins ("when" rule) */
-		"then": {
+		"set": {
 			"variable-one": false,
 			"variable-two": "string-value",
-			"variable-three": {"f": "stateName"}, /* assigns to the variable the state name - that is in this example: "default-state" */
-			"variable-four": {"f": "stateName"},
+			"variable-three": "@stateName", /* assigns to the variable the state name - that is in this example: "default-state" */
+			"variable-four": "@:@this variable starts with @",
+		},
+		"stack": {
 			"variable-five": {"m": "stack", "v": "stacked-value"} /* stacks the value so that it hides - but not removes - any previous ones, and can be later popped */
-			
 		},
 		/* "data" is not used by the tokenizing engine, but the values here are present for other code */
 		"data": {
@@ -34,8 +35,8 @@
 		/* executed at the end - just before new state is selected */
 		"after": {
 			"by": ["text", "abcd"], // when token content is equal to one of the specified values
-			"then": {
-				"variable-four": {"f": "tokenContent"}, /* assigns to the variable the token content - the parsed text from the beginning of a state to its end */
+			"set": {
+				"variable-four": "@tokenContent" /* assigns to the variable the token content - the parsed text from the beginning of a state to its end */
 			}
 		}
 	},
@@ -47,8 +48,8 @@
 			"on": ["default-state", "second-state"],
 			/* array means that when any of these tokens is encountered then this state is chosen (longer tokens are checked first) */
 			"by": ["goto 1", "goto one"],
-			/* "then"" inside a begin rule means, that these variables will be set only if this particular rule is used to start the state */
-			"then": {
+			/* "set"" inside a begin rule means, that these variables will be set only if this particular rule is used to start the state */
+			"set": {
 				"variable-one": {"f": "beginContent"} /* available in begin - assigns to the variable the parsed text that matched the element begin */
 			}
 		},{
@@ -73,19 +74,19 @@
 				"importance": 5
 			},{
 				"on": "other-state",
-				/* when checks variables set by "then" and only changes state if their values coresponds to these */
+				/* when checks variables set by "set" and only changes state if their values coresponds to these */
 				"when": {
 					/* only when number = true */
 					"number": true,
 					/* this is AND so both checks must be fullfilled */
 					"variable-one": false
 				},
-				"then": {
+				"set": {
 					"number": false
 				}
 			}
 		],
-		/* state-parent is parent of this state - this means that it inherits all its properties (like "data" and "then") except "begin" */
+		/* state-parent is parent of this state - this means that it inherits all its properties (like "data" and "set") except "begin" */
 		"parent": "state-parent",
 		
 		"data": {

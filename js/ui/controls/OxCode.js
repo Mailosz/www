@@ -286,9 +286,24 @@ export class OxCode extends OxControl {
 
         // save selection positions
         const countDivOffset = (container, containerOffset) => {
-            //TODO: it could fail for when container type is element, but hasn't so far in tests
             let current = container;
-            let offset = containerOffset;
+            let offset;
+
+            
+            if (container.nodeType == Node.ELEMENT_NODE)  {
+                //TODO: doesn't work on safari (only safari goes into this branch)
+                offset = 0;
+                let child = container.firstChild;
+                while (child != null && containerOffset > 0) {
+                    offset += child.textContent.length;
+                    containerOffset--;
+                    child = child.nextSibling;
+                }
+                return {current: container, offset: offset};
+            } else {
+                offset = containerOffset;
+            }
+
             while (current != null) {
                 if (current.parentElement == null) {
                     return null;
@@ -304,6 +319,7 @@ export class OxCode extends OxControl {
                 }
                 current = current.parentElement;
             }
+
         }
         
         /**

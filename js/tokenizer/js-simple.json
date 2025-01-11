@@ -15,7 +15,7 @@
 			}
 		}],
 		"default": true,
-		"then": {
+		"set": {
 			"literalType": "\"",
 			"commentLocation": "everywhere"
 		},
@@ -39,19 +39,19 @@
 		"begin": [{
 			"on": ["default"],
 			"by": ["\""],
-			"then": {
+			"set": {
 				"literalType": "\""
 			}
 		},{
 			"on": ["default"],
 			"by": ["'"],
-			"then": {
+			"set": {
 				"literalType": "'"
 			}
 		},{
 			"on": ["default"],
 			"by": ["`"],
-			"then": {
+			"set": {
 				"literalType": "`"
 			}
 		}]
@@ -113,13 +113,13 @@
 		"begin": [{
 			"everywhere": true,
 			"by": "/*",
-			"then": {
+			"set": {
 				"commentLocation": "everywhere"
 			}
 		},{
 			"on": ["literal"],
 			"by": "/*",
-			"then": {
+			"set": {
 				"commentLocation": "literal"
 			}
 		}]

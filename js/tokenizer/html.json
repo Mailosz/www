@@ -58,7 +58,7 @@
 		},
 		"after": [{
 			"by": "style",
-			"then": {
+			"set": {
 				"css": true
 			}
 		}]
@@ -85,8 +85,8 @@
 				"color": "darkblue"
 			},
 			"after": {
-				"then": {
-					"attrName": {"s": "tokenContent"}
+				"set": {
+					"attrName": "@tokenContent"
 				}
 			}
 		},
@@ -136,13 +136,13 @@
 			"begin": [{
 				"on": ["tagAttrEqSign"],
 				"by": ["\""],
-				"then": {
+				"set": {
 					"quoteType": "\""
 				}
 			},{
 				"on": ["tagAttrEqSign"],
 				"by": ["'"],
-				"then": {
+				"set": {
 					"quoteType": "'"
 				}
 			}]
@@ -161,7 +161,7 @@
 					"quoteType": "'"
 				}
 			}],
-			"then": {
+			"set": {
 				"quoteType": null
 			}
 		},
@@ -201,7 +201,7 @@
 				"error": true
 			}
 		}],
-		"then": {
+		"set": {
 			"css": false,
 			"js": false
 		},
