@@ -54,12 +54,39 @@ const style = /*css*/`
     }
 
     #user-icon {
-        background: blue;
+        background: cornflowerblue;
+        background: linear-gradient(#abf 0%, #89f 5%, #56c 100%);
         width: 100px;
         height: 100px;
         border-radius: 100%;
         box-shadow: 0 4px 10px rgba(127,127,127,0.5);
+        position: relative;
+        overflow: hidden;
     }
+
+        #user-icon::before {
+            content: ' ';
+            position: absolute;
+            background: #888;
+            background: linear-gradient(#999, #888);
+            left: 0%;
+            top: 70%;
+            width: 100%;
+            height: 40%;
+            border-radius: 100%;
+        }
+
+        #user-icon::after {
+            content: ' ';
+            position: absolute;
+            background: #aaa;
+            background: linear-gradient(#bbb, #aaa);
+            left: 25%;
+            top: 10%;
+            width: 50%;
+            height: 70%;
+            border-radius: 100%;
+        }
 
     #input-container {
         display: grid;
