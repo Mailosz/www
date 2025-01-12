@@ -2,11 +2,8 @@
 	"default":{
 		"begin": [],
 		"default": true,
-		"set": {
-			"html": true,
-			"css": false,
-			"js": false,
-			"quoted": null
+		"init": {
+			"type": "any"
 		}
 	}, "objectStart": {
 		"begin": [{
@@ -14,11 +11,7 @@
 			"by": "{"
 		}],
 		"set": {
-			"type": "@stack(tokenContent)",
-			"type": {"stack": {"special": "tokenContent"}}
-		},
-		"stack": {
-
+			"push:type": "object"
 		}
 	}, "object": {
 		"begin": [{
@@ -28,7 +21,10 @@
 		"begin": [{
 			"on": ["object", "objectValue"],
 			"by": "}"
-		}]
+		}],
+		"set": {
+			"type": "@pop"
+		}
 	}, "nameStart": {
 		"begin": [{
 			"on": ["object", "objectComma"],
@@ -56,12 +52,18 @@
 		"begin": [{
 			"on": ["default", "objectValue", "arrayComma"],
 			"by": "["
-		}]
+		}],
+		"set": {
+			"push:type": "array"
+		}
 	},"arrayEnd": {
 		"begin": [{
 			"on": ["arrayStart", "arrayValue"],
 			"by": "]"
-		}]
+		}],
+		"set": {
+			"type": "@pop"
+		}
 	}, "arrayComma": {
 		"begin": [{
 			"on": ["arrayEnd", "arrayValue"],

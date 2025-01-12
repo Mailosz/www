@@ -94,7 +94,7 @@ export class StringTokenizerLanguage {
 				groups: [], 
 				watchFor: [],
 				data: {},
-				setters: [],
+				vars: {},
 				afters: [],
 				computed: null};
 		}
@@ -158,20 +158,7 @@ export class StringTokenizerLanguage {
 			}
 
 			//setting variables
-			const set = language[name].set;
-			if (set !== undefined) {
-				this.states[name].setters = parseSetters(set, this.defaultValues, name);
-			}
-			//stacking variables
-			const stack = language[name].stack;
-			if (stack !== undefined) {
-				this.states[name].stackers = parseSetters(stack, this.defaultValues, name);
-			}
-			//stacking variables
-			const queue = language[name].stack;
-			if (queue !== undefined) {
-				this.states[name].queuers = parseSetters(queue, this.defaultValues, name);
-			}
+			this.states[name].setters = parseSetters(language[name].set, this.defaultValues, name);
 		}
 
 		// compute groups
@@ -208,10 +195,7 @@ export class StringTokenizerLanguage {
 						data = begin.data;
 					}
 
-					let setters = [];
-					if (begin.set !== undefined) {
-						setters = parseSetters(begin.set, this.defaultValues, name);
-					}
+					const setters = parseSetters(begin.set, this.defaultValues, name);
 
 					let importance;
 					if (begin.importance !== undefined) {
@@ -284,10 +268,10 @@ export class StringTokenizerLanguage {
 						matchers = [emptyMatcher()];
 					}
 					
-					let setters = [];
-					if (after.set !== undefined) {
-						setters = parseSetters(after.set, this.defaultValues, name);
-					}
+					
+					//setting variables
+					const setters = parseSetters(after.set, this.defaultValues, name);
+
 					let data = {};
 					if (after.data !== undefined) {
 						data = after.data;
@@ -511,51 +495,129 @@ function parseWhen(when, allowedVariables, stateName){
 	return when;
 }
 
-function parseSetters(set, allowedVariables, stateName) {
-	const setters = {};
-	if (set instanceof Object) {
-		for (const variableName in set) {
 
-			//check for allowed variables
-			if (!(variableName in allowedVariables)) {
-				throw `Unallowed variable "${variableName}" in "then" (state ${stateName}). All values must be initialized on the default state.`;
-			}
+function parseSetters(setDefs, allowedVariables, stateName) {
 
-			const value = set[variableName];
-
-			let setter;
-			if (typeof value == "string" && value.startsWith("@")) {
-				if (value.startsWith(":",1)) {
-					console.log("v : " + value)
-					setter = (values, specialValues) => value;;
-				} else if (value.startsWith("copy:", 1)) {
-					console.log("copy : " + value)
-					const copyName = value.substring(6);
-					if (!(copyName in allowedVariables)) {
-						throw `Unallowed variable "${copyName}" in copy declaration (state ${stateName}). All values must be initialized on the default state.`;
-					}
-					setter = (values, specialValues) => values[copyName];
-				} else {
-					const specialValue = value.substring(1);
-					console.log("special : " + specialValue)
-					setter = (values, specialValues) => {
-						if (specialValue in specialValues) {
-							const special = specialValues[specialValue]();
-							return special;
-						} else {
-							throw `No special value "${specialValue}" available, consider placing it in different stage (state: "${stateName}")`;
-						}
-					};
-				}
-			} else {
-				console.log("v : " + value)
-				setter = (values, specialValues) => value;
-			}
-
-			setters[variableName] = setter;
+	const checkVariableName = (name) => {
+		//check for allowed variables
+		if (!(name in allowedVariables)) {
+			throw `Unallowed variable "${name}" in "set" (state ${stateName}). All values must be initialized on the default state.`;
 		}
-	} else {
-		throw `"then" value must be an object - instead is: ${when} (state ${stateName})`;
+	}
+
+	const setters = [];
+	if (setDefs) {
+		if (setDefs instanceof Object) {
+			for (const setterName in setDefs) {
+				const value = setDefs[setterName];
+				let computeValue;
+				if (typeof value == "string" && value.startsWith("@")) {
+					if (value.startsWith("@",1)) {
+						console.log("v : " + value)
+						const actualValue = value.substring(1);
+						computeValue = (context, valueName) => actualValue;
+					} else if (value.startsWith("copy:", 1)) {
+						console.log("copy : " + value)
+						const copyName = value.substring(6);
+						if (!(copyName in allowedVariables)) {
+							throw `Unallowed variable "${copyName}" in copy declaration (state ${stateName}). All values must be initialized on the default state.`;
+						}
+						computeValue = (context, valueName) => context.values[copyName];
+					}else {
+						const specialValue = value.substring(1);
+
+						if (specialValue == "pop") {
+							computeValue = (context, valueName) => {
+								if (valueName in context.lists) {
+									return context.lists[valueName].pop();
+								} else {
+									console.warn(`Trying to pop value from ${valueName} but it was empty`);
+									return undefined;
+								}
+							}
+						} else if (specialValue == "dequeue") {
+							computeValue = (context, valueName) => {
+								if (valueName in context.lists) {
+									return context.lists[valueName].shift();
+								} else {
+									console.warn(`Trying to degueue value from ${valueName} but it was empty`);
+									return undefined;
+								}
+							}
+						} else {
+							console.log("special : " + specialValue)
+							computeValue = (context, valueName) => {
+								if (specialValue in context.specialValues) {
+									const special = context.specialValues[specialValue]();
+									return special;
+								} else {
+									throw `No special value "${specialValue}" available, consider placing it in different stage (state: "${stateName}")`;
+								}
+							};
+						}
+					}
+				} else {
+					console.log("v : " + value)
+					computeValue = (context, valueName) => value;
+				}
+
+
+				// left side
+
+
+
+				let setter;
+				if (setterName.startsWith("push:")) {
+					const variableName = setterName.substring(5);
+					checkVariableName(variableName);
+
+					setter = (context) => {
+						if (!(variableName in context.lists)) {
+							if (variableName in context.values) {
+								context.lists[variableName] = [context.values[variableName]];
+							} else {
+								context.lists[variableName] = [];
+							}
+						}
+						const value = computeValue(context);
+						context.values[variableName] = value;
+						context.lists[variableName].push(value);
+					}
+				} else if (setterName.startsWith(":queue")) {
+					const variableName = setterName.substring(0, setterName.length - 6);
+					checkVariableName(variableName);
+
+					
+					setter = (context) => {
+						if (!(variableName in context.lists)) {
+							if (variableName in context.values) {
+								context.lists[variableName] = [context.values[variableName]];
+							} else {
+								context.lists[variableName] = [];
+							}
+						}
+						const value = computeValue(context);
+						context.values[variableName] = value;
+						context.lists[variableName].unshift(value);
+					}
+				} else {
+					if (setterName.indexOf(":") > -1) {
+						throw `Unknown setter "${setterName}" in state "${stateName}"`;
+					}
+
+					const variableName = setterName;
+					checkVariableName(variableName);
+
+					setter = (context) => {
+						context.values[variableName] = computeValue(context);
+					}
+				}
+
+				setters.push(setter);
+			}
+		} else {
+			throw `"set" value must be an object - instead is: ${setDefs} (state ${stateName})`;
+		}
 	}
 	return setters;
 }

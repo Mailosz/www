@@ -13,6 +13,7 @@ export class StringTokenizer {
 	#values = null;
 	#hasFinished = false;
 	#lastMatcher = null;
+	#lists = {};
 
 	/**
 	 * 
@@ -27,6 +28,7 @@ export class StringTokenizer {
 		this.#state = language.states[language.defaultState];
 		this.#lastMatcher = null;
 		this.#values = language.defaultValues;
+		this.#lists = {};
 		this.#hasFinished = text == null; // if no text passed then the tokenizer is finished
 	}
 
@@ -179,9 +181,33 @@ export class StringTokenizer {
 	}
 
 	#setValues(obj, specialValues) {
-		for (const variable in obj.setters) {
-			this.#values[variable] = obj.setters[variable](this.#values, specialValues);
+		let context = {values: this.#values, lists: this.#lists, specialValues: specialValues};
+		for (const setter of obj.setters) {
+			setter(context);
 		}
+
+
+
+		// for (const variable in obj.vars.stackers) {
+		// 	const value = obj.vars.setters[variable](this.#values, specialValues);
+		// 	this.#values[variable] = value;
+		// 	this.#lists[variable].push(value);
+		// }
+		// for (const variable in obj.vars.queuers) {
+		// 	const value = obj.vars.setters[variable](this.#values, specialValues);
+		// 	this.#values[variable] = value;
+		// 	this.#lists[variable].unshift(value);
+		// }
+		// for (const variable in obj.vars.queuers) {
+		// 	const value = obj.vars.setters[variable](this.#values, specialValues);
+		// 	this.#values[variable] = value;
+		// 	this.#lists[variable].unshift(value);
+		// }
+		// for (const variable in obj.vars.queuers) {
+		// 	const value = obj.vars.setters[variable](this.#values, specialValues);
+		// 	this.#values[variable] = value;
+		// 	this.#lists[variable].unshift(value);
+		// }
 	}
 
 }
