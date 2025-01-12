@@ -21,13 +21,12 @@
 		/* when the state is chosen these variables are set, and can later be used in conditional begins ("when" rule) */
 		"set": {
 			"variable-one": false,
-			"variable-two": "string-value",
+			"@push:variable-two": "string-value", /* stacks the value so that it hides - but not removes - any previous ones, and can be later popped */
 			"variable-three": "@stateName", /* assigns to the variable the state name - that is in this example: "default-state" */
-			"variable-four": "@:@this variable starts with @",
+			"variable-four": "@@this variable starts with @",
+			"variable-five:queue": "@@this variable starts with @" /* queues value so that it hides - but not removes - any previous ones, and can be later shifted back */
 		},
-		"stack": {
-			"variable-five": {"m": "stack", "v": "stacked-value"} /* stacks the value so that it hides - but not removes - any previous ones, and can be later popped */
-		},
+
 		/* "data" is not used by the tokenizing engine, but the values here are present for other code */
 		"data": {
 			"description": "this value can be anything"
@@ -36,7 +35,9 @@
 		"after": {
 			"by": ["text", "abcd"], // when token content is equal to one of the specified values
 			"set": {
-				"variable-four": "@tokenContent" /* assigns to the variable the token content - the parsed text from the beginning of a state to its end */
+				"variable-four": "@tokenContent", /* assigns to the variable the token content - the parsed text from the beginning of a state to its end */
+				"variable-three": "@pop", /* removes a value from the stack */
+				"variable-five": "@dequeue" /* removes a value from the queue */
 			}
 		}
 	},

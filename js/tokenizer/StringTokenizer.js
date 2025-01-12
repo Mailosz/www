@@ -49,8 +49,8 @@ export class StringTokenizer {
 		this.#pos = pos;
 	}
 
-	setValues(values) {
-		throw "Not implemented";
+	getContext() {
+		return {values: this.#values, lists: this.#lists};
 	}
 
 	isFinished() {
@@ -85,7 +85,7 @@ export class StringTokenizer {
 		// execute state thens
 		this.#setValues(this.#state, {"stateName": () => this.#state.name});
 		
-		const matcher = this.#findMatch(this.#text, this.#pos, this.#state.watchFor, this.#values);
+		const matcher = this.#findMatch(this.#text, this.#pos, this.#state.watchFor);
 
 		const token = {
 			start: this.#tokenStart, 
@@ -102,9 +102,6 @@ export class StringTokenizer {
 			token.text = this.#text.substring(token.start);
 
 			this.#computeAfters(token, this.#state);
-
-			token.values = this.#values;
-
 		} else {
 			this.#tokenStart = matcher.matchedPosition;
 			token.end = this.#tokenStart;
@@ -115,7 +112,6 @@ export class StringTokenizer {
 			this.#state = this.#lang.states[matcher.target];
 			this.#pos = matcher.matchedPosition + matcher.matchedLength;
 
-			token.values = this.#values;
 			this.#lastMatcher = matcher;
 			this.#setValues(this.#lastMatcher, {"beginContent": () => this.#text.substring(this.#tokenStart, this.#pos)});
 		}
@@ -124,11 +120,11 @@ export class StringTokenizer {
 
 	}
 
-	#findMatch(text, startPos, matchers, values) {
+	#findMatch(text, startPos, matchers) {
 		let pos = startPos;
 
 		while (pos < this.#text.length) {
-			const matcher = this.#findMatchAtPosition(text, pos, matchers, values); 
+			const matcher = this.#findMatchAtPosition(text, pos, matchers); 
 			if (matcher) {
 				matcher.matchedPosition = pos;
 				return matcher;
@@ -146,7 +142,7 @@ export class StringTokenizer {
 	 * @param {Number} pos 
 	 * @returns 
 	 */
-	#findMatchAtPosition(text, pos, matchers, values) {
+	#findMatchAtPosition(text, pos, matchers) {
 
 		outer:
 			for (const matcher of matchers) {
@@ -159,7 +155,7 @@ export class StringTokenizer {
 				//now checking all required values if they are set
 				if (matcher.when != null) {
 					for (const check in matcher.when){
-						if (values[check] != matcher.when[check]){
+						if (this.#values[check] != matcher.when[check]){
 							continue outer; // one of values not set
 						}
 					}
@@ -172,7 +168,7 @@ export class StringTokenizer {
 
 	#computeAfters(token, state) {
 
-		const after = this.#findMatchAtPosition(token.text, 0, state.afters, this.#values);
+		const after = this.#findMatchAtPosition(token.text, 0, state.afters);
 		if (after) {
 			const tokenText = token.text;
 			this.#setValues(after, {"tokenContent": () => tokenText});

@@ -17,24 +17,112 @@
         <link rel="stylesheet" href="../css/langs/json-lang.css">
     </head>
     <body>
+        <script type="module">
+            import {StringTokenizer, StringTokenizerLanguage, StringTokenizerLanguageService } from "../js/tokenizer/StringTokenizer.js";
+
+            async function colorizeAll() {
+
+                let language = await StringTokenizerLanguageService.getLanguageAsync("../js/tokenizer/json.json");
+
+                let elems = document.getElementsByClassName("script");
+
+                for (let el of elems){
+                    colorizeTextContent(el, language);
+                }
+            }
+
+            function colorizeTextContent(element, language) {
+                let text = element.textContent.split('\n');
+                element.textContent = "";
+                console.time("Tokenizing time");
+
+                let tokenizer = new StringTokenizer(language);
+                let linesOfTokens = [];
+                for (const line of text) {
+                    tokenizer.resetText(line + "\n");
+
+                    const currentLine = [];
+                    while (!tokenizer.isFinished()) {
+                        
+                        let token = tokenizer.getNextToken();
+                        const context = tokenizer.getContext();
+                        const values = {};
+                        for (const name in context.values) {
+                            values[name] = context.values[name];
+                        }
+                        for (const name in context.lists) {
+                            values[name] = values[name] + "   " + context.lists[name].join(", ");
+                        }
+                        token.values = values;
+                        currentLine.push(token);
+
+                    }
+                    linesOfTokens.push(currentLine);
+                    
+                }
+                console.timeEnd("Tokenizing time");
+
+
+                for (const line of linesOfTokens) {
+                    const lineElement = document.createElement("div");
+
+                    for (const token of line) {
+                        const span = document.createElement("span");
+                        span.textContent = token.text;
+                        span.classList.add("token");
+                        if (token.data && token.data.color) {
+                            span.style.color = token.data.color;
+                        }
+                        if (token.startData && token.startData.error) {
+                            span.style.textDecoration = "1px wavy red underline";
+                        }
+                        const data = {...token.data, ...token.beforeData, ...token.afterData};
+                        if (token.data && data.class) {
+                            span.classList.add(data.class);
+                        } else {
+                            span.classList.add(token.state);
+                        }
+                        span.title = token.state + "\n";
+
+                        const tokenValues = token.values;
+                        if (Object.values(tokenValues).length > 0) {
+                            span.title += "\nValues:\n";
+                            for (const d in tokenValues) {
+                                span.title += d + ": " + tokenValues[d] + "\n";
+                            }
+                        }
+
+                        if (token.beginData && Object.values(token.beginData).length > 0) {
+                            span.title += "\nBegin data:\n";
+                            for (const d in token.beginData) {
+                                span.title += d + ": " + token.beginData[d] + "\n";
+                            }
+                        }
+
+                        if (Object.values(token.data).length > 0) {
+                            span.title += "\nData:\n";
+                            for (const d in token.data) {
+                                span.title += d + ": " + token.data[d] + "\n";
+                            }
+                        }
+
+                        if (Object.values(token.afterData).length > 0) {
+                            span.title += "\nAfter data:\n";
+                            for (const d in token.afterData) {
+                                span.title += d + ": " + token.afterData[d] + "\n";
+                            }
+                        }
+                        lineElement.appendChild(span);
+                    }
+                    element.appendChild(lineElement);
+                }
+            }
+            document.body.onload = ()=>colorizeAll();
+        </script>
         <!-- contenteditable="true" onkeyup="change(this);" -->
         <code class="script" >
     {
-        "default":{
-            "begin": [],
-            "default": true,
-            "init": {
-                "type": "any"
-            }
-        }, "objectStart": {
-            "begin": [{
-                "on": ["default","objectValue","arrayStart"],
-                "by": "{"
-            }],
-            "set": {
-                "push:type": "object"
-            }
-        }, "object": {
+        "object": {
             "begin": [{
                 "on": "objectStart"
             }]
@@ -106,101 +194,6 @@
         </code>
 
 
-        <script type="module">
-            import {StringTokenizer, StringTokenizerLanguage, StringTokenizerLanguageService } from "../js/tokenizer/StringTokenizer.js";
-
-            async function colorizeAll() {
-
-                let language = await StringTokenizerLanguageService.getLanguageAsync("../js/tokenizer/json.json");
-
-                let elems = document.getElementsByClassName("script");
-
-                for (let el of elems){
-                    colorizeTextContent(el, language);
-                }
-            }
-
-            function colorizeTextContent(element, language) {
-                let text = element.textContent.split('\n');
-                element.textContent = "";
-                console.time("Tokenizing time");
-
-                let tokenizer = new StringTokenizer(language);
-                let linesOfTokens = [];
-                for (const line of text) {
-                    tokenizer.resetText(line + "\n");
-
-                    const currentLine = [];
-                    while (!tokenizer.isFinished()) {
-                        
-                        let token = tokenizer.getNextToken();
-                        token.values = JSON.stringify(token.values);
-                        currentLine.push(token);
-
-                    }
-                    linesOfTokens.push(currentLine);
-                    
-                }
-                console.timeEnd("Tokenizing time");
-
-
-                for (const line of linesOfTokens) {
-                    const lineElement = document.createElement("div");
-
-                    for (const token of line) {
-                        const span = document.createElement("span");
-                        span.textContent = token.text;
-                        span.classList.add("token");
-                        if (token.data && token.data.color) {
-                            span.style.color = token.data.color;
-                        }
-                        if (token.startData && token.startData.error) {
-                            span.style.textDecoration = "1px wavy red underline";
-                        }
-                        const data = {...token.data, ...token.beforeData, ...token.afterData};
-                        if (token.data && data.class) {
-                            span.classList.add(data.class);
-                        } else {
-                            span.classList.add(token.state);
-                        }
-                        span.title = token.state + "\n";
-
-                        const tokenValues = JSON.parse(token.values);
-                        if (Object.values(tokenValues).length > 0) {
-                            span.title += "\nValues:\n";
-                            for (const d in tokenValues) {
-                                span.title += d + ": " + tokenValues[d] + "\n";
-                            }
-                        }
-
-                        if (token.beginData && Object.values(token.beginData).length > 0) {
-                            span.title += "\nBegin data:\n";
-                            for (const d in token.beginData) {
-                                span.title += d + ": " + token.beginData[d] + "\n";
-                            }
-                        }
-
-                        if (Object.values(token.data).length > 0) {
-                            span.title += "\nData:\n";
-                            for (const d in token.data) {
-                                span.title += d + ": " + token.data[d] + "\n";
-                            }
-                        }
-
-                        if (Object.values(token.afterData).length > 0) {
-                            span.title += "\nAfter data:\n";
-                            for (const d in token.afterData) {
-                                span.title += d + ": " + token.afterData[d] + "\n";
-                            }
-                        }
-                        lineElement.appendChild(span);
-                    }
-                    element.appendChild(lineElement);
-                }
-            }
-
-
-            colorizeAll();
-        </script>
+        
     </body>
 </html>

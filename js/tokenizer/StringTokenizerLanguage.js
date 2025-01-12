@@ -325,8 +325,6 @@ export class StringTokenizerLanguage {
 				state.watchFor.sort(matcherSort);
 			}
 		}
-
-		console.log(this.states)
 	}
 
 	#computeGroups(state, history){
@@ -513,11 +511,9 @@ function parseSetters(setDefs, allowedVariables, stateName) {
 				let computeValue;
 				if (typeof value == "string" && value.startsWith("@")) {
 					if (value.startsWith("@",1)) {
-						console.log("v : " + value)
 						const actualValue = value.substring(1);
 						computeValue = (context, valueName) => actualValue;
 					} else if (value.startsWith("copy:", 1)) {
-						console.log("copy : " + value)
 						const copyName = value.substring(6);
 						if (!(copyName in allowedVariables)) {
 							throw `Unallowed variable "${copyName}" in copy declaration (state ${stateName}). All values must be initialized on the default state.`;
@@ -528,8 +524,12 @@ function parseSetters(setDefs, allowedVariables, stateName) {
 
 						if (specialValue == "pop") {
 							computeValue = (context, valueName) => {
+
 								if (valueName in context.lists) {
-									return context.lists[valueName].pop();
+									const list = context.lists[valueName]
+									list.pop();
+									// console.log("Pop " + valueName, list);
+									return list.at(-1);
 								} else {
 									console.warn(`Trying to pop value from ${valueName} but it was empty`);
 									return undefined;
@@ -538,14 +538,15 @@ function parseSetters(setDefs, allowedVariables, stateName) {
 						} else if (specialValue == "dequeue") {
 							computeValue = (context, valueName) => {
 								if (valueName in context.lists) {
-									return context.lists[valueName].shift();
+									const list = context.lists[valueName]
+									list.shift();
+									return list.at(-1);
 								} else {
 									console.warn(`Trying to degueue value from ${valueName} but it was empty`);
 									return undefined;
 								}
 							}
 						} else {
-							console.log("special : " + specialValue)
 							computeValue = (context, valueName) => {
 								if (specialValue in context.specialValues) {
 									const special = context.specialValues[specialValue]();
@@ -557,7 +558,6 @@ function parseSetters(setDefs, allowedVariables, stateName) {
 						}
 					}
 				} else {
-					console.log("v : " + value)
 					computeValue = (context, valueName) => value;
 				}
 
@@ -567,8 +567,8 @@ function parseSetters(setDefs, allowedVariables, stateName) {
 
 
 				let setter;
-				if (setterName.startsWith("push:")) {
-					const variableName = setterName.substring(5);
+				if (setterName.startsWith("@push:")) {
+					const variableName = setterName.substring(6);
 					checkVariableName(variableName);
 
 					setter = (context) => {
@@ -579,12 +579,13 @@ function parseSetters(setDefs, allowedVariables, stateName) {
 								context.lists[variableName] = [];
 							}
 						}
-						const value = computeValue(context);
+						const value = computeValue(context, variableName);
 						context.values[variableName] = value;
 						context.lists[variableName].push(value);
+						// console.log("Push " + variableName, context.lists[variableName]);
 					}
-				} else if (setterName.startsWith(":queue")) {
-					const variableName = setterName.substring(0, setterName.length - 6);
+				} else if (setterName.startsWith("@queue:")) {
+					const variableName = setterName.substring(7);
 					checkVariableName(variableName);
 
 					
@@ -596,7 +597,7 @@ function parseSetters(setDefs, allowedVariables, stateName) {
 								context.lists[variableName] = [];
 							}
 						}
-						const value = computeValue(context);
+						const value = computeValue(context, variableName);
 						context.values[variableName] = value;
 						context.lists[variableName].unshift(value);
 					}
@@ -609,7 +610,7 @@ function parseSetters(setDefs, allowedVariables, stateName) {
 					checkVariableName(variableName);
 
 					setter = (context) => {
-						context.values[variableName] = computeValue(context);
+						context.values[variableName] = computeValue(context, variableName);
 					}
 				}
 

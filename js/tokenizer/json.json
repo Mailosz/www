@@ -1,6 +1,8 @@
 {
 	"default":{
-		"begin": [],
+		"begin": [{
+			"on": ["objectEnd","arrayEnd","valueStringEnd"]
+		}],
 		"default": true,
 		"init": {
 			"type": "any"
@@ -11,7 +13,7 @@
 			"by": "{"
 		}],
 		"set": {
-			"push:type": "object"
+			"@push:type": "object"
 		}
 	}, "object": {
 		"begin": [{
@@ -19,7 +21,7 @@
 		}]
 	}, "objectEnd": {
 		"begin": [{
-			"on": ["object", "objectValue"],
+			"on": ["object", "objectValue", "valueStringEnd", "default"],
 			"by": "}"
 		}],
 		"set": {
@@ -48,17 +50,36 @@
 		"begin": [{
 			"on": ["pairSeparator"]
 		}]
+	},"valueStringStart":{
+		"begin": {
+			"on": ["objectValue", "arrayValue"],
+			"by": "\""
+		}
+	},"valueString":{
+		"begin": {
+			"on": ["valueStringStart", "stringSpecialChar"]
+		}
+	},"stringSpecialChar":{
+		"begin": {
+			"on": "valueString",
+			"by": "\\\""
+		}
+	},"valueStringEnd":{
+		"begin": {
+			"on": "valueString",
+			"by": "\""
+		}
 	},"arrayStart": {
 		"begin": [{
-			"on": ["default", "objectValue", "arrayComma"],
+			"on": ["default", "objectValue", "valueStringEnd", "arrayComma"],
 			"by": "["
 		}],
 		"set": {
-			"push:type": "array"
+			"@push:type": "array"
 		}
 	},"arrayEnd": {
 		"begin": [{
-			"on": ["arrayStart", "arrayValue"],
+			"on": ["arrayStart", "arrayValue", "valueStringEnd", "default"],
 			"by": "]"
 		}],
 		"set": {
@@ -66,13 +87,25 @@
 		}
 	}, "arrayComma": {
 		"begin": [{
-			"on": ["arrayEnd", "arrayValue"],
+			"on": "arrayValue",
 			"by": ","
+		},{
+			"on": ["default"],
+			"by": ",",
+			"when": {
+				"type": "array"
+			}
 		}]
 	}, "objectComma": {
 		"begin": [{
 			"on": ["objectValue"],
 			"by": ","
+		},{
+			"on": ["default"],
+			"by": ",",
+			"when": {
+				"type": "object"
+			}
 		}]
 	}, "arrayValue": {
 		"begin": [{
