@@ -1,8 +1,8 @@
 html {
-    /* --light-accent-color: #8af;
+    /* --weak-accent-color: #8af;
     --accent-color: #68f;
     --strong-accent-color: #349; */
-    --light-accent-color: #afa;
+    --weak-accent-color: #afa;
     --accent-color: #3f3;
     --strong-accent-color: green;
     --text-color: black;
@@ -48,7 +48,7 @@ html {
 
     .button:state(checked) {
         border: var(--border-width, 2px) solid var(--strong-accent-color, green);
-        background-color: var(--light-accent-color, #afa);
+        background-color: var(--weak-accent-color, #afa);
     }
 
 /* arranges buttons in a single toolbar */

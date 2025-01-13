@@ -1,10 +1,20 @@
 html {
-    /* --light-accent-color: #8af;
+    /* --weak-accent-color: #8af;
     --accent-color: #68f;
     --strong-accent-color: #349; */
-    --light-accent-color: #afa;
-    --accent-color: #3f3;
+
+    --weaker-accent-color: #bfb;
+    --weak-accent-color: #7f7;
+    --accent-color: #0d0;
     --strong-accent-color: green;
+    --stronger-accent-color: darkgreen;
+
+    --weaker-secondary-color: #fea;
+    --weak-secondary-color: #fc8;
+    --secondary-color: #fa0;
+    --strong-secondary-color: #d80;
+    --stronger-secondary-color: #a60;
+
     --text-color: black;
 
     --border-color: #666;

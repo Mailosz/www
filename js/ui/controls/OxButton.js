@@ -35,7 +35,7 @@ const style = /*css*/`
     
     :host(:state(checked)) {
         border: var(--border-width, 2px) solid var(--strong-accent-color, green);
-        background-color: var(--light-accent-color, #afa);
+        background-color: var(--weak-accent-color, #afa);
     }
     
     :host(:hover:not([disabled])) {

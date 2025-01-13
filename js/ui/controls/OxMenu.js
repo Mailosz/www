@@ -24,7 +24,7 @@ const style = /*css*/`
     }
 
     ::slotted(ox-item:focus) {
-        background-color: var(--light-accent-color, lightblue);
+        background-color: var(--weak-accent-color, lightblue);
     }
 
     ::slotted(ox-item) {

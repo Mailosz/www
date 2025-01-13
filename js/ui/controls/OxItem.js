@@ -37,7 +37,7 @@ const style = /*css*/`
     }
 
     :host(:state(checked)) {
-        background: var(--light-accent-color);
+        background: var(--weak-accent-color);
     }
 
     :host([disabled]) {

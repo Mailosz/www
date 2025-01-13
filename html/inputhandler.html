@@ -36,7 +36,7 @@
             min-width: 1px;
             z-index: 10000;
         }
-        .selection.rect {
+        .selection.caret {
             outline: 2px solid orange;
         }
         .selection.end {
@@ -102,19 +102,19 @@
 
             const rects = range.getClientRects();
             for (let rect of rects) {
-                createSelectionRect(rect, "rect", range.collapsed ? "blink" : null)
+                createSelectionRect(rect, "caret", range.collapsed ? "blink" : null)
             }
 
             if (range.startContainer.nodeType === Node.ELEMENT_NODE) {
                 if (range.startOffset === range.startContainer.childNodes.length) {
                     let rect = range.startContainer.getBoundingClientRect();
 
-                    createSelectionRect(new DOMRect(rect.right, rect.top, 0, rect.height), "end");
+                    createSelectionRect(new DOMRect(rect.left, rect.top, rect.width, rect.height), "end");
                     
                 } else if (range.startOffset === 0) {
                     let rect = range.startContainer.getBoundingClientRect();
 
-                    createSelectionRect(new DOMRect(rect.left, rect.top, 0, rect.height), "start");
+                    createSelectionRect(new DOMRect(rect.left, rect.top, rect.width, rect.height), "start");
                 } else if (range.startOffset > 0) {
 
                     let node = range.startContainer.childNodes.item(range.startOffset);

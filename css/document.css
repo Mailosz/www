@@ -21,29 +21,13 @@ main {
 :target {
     outline: 0.1em;
     outline-offset: 0;
-    outline-color: rgba(from var(--accent-color,orange) r g b / 0.2);
+    outline-color: rgba(from var(--secondary-color,orange) r g b / 0.2);
     outline-style: solid;
     border-radius: 1px;
-    background-color: rgba(from var(--accent-color,orange) r g b / 0.2);
+    background-color: rgba(from var(--secondary-color,orange) r g b / 0.2);
+    border: 0.1em dotted var(--secondary-color,orange);
     display: inline-block;
-    quotes: '\2B9E' '\2B9C';
-    
 }
-
-:target::before {
-    content: open-quote;
-    color: var(--accent-color,orange);
-    position: absolute;
-    text-align: right;
-    transform: translateX(-100%);
-}
-
-:target::after {
-    position: absolute;
-    content: close-quote;
-    color: var(--accent-color,orange);
-}
-
 
 /* headers */
 h1 {
@@ -92,8 +76,9 @@ hr {
 /* MARK */
 
 mark {
-    outline: 2px solid var(--light-accent-color, yellow);
-    background-color: var(--light-accent-color, yellow);
+    outline: 2px solid var(--weak-accent-color, yellow);
+    background-color: var(--weak-accent-color, yellow);
+    color: var(--stronger-accent-color, black);
     border-radius: 2px;
 }
 

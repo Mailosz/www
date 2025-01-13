@@ -108,8 +108,12 @@ const style = /*css*/`
         flex: 1;
         width: 100%;
         min-height: 100px;
+
     }
 
+    .fullscreen #preview{
+        height: calc(50% - 32px);
+    }
 
     #example.fullscreen {
         position: fixed;

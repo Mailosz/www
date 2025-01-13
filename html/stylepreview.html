@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Style preview</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/style.green.css">
+    <style>
+        .color-preview {
+            display: flex;
+            width: 120px;
+            height: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div style="display: flex">
+        <div style="display: flex; flex-direction: column">
+            <div class="color-preview" style="background-color: from var(--accent-color) r g b"></div>
+            <div class="color-preview" style="background-color: var(--accent-color)"></div>
+            <div class="color-preview" style="background-color: var(--accent-color)"></div>
+            <div class="color-preview" style="background-color: var(--accent-color)"></div>
+            <div class="color-preview" style="background-color: var(--accent-color)"></div>
+        </div>
+        <div style="display: flex; flex-direction: column">
+            <div class="color-preview" style="background-color: var(--stronger-accent-color)"></div>
+            <div class="color-preview" style="background-color: var(--strong-accent-color)"></div>
+            <div class="color-preview" style="background-color: var(--accent-color)"></div>
+            <div class="color-preview" style="background-color: var(--weak-accent-color)"></div>
+            <div class="color-preview" style="background-color: var(--weaker-accent-color)"></div>
+        </div>
+        <div>
+            <div class="color-preview" style="background-color: var(--stronger-secondary-color)"></div>
+            <div class="color-preview" style="background-color: var(--strong-secondary-color)"></div>
+            <div class="color-preview" style="background-color: var(--secondary-color)"></div>
+            <div class="color-preview" style="background-color: var(--weak-secondary-color)"></div>
+            <div class="color-preview" style="background-color: var(--weaker-secondary-color)"></div>
+        </div>
+        <div>
+            <div class="color-preview" style="background-color: var(--secondary-color)"></div>
+            <div class="color-preview" style="background-color: var(--secondary-color)"></div>
+            <div class="color-preview" style="background-color: var(--secondary-color)"></div>
+            <div class="color-preview" style="background-color: var(--secondary-color)"></div>
+            <div class="color-preview" style="background-color: var(--secondary-color)"></div>
+        </div>
+    </div>
+
+</body>
+</html>

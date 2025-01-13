@@ -1,5 +1,5 @@
 body {
-    --switch-light-accent-color: var(--light-accent-color, #afa);
+    --switch-light-accent-color: var(--weak-accent-color, #afa);
     --switch-accent-color: var(--accent-color, #3f3);
     --strong-switch-accent-color: var(--strong-accent-color, green);
 

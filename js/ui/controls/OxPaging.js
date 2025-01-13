@@ -23,7 +23,7 @@ const style = /*css*/`
 
     #current {
         font-weight: 600;
-        background: var(--light-accent-color, lightblue); 
+        background: var(--weak-accent-color, lightblue); 
     }
 
     #container {
