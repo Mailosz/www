@@ -12,10 +12,8 @@ table.seamless {
     outline: none;
 }
 
-tr:first-child {
-    position: sticky;
-    left: 0px;
-    z-index: 0;
+table.seamless>tbody>tr{
+    background-color: transparent;
 }
 
 tbody>tr {

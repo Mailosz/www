@@ -14,7 +14,6 @@ body {
 }
 
 :is(main,section,article)>.wide {
-    position: absolute;
     left: 0;
     right: 0;
     margin-left: 0;
@@ -106,7 +105,10 @@ table {
 figure {
     clear: both;
     margin: 1em 0;
+    padding-top: 0.1px;
+    padding-bottom: 0.1px;
 }
+
 
 figcaption, blockquote {
     padding: 1em;

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../../css/main.css">
+	<title>Edit distance</title>
+
+	<script>
+
+		function editDistance(strA, strB) {
+
+			// debugger;
+			const deletionCost = 1;
+			const insertionCost = 1;
+			const substitutionCost = 1;
+
+			let row = new Array(strB.length);
+
+			for (let i = 0; i < row.length; ) {
+				row[i] = ++i;
+			}
+
+			let leftVal; // the value left to current
+			for (let a = 0; a < strA.length; a++){
+				let diagVal = a; // the value in the upper row to current
+				leftVal = a+1;
+				for (let b = 0; b < strB.length; b++) {
+					
+					let cost;
+					if (strA.charAt(a) == strB.charAt(b)) {
+						cost = 0;
+					} else {
+						cost = substitutionCost;
+					}
+
+					leftVal = Math.min(leftVal + deletionCost, row[b] + insertionCost, diagVal + cost);
+					diagVal = row[b];
+					row[b] = leftVal;
+				}
+			}
+
+			return leftVal;
+
+		}
+
+		function showEditDistance(a, b) {
+			let before = Date.now();
+			let res = editDistance(a,b);
+			let time = Date.now() - before;
+			console.log(a + ", " + b + " = " + res + "<br>");
+			console.log(time + "ms<br>");
+		}
+		
+		showEditDistance("sitting", "kitten");
+		showEditDistance("saturday", "sunday");
+		showEditDistance("cześć", "część");
+		showEditDistance("a", "b");
+		showEditDistance("a", "batuta");
+		showEditDistance("batuta", "a");
+		showEditDistance("telegrafistów", "Telegrafistów");
+		showEditDistance("Thelongestwordthaticouldhavethoughtof", "Najdłuższesłowojakiebyłemwstaniewymyśleć");
+	</script>
+</head>
+<body>
+	<main>
+		<h1>Edit distance</h1>
+		<p>It is a way of measuring how different are two strings.</p>
+		<p>With numbers, this is easy. Say you want to find out how different are "5" and "3" - you just deduct one from another and maybe take the absolute value, and behold!, they are 2 units apart.</p>
+		<p>But how different are, say <strong>"apples"</strong> and <strong>"oranges"</strong>?</p>
+		<h2>Naive approaches</h2>
+		<p>You could try to measure strings' length. By that metric "apples" and "oranges" differ by one. But so do "apples" and "apple", and we see intuitively that the latter are more similar.</p>
+		<p>Other approach we can try is to check all the characters in both strings whether they match. The problem with this method is that it cannot handle strings with different beginnings, for example "wake" and "awake" are considered completely different, when in reality they are pretty similar.</p>
+		<p>Surely, we can do better. But how?</p>
+		<h2>Longest common subsequence</h2>
+		<p>This approach tries to match substrings of both strings, so that it finds the longest possible streak of same characters.</p>
+		<p>The longer the matching sequence compared to the length of the strings, the lower the edit distance.</p>
+		<figure>
+			<figcaption>Characters in bold are the same</figcaption>
+			<table class="seamless" style="width: auto;">
+				<tr>
+					<td><b>wake</b></td><td>a<b>wake</b></td></tr>
+					<td><b>emp</b>eror</td><td><b>emp</b>ress</td></tr>
+					<tr><td>pot<b>hole</b>s</td><td>w<b>hole</b></td></tr>
+				</tr>
+			</table>
+		</figure>
+		<h2>Levenshtein distance</h2>
+		<p>In this approach we define the edit distance as "the number of operations required to transpose (change) one string into the other".</p>
+		<p>The operations are single letter edits such as: deletion, insertion and substitution.</p>
+		<
+	</main>
+</body>
+</html>
