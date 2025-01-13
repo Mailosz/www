@@ -22,6 +22,8 @@
 
             async function colorizeAll() {
 
+                StringTokenizerLanguageService.parseOptions.stricterParse = true;
+
                 let language = await StringTokenizerLanguageService.getLanguageAsync("../js/tokenizer/json.json");
 
                 let elems = document.getElementsByClassName("script");

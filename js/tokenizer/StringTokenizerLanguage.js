@@ -128,6 +128,14 @@ export class StringTokenizerLanguage {
 			this.defaultValues = language[this.defaultState].set;
 		}
 
+		if (this.stricterParse) {
+			for (const variable in this.defaultValues) {
+				if (variable.indexOf("@") != -1) {
+					throw `Variable names cannot contain '@' (variable "${variable}")`;
+				}
+			}
+		}
+
 
 		//prepare state definitions
 		for (const name in language){
@@ -190,10 +198,12 @@ export class StringTokenizerLanguage {
 			const begin = language[name].begin;
 			if (begin !== undefined){
 				forElementOrArray(begin, (begin) => {
+					
+					const conditions = parseWhenConditions(begin.when, this.defaultValues, name);
 
 					let matchers;
 					if (begin.by !== undefined) {
-						matchers = parseBeginMatchers(begin.by, name);
+						matchers = parseBeginMatchers(begin.by, (conditions.length>0?0.1:0), name);
 					} else {
 						if (begin.on === undefined) {
 							throw "Cannot have begin without any of 'on' or 'by'  (state \"" + name + "\")";
@@ -201,8 +211,6 @@ export class StringTokenizerLanguage {
 						// match everything matcher
 						matchers = [emptyMatcher()];
 					}
-
-					let when = parseWhen(begin.when, this.defaultValues, name);
 
 					let data = {};
 					if (begin.data !== undefined) {
@@ -220,7 +228,7 @@ export class StringTokenizerLanguage {
 
 					// apply values to matchers
 					for (const matcher of matchers){
-						matcher.when = when;
+						matcher.conditions = conditions;
 						matcher.data = data;
 						matcher.setters = setters;
 						matcher.importance = importance;
@@ -275,11 +283,13 @@ export class StringTokenizerLanguage {
 			if (afterDefinition !== undefined) {
 				forElementOrArray(afterDefinition, (after) => { 
 
+					let conditions = parseWhenConditions(afterDefinition.when, this.defaultValues, name);
+
 					let matchers;
 					if (after.by !== undefined) {
-						matchers = parseAfterMatchers(after.by, name);
+						matchers = parseAfterMatchers(after.by,(conditions.length>0?0.1:0), name);
 					} else {
-						matchers = [emptyMatcher()];
+						matchers = [emptyMatcher((conditions.length>0?-1:-2))];
 					}
 					
 					
@@ -290,12 +300,11 @@ export class StringTokenizerLanguage {
 					if (after.data !== undefined) {
 						data = after.data;
 					}
-					let when = parseWhen(afterDefinition.when, this.defaultValues, name);
 
 					for (const matcher of matchers) {
 						matcher.setters = setters;
 						matcher.data = data;
-						matcher.when = when;
+						matcher.conditions = conditions;
 						this.states[name].afters.push(matcher);
 					}
 					
@@ -378,7 +387,7 @@ export class StringTokenizerLanguage {
 function findSameMatcherIndex(list, a) { // TODO: better comparison
 	const index = list.findIndex((b) => a.comparator === b.comparator
 	&& a.target == b.target 
-	&& a.when == b.when)
+	&& a.conditions == b.conditions)
 	if (index != -1) {
 			console.log("Found same matchers: ", a, list[index]);
 		return index;
@@ -396,11 +405,11 @@ function matcherSort(a, b) {
 	}
 }
 
-function emptyMatcher() {
-	return {match: () => 0, comparator: "", order: -1, importance: 0};
+function emptyMatcher(baseOrder) {
+	return {match: () => 0, comparator: "", order: baseOrder, importance: 0};
 }
 
-function parseBeginMatchers(bys, stateName) {
+function parseBeginMatchers(bys, baseOrder, stateName) {
 	const matchers = [];
 	forElementOrArray(bys, (by) => {
 
@@ -412,14 +421,14 @@ function parseBeginMatchers(bys, stateName) {
 					return text.startsWith(by.text, pos) ? matcher.text.length : -1;
 				}
 				matcher.comparator = "text:" + by.text;
-				matcher.order = by.text.length;
+				matcher.order = by.text.length + baseOrder;
 				if ("regex" in by) {
 					throw `Cannot set both "text" and "regex" in a single matcher (text = "${by.text}", regex = "${by.regex}", "begin.by" in state ${stateName})`;
 				}
 			} else if ("regex" in by) {
 				const regex = new RegExp(by.regex, "y");
 				matcher.comparator = "regex:" + by.regex;
-				matcher.order = 0.5;
+				matcher.order = 0.5 + baseOrder;
 				matcher.match = function (text, pos) {
 					regex.lastIndex = pos;
 					const result = regex.exec(text);
@@ -433,7 +442,7 @@ function parseBeginMatchers(bys, stateName) {
 
 		} else {
 			matcher.comparator = "text:" + by;
-			matcher.order = by.length;
+			matcher.order = by.length + baseOrder;
 			matcher.match = function (text, pos) {
 				return text.startsWith(by, pos) ? by.length : -1;
 			}
@@ -444,7 +453,7 @@ function parseBeginMatchers(bys, stateName) {
 	return matchers;
 }
 
-function parseAfterMatchers(bys, stateName) {
+function parseAfterMatchers(bys, baseOrder, stateName) {
 	const matchers = [];
 	forElementOrArray(bys, (by) => {
 
@@ -456,13 +465,13 @@ function parseAfterMatchers(bys, stateName) {
 					return text == by.text;
 				}
 				matcher.comparator = "text:" + by.text;
-				matcher.order = by.text.length;
+				matcher.order = by.text.length + baseOrder;
 				if ("regex" in by) {
 					throw `Cannot set both "text" and "regex" in a single matcher, (text = "${by.text}", regex = "${by.regex}", "after.by" in state ${stateName})`;
 				}
 			} else if ("regex" in by) {
 				matcher.comparator = "regex:" + by.regex;
-				matcher.order = 0.5;
+				matcher.order = 0.5 + baseOrder;
 				const regex = new RegExp(by.regex, "y");
 				matcher.match = function (text, pos) {
 					regex.lastIndex = pos;
@@ -477,7 +486,7 @@ function parseAfterMatchers(bys, stateName) {
 
 		} else {
 			matcher.comparator = "text:" + by;
-			matcher.order = by.length;
+			matcher.order = by.length + baseOrder;
 			matcher.match = function (text, pos) {
 				return text.startsWith(by, pos) ? by.length : -1;
 			}
@@ -488,23 +497,74 @@ function parseAfterMatchers(bys, stateName) {
 	return matchers;
 }
 
-function parseWhen(when, allowedVariables, stateName){
+function parseWhenConditions(when, allowedVariables, stateName){
 
-	if (!when) return null;
+	if (!when) return [];
 
-	if (when instanceof Object) {
+	const checkVariableName = (name) => {
+		//check for allowed variables
+		if (!(name in allowedVariables)) {
+			throw `Unallowed variable "${name}" in "when" (state ${stateName}). All values must be initialized on the default state.`;
+		}
+	}
 
-		for (const variableName in when) {
-			if (!(variableName in allowedVariables)) {
-				throw `Unallowed variable "${variableName}" in "when" (state ${stateName}). All values must be initialized on the default state.`;
+	const ors = [];
+	forElementOrArray(when, (condition) => {
+
+		if (!(condition instanceof Object)) {
+			throw `"when" value must be an object - instead is: ${condition} (state ${stateName})`;
+		}
+
+		const ands = [];
+		for (const property in condition) {
+			if (property.startsWith("@")) {
+				if (property.startsWith("not:", 1)) {
+					const propertyName = property.substring(5);
+					checkVariableName(propertyName);
+
+					const values = parseCheckValue(condition[property]);
+					ands.push((context)=> {
+						// console.log(propertyName, context.values[propertyName], values, !values.includes(context.values[propertyName]));
+						return !values.includes(context.values[propertyName])
+					});
+				} else {
+					throw `Unknown property: "${property}" in "when" in state "${stateName}"`;
+				}
+			} else {
+				checkVariableName(property);
+
+				const values = parseCheckValue(condition[property]);
+				ands.push((context)=> {
+					// console.log("TTT"+property, context.values[property], values, values.includes(context.values[property]));
+					return values.includes(context.values[property])
+				});
 			}
 		}
 
-	} else {
-		throw `"when" value must be an object - instead is: ${when} (state ${stateName})`;
-	}
+		ors.push(ands);
+	});
 
-	return when;
+	return ors;
+}
+
+function parseCheckValue(valueArray) {
+	const values = [];
+	forElementOrArray(valueArray, (value) => {
+
+
+		if (typeof value == "string" && value.startsWith("@")) {
+			if (value.startsWith("@", 1)) {
+				values.push(value.substring(1));
+			} else {
+				throw `Unknown value: "${value}" in "when" in state "${stateName}"`;
+			}
+		} else {
+			values.push(value);
+		}
+
+	});
+
+	return values;
 }
 
 

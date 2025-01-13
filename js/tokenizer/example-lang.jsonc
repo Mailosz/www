@@ -77,10 +77,12 @@
 				"on": "other-state",
 				/* when checks variables set by "set" and only changes state if their values coresponds to these */
 				"when": {
-					/* only when number = true */
-					"number": true,
+					/* only when variable-four = true */
+					"variable-four": true,
 					/* this is AND so both checks must be fullfilled */
-					"variable-one": false
+					"variable-one": "green",
+					"variable-three": ["green", true, "blue"], /* matches if variable-three is ANY of these values*/
+					"@not:variable-two": "green" /* matches when variable-two is NOT "green" */
 				},
 				"set": {
 					"number": false

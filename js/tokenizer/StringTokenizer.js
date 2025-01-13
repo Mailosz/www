@@ -153,17 +153,27 @@ export class StringTokenizer {
 					continue;
 				}
 				//now checking all required values if they are set
-				if (matcher.when != null) {
-					for (const check in matcher.when){
-						if (this.#values[check] != matcher.when[check]){
-							continue outer; // one of values not set
-						}
-					}
+				if (this.#checkConditions(matcher.conditions)) {
+					//characters match and conditions match
+					return matcher;
 				}
-				//all characters same, found new state
-				return matcher;
 			}
 			return null;
+	}
+
+	#checkConditions(conditions) {
+		if (conditions.length == 0) return true;
+		const context = {values: this.#values};
+		outer:
+		for (const or of conditions) {
+			for (const and of or) {
+				if (!and(context)) {
+					continue outer;
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 
 	#computeAfters(token, state) {
