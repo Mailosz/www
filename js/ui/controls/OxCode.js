@@ -299,7 +299,7 @@ export class OxCode extends OxControl {
                     containerOffset--;
                     child = child.nextSibling;
                 }
-                return {current: container, offset: offset};
+                return {container: container, offset: offset};
             } else {
                 offset = containerOffset;
             }
@@ -319,7 +319,6 @@ export class OxCode extends OxControl {
                 }
                 current = current.parentElement;
             }
-
         }
         
         /**
@@ -329,11 +328,18 @@ export class OxCode extends OxControl {
         if (this.shadowRoot.getSelection) { // selection handling incosistency between chrome and firefox - check safari
             selection = this.shadowRoot.getSelection();
         } else {
-            selection = document.getSelection();
+            selection = this.ownerDocument.getSelection();
+        }
+        let getRange;
+        if (selection.getComposedRanges) { // right way but only works in safari
+            const composedRanges = selection.getComposedRanges(this.shadowRoot);
+            getRange = (i) => composedRanges[i];
+        } else {
+            getRange = (i) => selection.getRangeAt(i);
         }
         const oldRanges = [];
         for (let i = 0; i < selection.rangeCount; i++) {
-            let range = selection.getRangeAt(i);
+            let range = getRange(i);
             let start = countDivOffset(range.startContainer, range.startOffset);
             if (start) {
                 if (range.collapsed) {
