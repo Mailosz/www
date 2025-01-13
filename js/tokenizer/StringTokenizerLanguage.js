@@ -1,6 +1,10 @@
 export class StringTokenizerLanguageService {
 
 	static #cache = {}; 
+	/**
+	 * Options used to parse a language if it isn't cached
+	 */
+	static parseOptions = {stricterParse: false}
 	
 	/**
 	 * 
@@ -33,7 +37,7 @@ export class StringTokenizerLanguageService {
 
 		}).then((json) =>{
 			console.time("Language parse");
-			const lang = new StringTokenizerLanguage(json);
+			const lang = new StringTokenizerLanguage(json, StringTokenizerLanguageService.parseOptions);
 			console.timeEnd("Language parse");
 
 			return lang;
@@ -56,6 +60,7 @@ export class StringTokenizerLanguage {
 			}
 		};
 		this.functionsAllowed = nvl(options?.allowFunctions, false);
+		this.stricterParse = nvl(options?.stricterParse, false);
 
 		this.#prepare(languageJson);
 	}
@@ -97,6 +102,15 @@ export class StringTokenizerLanguage {
 				vars: {},
 				afters: [],
 				computed: null};
+
+			if (this.stricterParse) {
+				const allowedStateProperties = ["init", "begin", "set", "after", "default", "data", "group", "parent"];
+				for (const property in language[name]) {
+					if (!allowedStateProperties.includes(property)) {
+						throw `Unallowed property "${property}" in state "${name}"`;
+					}
+				}
+			}
 		}
 
 		// set first state as default, if no one yet set
@@ -110,8 +124,8 @@ export class StringTokenizerLanguage {
 		this.defaultValues = {};
 		if ("init" in language[this.defaultState]) {
 			this.defaultValues = language[this.defaultState].init;
-		} else if ("then" in language[this.defaultState]) {
-			this.defaultValues = language[this.defaultState].then;
+		} else if ("set" in language[this.defaultState]) {
+			this.defaultValues = language[this.defaultState].set;
 		}
 
 
