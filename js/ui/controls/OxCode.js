@@ -352,6 +352,7 @@ export class OxCode extends OxControl {
                 }
             }
         }
+        selection.empty();
         //
 
         while (lineElement != null) {
@@ -379,6 +380,7 @@ export class OxCode extends OxControl {
             }
             lineElement = lineElement.nextSibling;
         }
+        
 
         // restore selection positions
         const findElementFromOffset = (containerOffset) => {
@@ -399,10 +401,10 @@ export class OxCode extends OxControl {
             }
         }
 
-        selection.empty();
         for (let oldRange of oldRanges) {
             const range = document.createRange();
             const start = findElementFromOffset(oldRange.start);
+            // start is ok, but for some reason still doesn't work on safari - probably has to do with selection being inside the shadowRoot
             range.setStart(start.element, start.offset);
             if (oldRange.end) {
                 const end = findElementFromOffset(oldRange.end);
