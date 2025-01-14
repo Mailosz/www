@@ -12,7 +12,12 @@ const template = /*html*/`
             <button id="orientation-button" part="orientation-button" title="Orientation"></button>
             <button id="fullscreen-button" part="fullscreen-button" title="Fullscreen"></button>
         </div>
-        <iframe id="preview" is="auto-size"></viewer>
+        <div id="preview-container">
+            <iframe id="preview"></iframe>
+            <div id="refresh-panel">
+                <slot name="refresh-label">Click to refresh</slot>
+            </div>
+        </div>
     </div>
 `;
 
@@ -108,7 +113,6 @@ const style = /*css*/`
         flex: 1;
         width: 100%;
         min-height: 100px;
-
     }
 
     .fullscreen #preview{
@@ -128,7 +132,28 @@ const style = /*css*/`
     :host(:not([horizontal])) #example.fullscreen>#code-box {
         height: 50%;
         flex: 1;
-    }  
+    } 
+
+    #preview-container {
+        position: relative;
+    }
+
+    #refresh-panel {
+        display: none;
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(127,127,127,0.2);
+
+        justify-content: center;
+        align-items: center;
+    }
+
+    #refresh-panel.show {
+        display: flex;
+    }
 `;
 
 export class OxExample extends OxControl {
@@ -151,11 +176,18 @@ export class OxExample extends OxControl {
         this.shadowRoot.getElementById("orientation-button").onclick = (event) => this.changeOrientation();
         this.shadowRoot.getElementById("fullscreen-button").onclick = (event) => this.changeFullscreen();
 
+        const preview = this.shadowRoot.getElementById("preview");
+        preview.onload = () => preview.height = preview.contentDocument.body.scrollHeight;
+
         const codeBox = this.shadowRoot.getElementById("code-box");
         codeBox.setCode(this.textContent);
 
         if (this.autorun) {
             this.run();
+        } else {
+            const refreshPanel = this.shadowRoot.getElementById("refresh-panel");
+            refreshPanel.classList.add("show");
+            refreshPanel.onclick = ()=>this.run();
         }
 
     }
@@ -176,6 +208,8 @@ export class OxExample extends OxControl {
 
         const code = codeBox.getCode();
         preview.srcdoc = code;
+
+        this.shadowRoot.getElementById("refresh-panel").classList.remove("show");
     }
 
     changeOrientation() {
