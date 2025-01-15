@@ -30,10 +30,14 @@ const style = /*css*/`
         background-color: aliceblue;
     }
 
-    :host([horizontal]) #example {
+    #example {
         display: flex;
         justify-content: stretch;
         flex-direction: column;
+    }
+
+    :host([horizontal]) #example {
+        flex-direction: row;
     }
 
         :host([horizontal]) #example {
@@ -45,9 +49,6 @@ const style = /*css*/`
             border-bottom: var(--border-width) solid var(--border-color);
             border-left: none;
             border-right: none;
-        }
-        :host([horizontal]) #code-box, :host([horizontal]) #preview {
-            width: 50%;
         }
 
     #code-box {
@@ -109,15 +110,16 @@ const style = /*css*/`
 
     #preview {
         background-color: white;
-        border: var(--border-width) solid var(--border-color);
+        border: none;
         flex: 1;
         width: 100%;
         min-height: 100px;
     }
 
-    .fullscreen #preview{
-        height: calc(50% - 32px);
+    #example.fullscreen #preview, #example.fullscreen #code-box {
+        height: 100%;
     }
+
 
     #example.fullscreen {
         position: fixed;
@@ -130,12 +132,14 @@ const style = /*css*/`
     }
 
     :host(:not([horizontal])) #example.fullscreen>#code-box {
-        height: 50%;
+        height: auto;
         flex: 1;
     } 
 
     #preview-container {
         position: relative;
+        border: var(--border-width) solid var(--border-color);
+        flex: 1 1;
     }
 
     #refresh-panel {
