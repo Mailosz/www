@@ -5,7 +5,7 @@ import {AutoSizeIframe} from "./AutoSizeIframe.js";
 
 const template = /*html*/`
     <div id="example">
-        <ox-code id="code-box" tokenizer-language="../js/tokenizer/html.json" code-style="../css/langs/html-lang.css"></ox-code>
+        <ox-code id="code-box"></ox-code>
         <div id="controls">
             <button id="run-button" part="run-button" title="Run"></button>
             <div class="spacer"></div>
@@ -20,6 +20,8 @@ const template = /*html*/`
         </div>
     </div>
 `;
+const scriptUrl = new URL(import.meta.url);
+const baseUrl = scriptUrl.origin + scriptUrl.pathname.substring(0, scriptUrl.pathname.lastIndexOf("/"));
 
 const style = /*css*/`
     * {
@@ -185,6 +187,9 @@ export class OxExample extends OxControl {
 
         const codeBox = this.shadowRoot.getElementById("code-box");
         codeBox.setCode(this.textContent);
+
+        codeBox.setAttribute("tokenizer-language", baseUrl + "/../../tokenizer/html.json");
+        codeBox.setAttribute("code-style", baseUrl + "/../../../css/langs/html-lang.css");
 
         if (this.autorun) {
             this.run();
