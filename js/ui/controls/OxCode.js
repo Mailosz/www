@@ -34,6 +34,14 @@ const style = /*css*/`
         overflow: hidden;
     }
 
+    :host([compact]) #line-counters-box {
+        display: none;
+    }
+
+    :host([compact]) #code-box>div::before {
+        display: none;
+    }
+
     #container {
         height: 100%;
         width: 100%;
@@ -122,6 +130,7 @@ export class OxCode extends OxControl {
          * @param {InputEvent} event 
          */
         codeBox.onbeforeinput = (event) => {this.#handleInput(event);}
+        codeBox.oninput = (event) => this.dispatchEvent(new Event("input"));
 
         const code = this.textContent;
         this.#createCodeBox(code);
@@ -287,22 +296,20 @@ export class OxCode extends OxControl {
         // save selection positions
         const countDivOffset = (container, containerOffset) => {
             let current = container;
-            let offset;
+            let offset = containerOffset;
 
-            
-            if (container.nodeType == Node.ELEMENT_NODE)  {
-                //TODO: doesn't work on safari (only safari goes into this branch)
-                offset = 0;
-                let child = container.firstChild;
-                while (child != null && containerOffset > 0) {
-                    offset += child.textContent.length;
-                    containerOffset--;
-                    child = child.nextSibling;
-                }
-                return {container: container, offset: offset};
-            } else {
-                offset = containerOffset;
-            }
+            // this causes problems
+            // if (container.nodeType == Node.ELEMENT_NODE)  {
+            //     //TODO: doesn't work on safari (only safari goes into this branch)
+            //     offset = 0;
+            //     let child = container.firstChild;
+            //     while (child != null && containerOffset > 0) {
+            //         offset += child.textContent.length;
+            //         containerOffset--;
+            //         child = child.nextSibling;
+            //     }
+            //     return {container: container, offset: offset};
+            // }
 
             while (current != null) {
                 if (current.parentElement == null) {
@@ -338,21 +345,24 @@ export class OxCode extends OxControl {
             getRange = (i) => selection.getRangeAt(i);
         }
         const oldRanges = [];
-        for (let i = 0; i < selection.rangeCount; i++) {
-            let range = getRange(i);
-            let start = countDivOffset(range.startContainer, range.startOffset);
-            if (start) {
-                if (range.collapsed) {
-                    oldRanges.push({ start: start, end: null});
-                } else {
-                    let end = countDivOffset(range.endContainer, range.endOffset);
-                    if (end) {
-                        oldRanges.push({ start: start, end: end});
+        if (this.ownerDocument.activeElement == this) {
+            for (let i = 0; i < selection.rangeCount; i++) {
+                let range = getRange(i);
+                let start = countDivOffset(range.startContainer, range.startOffset);
+                if (start) {
+                    if (range.collapsed) {
+                        oldRanges.push({ start: start, end: null});
+                    } else {
+                        let end = countDivOffset(range.endContainer, range.endOffset);
+                        if (end) {
+                            oldRanges.push({ start: start, end: end});
+                        }
                     }
                 }
             }
+            selection.empty();
         }
-        selection.empty();
+
         //
 
         while (lineElement != null) {

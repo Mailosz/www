@@ -15,3 +15,7 @@ ox-upload:active  {
 iframe[is=auto-size] {
     box-sizing: content-box;
 }
+
+ox-code[compact] {
+    padding: 8px;
+}

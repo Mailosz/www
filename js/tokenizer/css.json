@@ -68,8 +68,7 @@
         "begin": [{
             "on": "declarationStart"
         },{
-            "on": "value",
-            "by": ";"
+            "on": "propertiesSeparator"
         },{
             "on": "commentEnd",
             "when": {
@@ -79,6 +78,11 @@
 		"data": {
 			"color": "green"
 		}
+    },"propertiesSeparator":{
+        "begin": {
+            "on": "value",
+            "by": ";"
+        }
     },
     "propertyValueSeparator": {
         "group": "declaration",

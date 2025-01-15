@@ -22,7 +22,7 @@ html {
 
 /* BUTTONS */
 
-.button, button, input[type=button], input[type=submit], input[type=reset] {
+.button, button, input[type=button], input[type=submit], input[type=reset], ::file-selector-button {
     display: inline-block;
     background-color: var(--button-background);
     border: var(--border-width) solid var(--border-color);
@@ -33,11 +33,11 @@ html {
     color: var(--text-color, black);
 }
 
-    .button:hover, button:hover, input[type=button]:hover, input[type=submit]:hover, input[type=reset]:hover {
+    .button:hover, button:hover, input[type=button]:hover, input[type=submit]:hover, input[type=reset]:hover, ::file-selector-button:hover {
         filter: brightness(1.1);
     }
 
-    .button:active, button:active, input[type=button]:active, input[type=submit]:active, input[type=reset]:active {
+    .button:active, button:active, input[type=button]:active, input[type=submit]:active, input[type=reset]:active, ::file-selector-button:active {
         filter: brightness(0.9);
     }
 
@@ -78,6 +78,22 @@ input {
 
 input:indeterminate {
     accent-color: gray;
+}
+
+input:is([type=text],[type=number],[type=password],[type=date],[type=datetime]), select {
+    border: 2px solid var(--border-color, #666);
+    border-radius: var(--border-radius);
+    padding: 2px 4px;
+}
+
+input:is([type=text],[type=number],[type=password],[type=date],[type=datetime]):focus, select:focus {
+    border-color: var(--accent-color, cornflowerblue);
+    box-shadow: 0 0 10px rgba(127,127,127,0.5);
+    outline: none;
+}   
+
+select {
+    appearance:auto;
 }
 
 

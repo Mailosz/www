@@ -1,0 +1,28 @@
+{
+	"property":{
+		"begin": [{
+			"on": ["propertiesSeparator"],
+			"by": ""
+		}],
+		"default": true
+	},
+	"propertyValueSeparator":{
+		"begin": [{
+			"on": ["property"],
+			"by": ":"
+		}]
+	},
+	"value":{
+		"begin": [{
+			"on": ["propertyValueSeparator"],
+			"by": ""
+		}]
+	},
+	"propertiesSeparator":{
+		"begin": [{
+			"on": ["value"],
+			"by": ";"
+		}]
+	}
+
+}

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../css/main.css">
+    <script type="module" src="../../js/ui/controls/OxCode.js"></script>
+    <title>Flexbox playground</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: stretch;
+            flex-direction: column;
+        }
+
+        #preview {
+            flex: 1;
+            background-color: aquamarine;
+            padding: 20px;
+            display: flex;
+            overflow: auto;
+        }
+
+        #preview>.item {
+            min-width: 100px;
+            min-height: 100px;
+            position: relative;
+            padding: 8px;
+            font-size: 0.8em;
+        }
+
+        #preview>.item .remove {
+            position: absolute;
+            right: 0;
+            top: 0;
+            padding: 4px 10px;
+            cursor: pointer;
+            background: rgba(127,127,127,0.2);
+
+        }
+            #preview>.item .remove:hover {
+                background: red;
+            }
+            #preview>.item .remove:active {
+                background: maroon;
+            }
+
+        .item:nth-child(10n+1) {
+            background-color: cornflowerblue;
+        }
+        .item:nth-child(10n+2) {
+            background-color: orange;
+        }
+        .item:nth-child(10n+3) {
+            background-color: violet;
+        }
+        .item:nth-child(10n+4) {
+            background-color: seagreen;
+        }
+        .item:nth-child(10n+5) {
+            background-color: burlywood;
+        }
+        .item:nth-child(10n+6) {
+            background-color: lightgreen;
+        }
+        .item:nth-child(10n+7) {
+            background-color: lightcoral;
+        }
+        .item:nth-child(10n+8) {
+            background-color: greenyellow;
+        }
+        .item:nth-child(10n+9) {
+            background-color: slateblue;
+        }
+        .item:nth-child(10n+10) {
+            background-color: bisque;
+        }
+
+        ox-code[compact] {
+            padding: 8px;
+            background-color: #eee;
+        }
+    </style>
+</head>
+<body>
+    <script>
+
+        function addItem() {
+            const newItem = document.getElementById('item-template').content.firstElementChild.cloneNode(true);
+            document.getElementById('preview').append(newItem);
+
+            //connectSelects(newItem, newItem);
+
+            const codeBox = newItem.querySelector("ox-code");
+            codeBox.oninput = (event) => {
+
+                for (const property in newItem.style) {
+                    newItem.style.removeProperty(property);
+                }
+
+                const code = event.target.getCode();
+                if (!code) return;
+                const properties = code.split(";");
+                for (const property of properties) {
+                    const prop = property.split(":");
+                    if (prop.length == 2) {
+                        const propertyName = prop[0].trim();
+                        const propertyValue = prop[1].trim();
+
+                        newItem.style.setProperty(propertyName, propertyValue);
+                    }
+                }
+
+            };
+        }
+
+        function connectSelects(from, to) {
+            const selects = from.getElementsByTagName("select");
+
+            for (const select of selects) {
+                const property = select.name;
+
+                select.onchange = () => {
+                    if (select.selectedIndex >= 0) {
+                        to.style[property] = select.selectedOptions.item(0).value;
+
+                    }
+                }
+            }
+        }
+
+        document.body.onload = (event) => {
+            connectSelects(document.getElementById("options"), document.getElementById("preview"));
+            addItem();
+            addItem();
+            addItem();
+            addItem();
+            addItem();
+        }
+    </script>
+    <div id="options">
+        <label>flex-direction: <select name="flex-direction">
+                <option>row</option>
+                <option>column</option>
+                <option>row-reverse</option>
+                <option>column-reverse</option>
+            </select>
+        </label>
+        <label>flex-wrap: <select name="flex-wrap">
+            <option>nowrap</option>
+            <option>wrap</option>
+            <option>wrap-reverse</option>
+        </select></label>
+        <label>justify-content: <select name="justify-content">
+            <option>normal</option>
+            <optgroup label="Positional">
+                <option>center</option>
+                <option>start</option>
+                <option>end</option>
+                <option>flex-start</option>
+                <option>flex-end</option>
+                <option>left</option>
+                <option>right</option>
+            </optgroup>
+            <optgroup label="Distributed">
+                <option>space-between</option>
+                <option>space-around</option>
+                <option>space-evenly</option>
+                <option>stretch</option>
+            </optgroup>
+        </select></label>
+        <label>align-items: <select name="align-items">
+            <option>normal</option>
+            <optgroup label="Positional">
+                <option>center</option>
+                <option>start</option>
+                <option>end</option>
+                <option>flex-start</option>
+                <option>flex-end</option>
+                <option>self-start</option>
+                <option>self-end</option>
+                <option>anchor-center</option>
+            </optgroup>
+            <optgroup label="Baseline">
+                <option>baseline</option>
+                <option>first baseline</option>
+                <option>last baseline</option>
+            </optgroup>
+        </select></label>
+        <label>align-content: <select name="align-content">
+            <option>normal</option>
+            <optgroup label="Positional">
+                <option>center</option>
+                <option>start</option>
+                <option>end</option>
+                <option>flex-start</option>
+                <option>flex-end</option>
+            </optgroup>
+            <optgroup label="Baseline">
+                <option>baseline</option>
+                <option>first baseline</option>
+                <option>last baseline</option>
+            </optgroup>
+            <optgroup label="Distributed">
+                <option>space-between</option>
+                <option>space-around</option>
+                <option>space-evenly</option>
+                <option>stretch</option>
+            </optgroup>
+        </select>
+    </label>
+    <label>gap:<select name="gap">
+        <option>0</option>
+        <option>10px</option>
+        <option>20px 5px</option>
+        <option>5px 20px</option>
+    </select></label>
+    <button onclick="addItem();">Add+</button>
+    </div>
+    <div id="preview">
+
+    </div>
+    <template id="item-template">
+        <div class="item">
+            <div>Edit css:</div>
+            <ox-code compact contenteditable="true" tokenizer-language="../../js/tokenizer/css-properties.json" code-style="../../css/langs/css-lang.css">
+                flex: 0;
+            </ox-code>
+            <div class="remove" onclick="event.target.parentElement.remove();">X</div>
+        </div>
+    </template>
+</body>
+</html>
