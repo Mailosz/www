@@ -19,8 +19,10 @@ export class StringTokenizer {
 	 * 
 	 * @param {StringTokenizerLanguage} language 
 	 * @param {String} text Initial text to parse
+	 * @param {Object} options Initial text to parse
+	 * @param {boolean} options.returnEmptyTokens Depending on used language, parsing may produce empty tokens - this options sets whether to return them or ignore
 	 */
-	constructor(language, text) {
+	constructor(language, text, options) {
 		this.#lang = language;
 		this.#text = text;
 		this.#pos = 0;
@@ -29,6 +31,10 @@ export class StringTokenizer {
 		this.#lastMatcher = null;
 		this.#values = language.defaultValues;
 		this.#lists = {};
+		this.options = {
+			returnEmptyTokens: false,
+			...options
+		};
 		this.#hasFinished = text == null; // if no text passed then the tokenizer is finished
 	}
 
@@ -114,6 +120,10 @@ export class StringTokenizer {
 
 			this.#lastMatcher = matcher;
 			this.#setValues(this.#lastMatcher, {"beginContent": () => this.#text.substring(this.#tokenStart, this.#pos)});
+
+			if (!this.options.returnEmptyTokens && token.start == token.end) {
+				return this.getNextToken();
+			}
 		}
 
 		return token;

@@ -38,7 +38,7 @@
                 element.textContent = "";
                 console.time("Tokenizing time");
 
-                let tokenizer = new StringTokenizer(language);
+                let tokenizer = new StringTokenizer(language, null, {returnEmptyTokens: true});
                 let linesOfTokens = [];
                 for (const line of text) {
                     tokenizer.resetText(line + "\n");
