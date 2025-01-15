@@ -3,15 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../css/main.css">
+    <script type="module" src="../../js/ui/controls/OxCode.js"></script>
+    <script type="module" src="../../js/ui/controls/OxExample.js"></script>
     <title>CSS Display</title>
 </head>
 <body>
-    <h1>CSS layouts</h1>
-    <p></p>
-    <h2>CSS Display</h2>
-    <h2>Flow layout</h2>
-    <p>This is the original and default layout that an element can have. It can be enabled explicitly by setting display property to "<b>flow</b>".</p>
-    <p>Flow layout distinguishes two types of elements: <b>inline</b> and <b>block</b> elements.</p>
-    <h2>Flexbox</h2>
+    <main>
+        <h1>CSS layouts</h1>
+        <p></p>
+        <h2>CSS Display</h2>
+        <h2>Flow layout</h2>
+        <p>This is the original and default layout that an element can have. It can be enabled explicitly by setting display property to "<b>flow</b>".</p>
+        <p>Flow layout distinguishes two types of elements: <b>inline</b> and <b>block</b> elements.</p>
+        <p>Inline elements are displayed "in line", along the text. On the other hand, block elements take whole line for themselves. Consider the following example:</p>
+        <ox-example autorun>
+            &lt;p&gt;This is a block element. It fills the whole line.&lt;/p&gt;
+            &lt;p&gt;This is another block element. &lt;mark&gt;It contains an inline element. &lt;/mark&gt;&lt;b&gt;And another one. &lt;/b&gt;&lt;i&gt;And one more.&lt;/i&gt;&lt;/p&gt;
+            &lt;span&gt;This is an inline element.&lt;/span&gt;
+            &lt;span&gt;This is an inline element too.&lt;/span&gt;
+            &lt;p&gt;And a block element.&lt;/p&gt;
+        </ox-example>
+        <p><code>&lt;p&gt;</code> is an example of a block element, while <code>&lt;mark&gt;</code>, <code>&lt;b&gt;</code>, <code>&lt;i&gt;</code> and <code>&lt;span&gt;</code> are all inline elements.</p>
+        <p>You can see that each block element takes up a whole line, regardles of how much content it has, and inline elements are displayed next to each other.</p>
+        <h2>Flexbox</h2>
+        <p>Flexbox is a layout that treats all items the same (there aren't a difference between inline and block elements).</p>
+        <p>It stack elements in a line.</p>
+        <p>You enable it by setting <code>display: flex;</code></p>
+        <p>See <a href="./css-flexbox.html">flexbox playground</a> to test several CSS properties relevant to flexbox.</p>
+        <h2>Grid</h2>
+        <p>It aligns elements on a grid.</p>
+        <p>See <a href="./css-grid.html">grid playground</a> to test several CSS properties relevant to flexbox.</p>
+    </main>
 </body>
 </html>
