@@ -20,7 +20,7 @@
 			"commentLocation": "everywhere"
 		},
 		"after": [{
-			"by": ["var", "let", "const", "if", "for", "while", "function", "this", "instanceof", "throw", "catch", "return", "break", "continue", "null", "export", "class", "try", "await", "async", "static"],
+			"by": ["export", "var", "let", "const", "if", "else", "for", "while", "function", "this", "instanceof", "throw", "catch", "return", "break", "continue", "null", "class", "try", "await", "async", "static"],
 			"data": {
 				"class": "keyword"
 			}
@@ -37,19 +37,19 @@
 		}]
 	}, "literalStart": {
 		"begin": [{
-			"on": ["default"],
+			"on": ["default","word-break"],
 			"by": ["\""],
 			"set": {
 				"literalType": "\""
 			}
 		},{
-			"on": ["default"],
+			"on": ["default","word-break"],
 			"by": ["'"],
 			"set": {
 				"literalType": "'"
 			}
 		},{
-			"on": ["default"],
+			"on": ["default","word-break"],
 			"by": ["`"],
 			"set": {
 				"literalType": "`"

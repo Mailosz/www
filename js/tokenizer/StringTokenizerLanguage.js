@@ -281,32 +281,34 @@ export class StringTokenizerLanguage {
 			//setting after
 			const afterDefinition = language[name].after;
 			if (afterDefinition !== undefined) {
-				forElementOrArray(afterDefinition, (after) => { 
+				forElementOrArray(afterDefinition, (afterDefinition) => { 
 
 					let conditions = parseWhenConditions(afterDefinition.when, this.defaultValues, name);
 
 					let matchers;
-					if (after.by !== undefined) {
-						matchers = parseAfterMatchers(after.by,(conditions.length>0?0.1:0), name);
+					if (afterDefinition.by !== undefined) {
+						matchers = parseAfterMatchers(afterDefinition.by, conditions, name);
 					} else {
-						matchers = [emptyMatcher((conditions.length>0?-1:-2))];
+						matchers = [emptyMatcher(-1)];
 					}
 					
 					
 					//setting variables
-					const setters = parseSetters(after.set, this.defaultValues, name);
+					const setters = parseSetters(afterDefinition.set, this.defaultValues, name);
 
 					let data = {};
-					if (after.data !== undefined) {
-						data = after.data;
+					if (afterDefinition.data !== undefined) {
+						data = afterDefinition.data;
 					}
 
-					for (const matcher of matchers) {
-						matcher.setters = setters;
-						matcher.data = data;
-						matcher.conditions = conditions;
-						this.states[name].afters.push(matcher);
-					}
+					const after = {
+						conditions: conditions,
+						matchers: matchers,
+						setters: setters,
+						data: data
+					};
+
+					this.states[name].afters.push(after);
 					
 				});
 			}
@@ -453,7 +455,7 @@ function parseBeginMatchers(bys, baseOrder, stateName) {
 	return matchers;
 }
 
-function parseAfterMatchers(bys, baseOrder, stateName) {
+function parseAfterMatchers(bys, conditions, stateName) {
 	const matchers = [];
 	forElementOrArray(bys, (by) => {
 
@@ -461,19 +463,19 @@ function parseAfterMatchers(bys, baseOrder, stateName) {
 
 		if (typeof by == "object") {
 			if ("text" in by) {
-				matcher.match = function (text, pos) {
-					return text == by.text;
+				matcher.match = function (text) {
+					return text === by.text;
 				}
 				matcher.comparator = "text:" + by.text;
-				matcher.order = by.text.length + baseOrder;
+				matcher.order = by.text.length;
 				if ("regex" in by) {
 					throw `Cannot set both "text" and "regex" in a single matcher, (text = "${by.text}", regex = "${by.regex}", "after.by" in state ${stateName})`;
 				}
 			} else if ("regex" in by) {
 				matcher.comparator = "regex:" + by.regex;
-				matcher.order = 0.5 + baseOrder;
+				matcher.order = 0.5;
 				const regex = new RegExp(by.regex, "y");
-				matcher.match = function (text, pos) {
+				matcher.match = function (text) {
 					regex.lastIndex = pos;
 					const result = regex.exec(text);
 					if (result == null || result[0].length != text.length) {
@@ -486,12 +488,13 @@ function parseAfterMatchers(bys, baseOrder, stateName) {
 
 		} else {
 			matcher.comparator = "text:" + by;
-			matcher.order = by.length + baseOrder;
-			matcher.match = function (text, pos) {
-				return text.startsWith(by, pos) ? by.length : -1;
+			matcher.order = by.length;
+			matcher.match = function (text) {
+				return text === by;
 			}
 		}
 
+		matcher.conditions = conditions;
 		matchers.push(matcher);
 	});
 	return matchers;

@@ -145,7 +145,7 @@ export class StringTokenizer {
 	}
 
 	/**
-	 * Checks a single character
+	 * Checks for a match starting at a specific character
 	 * @param {String} text 
 	 * @param {*} values 
 	 * @param {*} state 
@@ -188,11 +188,24 @@ export class StringTokenizer {
 
 	#computeAfters(token, state) {
 
-		const after = this.#findMatchAtPosition(token.text, 0, state.afters);
-		if (after) {
-			const tokenText = token.text;
-			this.#setValues(after, {"tokenContent": () => tokenText});
-			token.afterData = after.data;
+		for (const after of state.afters) {
+
+			for (const matcher of after.matchers) {
+				// checking in-depth if string matches new token start
+				if (!matcher.match(token.text)) {
+					continue;
+				}
+				//now checking all required values if they are set
+				if (this.#checkConditions(matcher.conditions)) {
+					//characters match and conditions match
+					
+					const tokenText = token.text;
+					this.#setValues(after, {"tokenContent": () => tokenText});
+					token.afterData = after.data;
+
+					break;
+				}
+			}
 		}
 	}
 
