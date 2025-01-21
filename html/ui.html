@@ -7,11 +7,13 @@
     <title>UI</title>
     <link rel="stylesheet" href="../css/ui/ui.css">
     <link rel="stylesheet" href="../css/ui/switch.css">
+    <link rel="stylesheet" href="../css/wait.css">
 
     <script type="module" src="../js/ui/controls/OxButton.js"></script>
     <script type="module" src="../js/ui/controls/OxItem.js"></script>
     <script type="module" src="../js/ui/controls/OxMenu.js"></script>
     <script type="module" src="../js/ui/controls/OxLogin.js"></script>
+    <script type="module" src="../js/ui/controls/OxView.js"></script>
 </head>
 <body onload="document.getElementById('menu-menu').open();">
     <h2>Inputs</h2>
@@ -156,15 +158,26 @@
         <p><input type></p>
     <p>Test test test test test test test test test. Test test test test test test test test test. </p>
     <p>Test test test test test test test test test. Test test test test test test test test test. </p>
+    <h2>Tab</h2>
+    <div style="display: flex;">
+        <ox-item label="Item 1" toggle checked group="tab-group" onclick="document.getElementById('view-id').show('')">
+            <img slot="icon" src="../res/img/a.png"/>
+        </ox-item>
+        <ox-item label="Item 2" toggle group="tab-group" icon="../res/img/b.png" onclick="document.getElementById('view-id').show('second')">
+        </ox-item>
+        <ox-item label="Item 3" toggle group="tab-group" icon="../res/img/c.png" onclick="document.getElementById('view-id').show('third')">
+    
+        </ox-item>
+    </div>
 
+    <ox-tab id="view-id" shown="second">
+        <div>This is first view</div>
+        <div slot="second">This is second view</div>
+        <div slot="third">This is third view</div>
+    </ox-tab>
+    <p>Test test test test test test test test test. Test test test test test test test test test. </p>
+    <p>Test test test test test test test test test. Test test test test test test test test test. </p>
 
-    <!-- <select class="ribbon-select" multiple>
-        <option></option>
-        <option><img src="../res/img/b.png">Option 2</option>
-        <option><img src="../res/img/c.png">Option 3</option>
-        <option><img src="../res/img/d.png">Option 4</option>
-        <option>Option 5</option>
-    </select> -->
     <script defer>
         
         document.getElementById("indeterminate-checkbox").indeterminate = true;
