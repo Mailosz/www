@@ -19,3 +19,100 @@ iframe[is=auto-size] {
 ox-code[compact] {
     padding: 8px;
 }
+
+ox-menu {
+    display: block;
+    position: relative;
+    min-width: 20vw;
+    max-width: min(80vw, 20em);
+}
+
+ox-menu[popover] {
+    display: none;
+}
+
+ox-menu[popover]:popover-open {
+    border: none;
+    background: none;
+    overflow: visible;
+    display: block;
+    margin: 0;
+
+    position: absolute;
+    top: auto;
+    position-anchor: --menu-anchor;
+    left: anchor(left);
+    top: anchor(bottom);
+}
+
+
+
+ox-menu::part(popup) {
+    border: 1px solid #666;
+    box-shadow: 2px 2px 15px rgba(127,127,127, 0.75);
+    z-index: 10;
+    background: #eee;
+    display: flex;
+    flex-direction: column;
+    max-width: 300px;
+    position: relative;
+    padding: 0.25em 0;
+}
+
+ox-menu>ox-item:focus {
+    background-color: var(--weak-accent-color, lightblue);
+    z-index: 10;
+}
+
+ox-menu>ox-item {
+    background-color: #eee;
+    display: flex;
+    flex-direction: row;
+    height: 32px;
+    cursor: pointer;
+    align-items: stretch;
+    position: relative;
+    word-wrap: none;
+    line-break: strict;
+    white-space: nowrap;
+}
+
+ox-menu>ox-item[disabled] {
+    filter: brightness(2) saturate(0.1) contrast(0.75);
+}
+
+ox-menu>ox-item::part(icon) {
+    height: 2.5em;
+    width: 2.5em;
+    padding: 0.25em;
+    margin-left: 0.25em;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+ox-menu>ox-item:has(:not([slot]))::after {
+    content: '\2B9E';
+    margin: auto 0.5em;
+    justify-self: end;
+}
+
+ox-menu>ox-item::part(label) {
+    margin: auto 0.5em auto 0.5em;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+ox-menu>ox-item:hover {
+    filter: brightness(1.1);
+}
+
+ox-menu>ox-item:active {
+    filter: brightness(0.9);
+}
+
+ox-menu>ox-menu {
+    display: block;
+    position: absolute;
+    left: calc(100% - 1em);
+    width: auto;
+}
