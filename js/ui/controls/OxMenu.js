@@ -1,10 +1,11 @@
 import {OxControl} from "./OxControl.js";
-import {OxPopup} from "./OxPopup.js";
+import {OxItem} from "./OxItem.js";
 
 
 const template = /*html*/`
-    <div class="popup">
-        <slot></slot>
+    <div id="popup" part="popup">
+        <slot id="slot-id"></slot>
+        <div id="submenus"></div>
     </div>
 `;
 
@@ -13,36 +14,9 @@ const style = /*css*/`
         box-sizing: border-box;
     }
 
-    .popup {
-        border: 1px solid #666;
-        box-shadow: 0 0  10px rgba(127,127,127, 0.5);
-        z-index: 10;
-        background: #eee;
-        display: flex;
-        flex-direction: column;
-        max-width: 300px;
-    }
+    :host{
 
-    ::slotted(ox-item:focus) {
-        background-color: var(--weak-accent-color, lightblue);
     }
-
-    ::slotted(ox-item) {
-        background-color: #ddd;
-        display: flex;
-        flex-direction: row;
-        height: 32px;
-        cursor: pointer;
-    }
-
-    ::slotted(ox-item:hover) {
-        filter: brightness(1.1);
-    }
-
-    ::slotted(ox-item:active) {
-        filter: brightness(0.9);
-    }
-
 `;
 
 export class OxMenu extends OxControl {
@@ -52,16 +26,117 @@ export class OxMenu extends OxControl {
     constructor() {
         super();
         
-        this.createShadowRoot(template, style);
+        this.createShadowRoot(template, style, {mode: "open", delegatesFocus: true});
         
+        new MutationObserver((records) => {
+            for (const record of records) {
 
+            }
+        }).observe(this, {childList: true});
 
     }
 
     connectedCallback() {
         super.connectedCallback();
 
+        this.addEventListener("keydown", this.#keydown);
+        this.addEventListener("toggle", (event) => {
+            if (event.newState == "open") {
+                this.shadowRoot.getElementById("slot-id").assignedElements().at(0).focus();
+            }
+        });
 
+        /**
+         * @type {HTMLSlotElement}
+         */
+        const slot = this.shadowRoot.getElementById("slot-id");
+        slot.onclick = (event) => {
+            console.log(event.target);
+            this.tryOpenSubmenu(event.target);
+        }
+    }
+    /**
+     * 
+     * @param {KeyboardEvent} event 
+     */
+    #keydown(event) {
+        console.log(event.key);
+        event.stopPropagation();
+        if (event.key == "ArrowUp") {
+            const rootNode = this.ownerDocument;
+            let prev = rootNode.activeElement.previousElementSibling;
+            while (prev != null) {
+                prev.focus({preventScroll: true});
+                if (rootNode.activeElement == prev) {
+                    return;
+                }
+                prev = this.previousElementSibling;
+            }
+        } else if (event.key == "ArrowDown") {
+            const rootNode = this.ownerDocument;
+            let next = rootNode.activeElement.nextElementSibling;
+            while (next != null) {
+                next.focus({preventScroll: true});
+                if (rootNode.activeElement == next) {
+                    return;
+                }
+                next = this.nextElementSibling;
+            }
+        } else if (event.key == "ArrowRight") {
+            let el = this.getRootNode().activeElement;
+            if (el) {
+                this.tryOpenSubmenu(el);
+            }
+        } else if (event.key == "Escape" || event.key == "ArrowLeft") {
+            if (this.popover) {
+                this.hidePopover()
+            } else {
+                this.previousElementSibling.focus({preventScroll: true});
+            }
+        } else if (event.key == "Enter") {
+            this.getRootNode().activeElement?.click();
+        }
+    }
+
+    tryOpenSubmenu(item) {
+        if (item instanceof OxItem) {
+
+            const subitems = [];
+            for (const subitem of item.children) {
+                if (!subitem.hasAttribute("slot")) {
+                    subitems.push(subitem);
+                }
+            }
+            if (subitems.length > 0) {
+
+                const submenu = document.createElement("ox-menu");
+                submenu.append(...subitems);
+                submenu.part="submenu";
+                submenu.classList.add("submenu");
+
+                const submenuClose = () => {
+                    submenu.remove();
+                    item.append(...subitems);
+                }
+                
+                // const submenus = this.shadowRoot.getElementById("submenus");
+                item.after(submenu);
+
+                submenu.firstElementChild.focus();
+                submenu.addEventListener("focusout", (event) => {
+                    if (!event.relatedTarget) {
+                        submenuClose();
+                    } else if (event.relatedTarget instanceof Node) {
+                        if (!submenu.contains(event.relatedTarget)) {
+                            submenuClose();
+                        }
+                    } else {
+                        submenuClose();
+                    }
+                });
+                
+            }
+        }
     }
 
     attributeChangedCallback(name, oldValue, newValue) {

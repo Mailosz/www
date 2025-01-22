@@ -8,12 +8,13 @@
     <link rel="stylesheet" href="../css/ui/ui.css">
     <link rel="stylesheet" href="../css/ui/switch.css">
     <link rel="stylesheet" href="../css/wait.css">
+    <link rel="stylesheet" href="../css/controls.css">
 
     <script type="module" src="../js/ui/controls/OxButton.js"></script>
     <script type="module" src="../js/ui/controls/OxItem.js"></script>
     <script type="module" src="../js/ui/controls/OxMenu.js"></script>
     <script type="module" src="../js/ui/controls/OxLogin.js"></script>
-    <script type="module" src="../js/ui/controls/OxView.js"></script>
+    <script type="module" src="../js/ui/controls/OxTab.js"></script>
 </head>
 <body onload="document.getElementById('menu-menu').open();">
     <h2>Inputs</h2>
@@ -114,17 +115,28 @@
         <ox-item label="Item 4" toggle group="g-1" icon="../res/img/d.png" disabled>
 
         </ox-item>
-    </div>
+    </div> 
     <h2>Menus</h2>
     <p>
-        <ox-menu style="max-width: 300px;" id="menu-menu">
+        <button id="menu-button" popovertarget="menu-menu" style="anchor-name: --menu-anchor">Open menu</button>
+        <ox-menu id="menu-menu" popover="auto">
             <ox-item label="Item 1" toggle group="g-3">
                 <img slot="icon" src="../res/img/a.png"/>
             </ox-item>
-            <ox-item label="Item 2" toggle checked group="g-3" icon="../res/img/b.png">
+            <ox-item label="Item with subitems test test test testa test test test" toggle checked group="g-3" icon="../res/img/b.png">
                 <ox-item label="Item A" toggle group="g-3" icon="../res/img/a.png"></ox-item>
-                <ox-item label="Item B" toggle checked group="g-3" icon="../res/img/b.png"></ox-item>
-                <ox-item label="Item C" toggle group="g-3" icon="../res/img/c.png"></ox-item>
+                <ox-item label="Item B" toggle checked group="g-3" icon="../res/img/b.png">
+                    <ox-item label="Item X" toggle group="g-3" icon="../res/img/a.png"></ox-item>
+                    <ox-item label="Item Y" toggle checked group="g-3" icon="../res/img/b.png"></ox-item>
+                    <ox-item label="Item Z" toggle group="g-3" icon="../res/img/c.png"></ox-item>
+                    <ox-item label="Item V" toggle group="g-3" icon="../res/img/d.png"></ox-item>
+                </ox-item>
+                <ox-item label="Item C" toggle group="g-3" icon="../res/img/c.png">
+                    <ox-item label="Item Q" toggle group="g-3" icon="../res/img/a.png"></ox-item>
+                    <ox-item label="Very very long item with many many many text" toggle checked group="g-3" icon="../res/img/b.png"></ox-item>
+                    <ox-item label="Item E" toggle group="g-3" icon="../res/img/c.png"></ox-item>
+                    <ox-item label="Item R" toggle group="g-3" icon="../res/img/d.png"></ox-item>
+                </ox-item>
                 <ox-item label="Item D" toggle group="g-3" icon="../res/img/d.png" disabled></ox-item>
             </ox-item>
             <ox-item label="Item 3" toggle group="g-3" icon="../res/img/c.png">
@@ -133,7 +145,8 @@
             <ox-item label="Item 4" toggle group="g-3" icon="../res/img/d.png">
     
             </ox-item>
-        </div>
+        </ox-menu>
+
     </p>
     <h2>Wait</h2>
     <button onclick="document.getElementById('wait-ring').classList.toggle('hidden')">Toggle wait</button>
@@ -170,7 +183,7 @@
         </ox-item>
     </div>
 
-    <ox-tab id="view-id" shown="second">
+    <ox-tab id="view-id">
         <div>This is first view</div>
         <div slot="second">This is second view</div>
         <div slot="third">This is third view</div>
@@ -180,7 +193,10 @@
 
     <script defer>
         
-        document.getElementById("indeterminate-checkbox").indeterminate = true;
+        const checkbox = document.getElementById("indeterminate-checkbox");
+        if (checkbox) {
+            checkbox.indeterminate = true;  
+        }
 
         function submenuClick(item) {
             console.log("jus")

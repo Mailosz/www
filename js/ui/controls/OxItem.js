@@ -22,7 +22,7 @@ const style = /*css*/`
     }
 
     #icon {
-        display: contents;
+
     }
 
     #icon img, #icon ::slotted(img) {
