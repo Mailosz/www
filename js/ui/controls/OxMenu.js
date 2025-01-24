@@ -1,5 +1,5 @@
 import {OxControl} from "./OxControl.js";
-import {OxButton} from "./OxItem.js";
+import {OxButton} from "./OxButton.js";
 
 
 const template = /*html*/`
