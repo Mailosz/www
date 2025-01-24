@@ -20,6 +20,31 @@ ox-code[compact] {
     padding: 8px;
 }
 
+
+/* OX-BUTTON */
+ox-button {
+    background-color: var(--button-background,#eee);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 0.25em 0.5em;
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--text-color, black);
+    flex-direction: column;
+    align-items: safe center;
+    overflow: hidden;
+}
+
+ox-button[disabled] {
+    filter: brightness(2) saturate(0.1) contrast(0.75);
+}
+
+ox-button:state(checked) {
+    background-color: var(--weak-accent-color, lightblue);
+}
+
+
+/* OX-MENU */
 ox-menu {
     display: block;
     position: relative;
@@ -38,25 +63,19 @@ ox-menu[popover]:popover-open {
     display: block;
     margin: 0;
 
-    position: absolute;
+    /* position: absolute;
     top: auto;
     position-anchor: --menu-anchor;
     left: anchor(left);
-    top: anchor(bottom);
+    top: anchor(bottom); */
 }
 
-
-
-ox-menu::part(popup) {
-    border: 1px solid #666;
-    box-shadow: 2px 2px 15px rgba(127,127,127, 0.75);
-    z-index: 10;
-    background: #eee;
-    display: flex;
-    flex-direction: column;
-    max-width: 300px;
-    position: relative;
-    padding: 0.25em 0;
+ox-menu>ox-button {
+    border: none;
+    border-radius: 0;
+    background-color: #eee;
+    padding: 0;
+    flex-direction: row;
 }
 
 ox-menu>ox-button:focus {
@@ -64,34 +83,7 @@ ox-menu>ox-button:focus {
     z-index: 10;
 }
 
-ox-menu>ox-button {
-    background-color: #eee;
-    display: flex;
-    flex-direction: row;
-    height: 32px;
-    cursor: pointer;
-    align-items: stretch;
-    position: relative;
-    word-wrap: none;
-    line-break: strict;
-    white-space: nowrap;
-}
-
-ox-menu>ox-button[disabled] {
-    filter: brightness(2) saturate(0.1) contrast(0.75);
-}
-
-ox-menu>ox-button::part(icon) {
-    height: 2.5em;
-    width: 2.5em;
-    padding: 0.25em;
-    margin-left: 0.25em;
-    flex-grow: 0;
-    flex-shrink: 0;
-}
-
-ox-menu>ox-button:has(:not([slot]))::after,
-ox-menu>ox-button:has(+ox-menu)::after {
+ox-menu>:is(ox-button:has([slot=submenu]),ox-button:has(ox-menu))::after {
     content: '\2B9E';
     margin: auto 0.5em;
     justify-self: end;
@@ -108,19 +100,58 @@ ox-menu>ox-button::part(label) {
     overflow: hidden;
 }
 
-ox-menu>ox-button:hover {
-    filter: brightness(1.1);
+ox-menu>*>ox-button {
+    border: none;
+    border-radius: 0;
+    background-color: #eee;
+    padding: 0.5em;
+    flex-direction: column;
 }
 
-ox-menu>ox-button:active {
-    filter: brightness(0.9);
+ox-menu::part(popup) {
+    border: 1px solid #666;
+    box-shadow: 2px 2px 15px rgba(127,127,127, 0.75);
+    z-index: 10;
+    background: #eee;
+    display: flex;
+    flex-direction: column;
+    max-width: 300px;
+    position: relative;
+    padding: 0.25em 0;
 }
 
-ox-menu>ox-menu {
+ox-menu>ox-button {
+    background-color: #eee;
+    display: flex;
+    flex-direction: row;
+    height: 32px;
+    cursor: pointer;
+    align-items: stretch;
+    position: relative;
+    word-wrap: none;
+    line-break: strict;
+    white-space: nowrap;
+}
+
+ox-menu>ox-button::part(icon) {
+    height: 2.5em;
+    width: 2.5em;
+    padding: 0.25em;
+    margin-left: 0.25em;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+
+ox-menu ox-menu {
     display: block;
     position: absolute;
-    left: calc(100% - 1em);
+    translate: 80% 0%;
     width: auto;
+}
+
+ox-menu ox-menu ox-menu {
+    translate: 160% 0%;
 }
 
 ox-menu>hr {

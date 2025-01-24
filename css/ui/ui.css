@@ -52,21 +52,40 @@ html {
     }
 
 /* arranges buttons in a single toolbar */
-.toolbar {
+.toolbar, .horizontal-toolbar {
     display: inline-flex;
     justify-content: start;
     align-items: stretch;
     gap: 0;
 }
 
-    .toolbar>:is(ox-button):not(:first-child) {
+    :is(.toolbar, .horizontal-toolbar)>:is(ox-button):not(:first-child) {
         border-left: none;
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
     }
 
-    .toolbar>:is(ox-button):not(:last-child) {
+    :is(.toolbar, .horizontal-toolbar)>:is(ox-button):not(:last-child) {
         border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+.vertical-toolbar {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: stretch;
+    gap: 0;
+}
+
+    .vertical-toolbar>:is(ox-button):not(:first-child) {
+        border-top: none;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+
+    .vertical-toolbar>:is(ox-button):not(:last-child) {
+        border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
     }
 
@@ -94,6 +113,22 @@ input:is([type=text],[type=number],[type=password],[type=date],[type=datetime]):
 
 select {
     appearance:auto;
+}
+
+/* SEAMLESS */
+
+ox-button.seamless {
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+}
+ox-button.seamless:state(checked) {
+    background-color: var(--weak-accent-color, lightblue);
+}
+
+ox-button.seamless:hover,
+ox-button.seamless:active {
+    background-color: var(--weaker-accent-color, lightblue);
 }
 
 /* PROGRESS BAR */

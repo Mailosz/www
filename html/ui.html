@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../css/ui/switch.css">
     <link rel="stylesheet" href="../css/wait.css">
     <link rel="stylesheet" href="../css/controls.css">
+    <link rel="stylesheet" href="../css/style.green.css">
 
     <script type="module" src="../js/ui/controls/OxButton.js"></script>
     <script type="module" src="../js/ui/controls/OxButton.js"></script>
@@ -16,7 +17,51 @@
     <script type="module" src="../js/ui/controls/OxLogin.js"></script>
     <script type="module" src="../js/ui/controls/OxTab.js"></script>
 </head>
-<body onload="document.getElementById('menu-menu').open();">
+<body>
+    <h2 id="menus">Menus</h2>
+    <p>
+        <ox-button label="Open menu" >
+            <ox-menu id="menu-menu" slot="submenu">
+                <ox-button label="Item 1" group="g-3">
+                    <img slot="icon" src="../res/img/a.png"/>
+                </ox-button>
+                <ox-button label="Item with subitems test test test testa test test test" group="g-3" icon="../res/img/b.png">
+                    <ox-menu slot="submenu">
+                        <ox-button label="Item A" group="g-3" icon="../res/img/a.png"></ox-button>
+                        <ox-button label="Item B" group="g-3" icon="../res/img/b.png">
+                            <ox-menu slot="submenu">
+                                <!-- <a style="display: flex;">
+                                    <ox-button label="Item !" group="g-3" icon="../res/img/a.png"></ox-button>
+                                    <ox-button label="Item @" checked group="g-3" icon="../res/img/b.png"></ox-button>
+                                    <ox-button label="Item #" group="g-3" icon="../res/img/c.png"></ox-button>
+                                </a> -->
+                                <ox-button label="Item X" group="g-3" icon="../res/img/a.png"></ox-button>
+                                <ox-button label="Item Y" group="g-3" icon="../res/img/b.png"></ox-button>
+                                <ox-button label="Item Z" group="g-3" icon="../res/img/c.png"></ox-button>
+                                <ox-button label="Item V" group="g-3" icon="../res/img/d.png"></ox-button>
+                            </ox-menu>
+                        </ox-button>
+    
+                        <ox-button label="Item C" group="g-3" icon="../res/img/c.png">
+                            <ox-menu slot="submenu">
+                                <ox-button label="Item Q" group="g-3" icon="../res/img/a.png"></ox-button>
+                                <ox-button label="Very very long item with many many many text" group="g-3" icon="../res/img/b.png"></ox-button>
+                                <ox-button label="Item E" group="g-3" icon="../res/img/c.png"></ox-button>
+                                <ox-button label="Item R" group="g-3" icon="../res/img/d.png"></ox-button>
+                            </ox-menu>
+                        </ox-button>
+                        <ox-button label="Item D" group="g-3" icon="../res/img/d.png" disabled></ox-button>
+                    </ox-menu>
+                </ox-button>
+                <ox-button label="Item 3" group="g-3" icon="../res/img/c.png">
+        
+                </ox-button>
+                <ox-button label="Item 4" group="g-3" icon="../res/img/d.png">
+        
+                </ox-button>
+            </ox-menu>
+        </ox-button>
+    </p>
     <h2>Inputs</h2>
     <p><label><input type="checkbox">Checkbox</label><label><input type="checkbox" checked>Checked checkbox</label><label><input type="checkbox" id="indeterminate-checkbox">Indeterminate</label><label><input type="checkbox" disabled>Disabled</label><label><input type="checkbox" checked disabled>Checked disabled</label></p>
     <h2>Switches</h2>
@@ -65,95 +110,68 @@
 
     </p>
     <p>
-        <ox-button type="toggle">Toggle button</ox-button>
-        <ox-button type="toggle" checked>Toggle button</ox-button>
-    </p>
-    <p>
         <a href="#id" class="button">Link button</a>
-    </p>
-    <p>
-        <ox-button type="radio" group="group-1">Radio button 1</ox-button>
-        <ox-button type="radio" group="group-1">Radio button 2</ox-button>
-        <ox-button type="radio" group="group-1">Radio button 3</ox-button>
-    </p>
-    <p>
-        <ox-button type="radio-toggle" group="group-2">Radio toggle 1</ox-button>
-        <ox-button type="radio-toggle" group="group-2">Radio toggle 2</ox-button>
-        <ox-button type="radio-toggle" group="group-2">Radio toggle 3</ox-button>
     </p>
     <p>
         <ox-button disabled>Disabled</ox-button>
         <ox-button disabled checked>Disabled selected</ox-button>
         <input type="button" disabled value="Input button">
-        <ox-button class="button" disabled toggle checked>Item</ox-button>
+        <ox-button disabled toggle checked>Item</ox-button>
     </p>
-    <div>
-        <ox-button class="button" label="Item 1" toggle>
+    <p>
+        <ox-button label="Item 1" toggle>
             <img src="../res/img/a.png"/>
         </ox-button>
-        <ox-button class="button" label="Item 2" toggle checked>
+        <ox-button label="Item 2" toggle checked>
             <img src="../res/img/b.png"/>
         </ox-button>
-        <ox-button class="button">Item button</ox-button>
-        <ox-button class="button" label="Label"></ox-button>
-        <ox-button class="button" label="Toggle" toggle></ox-button>
-    </div>
+        <ox-button>Item button</ox-button>
+        <ox-button label="Label"></ox-button>
+        <ox-button label="Toggle" toggle></ox-button>
+    </p>
+    <p>
+        <div class="toolbar">
+            <ox-button>1</ox-button>
+            <ox-button>2</ox-button>
+            <ox-button>3</ox-button>
+        </div>
+
+        <div class="toolbar">
+            <ox-button>1</ox-button>
+            <ox-button>2</ox-button>
+            <ox-button>3</ox-button>
+        </div>
+
+        <div class="vertical-toolbar">
+            <ox-button>1</ox-button>
+            <ox-button>2</ox-button>
+            <ox-button>3</ox-button>
+        </div>
+
+        <div class="vertical-toolbar">
+            <ox-button>1</ox-button>
+            <ox-button>2</ox-button>
+            <ox-button>3</ox-button>
+        </div>
+    </p>
     <h1>Lists</h1>
-    <div style="display: flex;">
-        <ox-button label="Item 1" toggle group="g-1">
+    <div style="display: flex; justify-content: stretch;">
+        <ox-button style="flex: 1" class="seamless" label="Item 1" toggle group="g-1">
             <img slot="icon" src="../res/img/a.png"/>
         </ox-button>
-        <ox-button label="Item 2" toggle checked group="g-1" icon="../res/img/b.png">
-            <ox-button label="Item A" toggle group="g-2" icon="../res/img/a.png"></ox-button>
+        <ox-button style="flex: 1" class="seamless" label="Item 2" toggle checked group="g-1" icon="../res/img/b.png">
+            <!-- <ox-button label="Item A" toggle group="g-2" icon="../res/img/a.png"></ox-button>
             <ox-button label="Item B" toggle checked group="g-2" icon="../res/img/b.png"></ox-button>
             <ox-button label="Item C" toggle group="g-2" icon="../res/img/c.png"></ox-button>
-            <ox-button label="Item D" toggle group="g-2" icon="../res/img/d.png" disabled></ox-button>
+            <ox-button label="Item D" toggle group="g-2" icon="../res/img/d.png" disabled></ox-button> -->
         </ox-button>
-        <ox-button label="Item 3" toggle group="g-1" icon="../res/img/c.png">
+        <ox-button style="flex: 1" class="seamless" label="Item 3" toggle group="g-1" icon="../res/img/c.png">
 
         </ox-button>
-        <ox-button label="Item 4" toggle group="g-1" icon="../res/img/d.png" disabled>
+        <ox-button style="flex: 1" class="seamless" label="Item 4" toggle group="g-1" icon="../res/img/d.png" disabled>
 
         </ox-button>
     </div> 
-    <h2>Menus</h2>
-    <p>
-        <button id="menu-button" popovertarget="menu-menu" style="anchor-name: --menu-anchor">Open menu</button>
-        <ox-menu id="menu-menu" popover="auto">
-            <ox-button label="Item 1" toggle group="g-3">
-                <img slot="icon" src="../res/img/a.png"/>
-            </ox-button>
-            <ox-button label="Item with subitems test test test testa test test test" toggle checked group="g-3" icon="../res/img/b.png">
-                <ox-button label="Item A" toggle group="g-3" icon="../res/img/a.png"></ox-button>
-                <ox-button label="Item B" toggle checked group="g-3" icon="../res/img/b.png">
-                    <a style="display: flex;">
-                        <ox-button label="Item !" toggle group="g-3" icon="../res/img/a.png"></ox-button>
-                        <ox-button label="Item @" toggle checked group="g-3" icon="../res/img/b.png"></ox-button>
-                        <ox-button label="Item #" toggle group="g-3" icon="../res/img/c.png"></ox-button>
-                    </a>
-                    <ox-button label="Item X" toggle group="g-3" icon="../res/img/a.png"></ox-button>
-                    <ox-button label="Item Y" toggle checked group="g-3" icon="../res/img/b.png"></ox-button>
-                    <ox-button label="Item Z" toggle group="g-3" icon="../res/img/c.png"></ox-button>
-                    <ox-button label="Item V" toggle group="g-3" icon="../res/img/d.png"></ox-button>
-                </ox-button>
-
-                <ox-button label="Item C" toggle group="g-3" icon="../res/img/c.png">
-                    <ox-button label="Item Q" toggle group="g-3" icon="../res/img/a.png"></ox-button>
-                    <ox-button label="Very very long item with many many many text" toggle checked group="g-3" icon="../res/img/b.png"></ox-button>
-                    <ox-button label="Item E" toggle group="g-3" icon="../res/img/c.png"></ox-button>
-                    <ox-button label="Item R" toggle group="g-3" icon="../res/img/d.png"></ox-button>
-                </ox-button>
-                <ox-button label="Item D" toggle group="g-3" icon="../res/img/d.png" disabled></ox-button>
-            </ox-button>
-            <ox-button label="Item 3" toggle group="g-3" icon="../res/img/c.png">
-    
-            </ox-button>
-            <ox-button label="Item 4" toggle group="g-3" icon="../res/img/d.png">
-    
-            </ox-button>
-        </ox-menu>
-
-    </p>
     <h2>Wait</h2>
     <button onclick="document.getElementById('wait-ring').classList.toggle('hidden')">Toggle wait</button>
     <div class="wait-ring" id="wait-ring" style="position: absolute; left: 50px; width: 50px; height: 50px;"></div>

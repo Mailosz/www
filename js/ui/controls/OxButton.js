@@ -2,11 +2,14 @@ import {OxControl} from "./OxControl.js";
 
 
 const template = /*html*/`
-    <div id="icon" part="icon">
-        <slot name="icon" id="icon-slot"></slot>
+    <div id="button" part="button">
+        <div id="icon" part="icon">
+            <slot name="icon" id="icon-slot"></slot>
+        </div>
+        <slot></slot>
+        <div id="label" part="label"></div>
     </div>
-    <div id="label" part="label"></div>
-    <slot id="submenu" name="submenu"></slot>
+    <slot id="submenu-slot" name="submenu"></slot>
 `;
 
 const style = /*css*/`
@@ -15,15 +18,27 @@ const style = /*css*/`
     }
 
     :host {
-        display: flex;
-        justify-content: stretch;
-        flex-direction: column;
-        align-items: center;
-        flex: 1;
+        display: inline-flex;
     }
 
-    #icon {
+    :host(:hover) {
+        filter: brightness(1.1);
+    }
 
+    :host(:active) {
+        filter: brightness(0.9);
+    }
+
+        
+    #button {
+        all: inherit;
+        display: contents;
+
+    }
+
+    ::slotted(img) {
+        max-width: 100%;
+        max-height: 100%;
     }
 
     #icon img, #icon ::slotted(img) {
@@ -62,21 +77,18 @@ export class OxButton extends OxControl {
     constructor() {
         super();
         
-        this.createShadowRoot(template, style, {mode: "open", "slotAssignment": "named"});
+        this.createShadowRoot(template, style, {mode: "open", "slotAssignment": "named", delegatesFocus: false});
 
         this.#internals = this.attachInternals();
-        this.tabIndex = 0;
     }
-
+    
     connectedCallback() {
         super.connectedCallback();
+        this.tabIndex = 0;
+        this.shadowRoot.getElementById("button").tabIndex = 0;
 
-        this.onclick = (event) => {
-            const elements = this.shadowRoot.getElementById("submenu").assignedElements();
-            if (elements.length > 0) {
-                elements[0].showPopover();
-            }
-        }
+        this.addEventListener("click", this.#submenuClick);
+        this.addEventListener("keydown", this.#keydown);
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -146,9 +158,9 @@ export class OxButton extends OxControl {
             this.#isDisabled = value;
 
             if (value) {
-                this.tabIndex = -1;
+                this.shadowRoot.getElementById("button").tabIndex = -1;
             } else {
-                this.tabIndex = 0;
+                this.shadowRoot.getElementById("button").tabIndex = 0;
             }
         }
     }
@@ -160,9 +172,9 @@ export class OxButton extends OxControl {
     set isToggle(value) {
         if (value != this.#isToggle) {
             if (value) {
-                this.addEventListener("click", this.#click);
+                this.addEventListener("click", this.#toggleClick);
             } else {
-                this.removeEventListener("click", this.#click);
+                this.removeEventListener("click", this.#toggleClick);
             }
         }
 
@@ -196,8 +208,10 @@ export class OxButton extends OxControl {
         }
     }
 
-    #click(event) {
-        if (this.isDisabled) return;
+    #toggleClick(event) {
+        if (event.defaultPrevented || this.isDisabled) {
+            return
+        }
         const oldValue = this.#isChecked;
         
         if (this.#groupName) {
@@ -215,6 +229,52 @@ export class OxButton extends OxControl {
 
         const inputEvent = new CustomEvent("input", {oldValue: oldValue, newValue: this.#isChecked});
         this.dispatchEvent(inputEvent);
+    }
+
+    /**
+     * 
+     * @param {Event} event 
+     */
+    #submenuClick(event) {
+        if (event.defaultPrevented || this.isDisabled) {
+            return
+        }
+        if (this.openSubmenu()) {
+            event.preventDefault();
+        }
+    }
+
+    openSubmenu() {
+        /**
+         * @type {HTMLSlotElement}
+         */
+        const submenuSlot = this.shadowRoot.getElementById("submenu-slot");
+        const submenus = submenuSlot.assignedElements();
+        if (submenus.length > 0) {
+            for (const submenu of submenus) {
+                if (submenu.showFor) {
+                    submenu.showFor(this);
+                }
+            }            
+            return true;
+        }
+        return false;
+    }
+
+        /**
+     * 
+     * @param {KeyboardEvent} event 
+     */
+    #keydown(event) {
+        console.log(event.key);
+        if (event.defaultPrevented || this.isDisabled) {
+            return;
+        }
+        
+        if (event.key == "Enter") {
+            this.click();
+        }
+
     }
 
 }

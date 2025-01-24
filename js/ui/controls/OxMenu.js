@@ -37,12 +37,23 @@ export class OxMenu extends OxControl {
 
     connectedCallback() {
         super.connectedCallback();
-        // this.setAttribute("popover", "auto");
+        this.setAttribute("popover", "auto");
 
         this.addEventListener("keydown", this.#keydown);
         this.addEventListener("toggle", (event) => {
             if (event.newState == "open") {
                 this.shadowRoot.getElementById("slot-id").assignedElements().at(0).focus();
+            }
+        });
+        this.addEventListener("focusout", (event) => {
+            if (!event.relatedTarget) {
+                this.close();
+            } else if (event.relatedTarget instanceof Node) {
+                if (!this.contains(event.relatedTarget)) {
+                    this.close();
+                }
+            } else {
+                this.close();
             }
         });
 
@@ -86,73 +97,68 @@ export class OxMenu extends OxControl {
             }
         } else if (event.key == "ArrowRight") {
             let el = this.getRootNode().activeElement;
-            if (el) {
-                this.tryOpenSubmenu(el);
+            if (el instanceof OxButton) {
+                el.openSubmenu(el);
             }
             event.preventDefault();
-        } else if (event.key == "Escape" || event.key == "ArrowLeft") {
-            if (this.popover) {
-                this.hidePopover()
-            } else {
-                this.previousElementSibling.focus({preventScroll: true});
-            }
+        } else if (event.key == "ArrowLeft") {
+            this.parentElement.focus({preventScroll: true});
             event.preventDefault();
-        } else if (event.key == "Enter") {
-            this.getRootNode().activeElement?.click();
         }
     }
 
+    showFor(element) {
+        this.showPopover();
+        this.firstElementChild.focus();
+    }
+
+    close() {
+        this.hidePopover();
+    }
+
     tryOpenSubmenu(item) {
-        if (item instanceof OxButton) {
+        // if (item instanceof OxButton) {
 
-            const subitems = [];
-            for (const subitem of item.children) {
-                if (!subitem.hasAttribute("slot")) {
-                    // subitem.showPopover();
-                    subitems.push(subitem);
-                }
-            }
-            if (subitems.length > 0) {
+        //     const subitems = [];
+        //     for (const subitem of item.children) {
+        //         if (!subitem.hasAttribute("slot")) {
+        //             // subitem.showPopover();
+        //             subitems.push(subitem);
+        //         }
+        //     }
+        //     if (subitems.length > 0) {
 
-                const submenu = document.createElement("ox-menu");
-                submenu.append(...subitems);
-                submenu.part="submenu";
-                submenu.classList.add("submenu");
+        //         const submenu = document.createElement("ox-menu");
+        //         submenu.append(...subitems);
+        //         submenu.part="submenu";
+        //         submenu.classList.add("submenu");
 
-                const submenuClose = () => {
-                    submenu.remove();
-                    item.append(...subitems);
-                }
+        //         const submenuClose = () => {
+        //             submenu.remove();
+        //             item.append(...subitems);
+        //         }
                 
-                item.after(submenu);
+        //         item.after(submenu);
 
-                submenu.firstElementChild.focus();
-                submenu.addEventListener("focusout", (event) => {
-                    if (!event.relatedTarget) {
-                        submenuClose();
-                    } else if (event.relatedTarget instanceof Node) {
-                        if (!submenu.contains(event.relatedTarget)) {
-                            submenuClose();
-                        }
-                    } else {
-                        submenuClose();
-                    }
-                });
+        //         submenu.firstElementChild.focus();
+        //         submenu.addEventListener("focusout", (event) => {
+        //             if (!event.relatedTarget) {
+        //                 submenuClose();
+        //             } else if (event.relatedTarget instanceof Node) {
+        //                 if (!submenu.contains(event.relatedTarget)) {
+        //                     submenuClose();
+        //                 }
+        //             } else {
+        //                 submenuClose();
+        //             }
+        //         });
                 
-            }
-        }
+        //     }
+        // }
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
 
-    }
-
-    open(opts) {
-        //return this.shadowRoot.firstElementChild.open(opts);
-    }
-
-    close(value) {
-        this.shadowRoot.firstElementChild.close(value);
     }
 }
 
