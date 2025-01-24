@@ -57,7 +57,9 @@
             padding: 10px;
             background-color: white;
             box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
-            max-width: 256px;
+            pointer-events: all;
+            width: 208px;
+            resize: both;
         }
 
         #parent{
@@ -76,25 +78,44 @@
         
     </div>
     <div id="popup-home">
-        <div id="popup">Right click on a rectangle to select a new position for this popup</div>
+        <div id="popup">
+            <div>Insert placement here, and click  a rectangle to set anchor.</div>
+            <div><input id="placement-input" value="left top"></div>
+        </div>
     </div>
     <script type="module">
         import {Popup} from '../js/ui/Popup.js';
         import {PlacementHelper} from '../js/utils/PlacementHelper.js';
         import {PopupMenu} from '../js/ui/PopupMenu.js';
 
-
+        let popup = document.getElementById("popup");
+        let popupHome = document.getElementById("popup-home");
+        
+        let options = {relativeTo: popupHome, keepInside: popupHome}
+        
+        const input = document.getElementById("placement-input");
+        input.onkeydown = (event) => {
+            if (event.key == "Enter") {
+                let selection = document.getElementsByClassName("selected");
+                if (selection.length > 0) {
+                    placeElement(popup, selection.item(0), input.value, options);
+                }
+                
+            }
+        }
+        
+        
         let parent = document.getElementById("parent");
-
+        
         let backgrounds = ["green", "violet", "darkslateblue", "goldenrod", "darkgreen", "darkorchid", "brown", "darkgreen", "darkorange", "gray"];
-
+        
         for (let i = 0; i < 50; i++) {
             let elem = document.createElement("div");
             elem.classList.add("elem");
-
+            
             elem.style.flex = 3 + Math.ceil(Math.random() * 5);
             elem.style.backgroundColor = backgrounds[i % backgrounds.length];
-
+            
             
             parent.appendChild(elem);
             if (i % 6 == 5) {
@@ -103,13 +124,15 @@
                 parent.appendChild(nl);
             }
         }
-
-
+        
+        function placeElement(element, anchor, placement, options){
+            const input = document.getElementById("placement-input");
+            input.value = placement;
+            PlacementHelper.placeElement(element, anchor, placement, options);
+        }
+        
         let elems = document.getElementsByClassName("elem");
-        let popup = document.getElementById("popup");
-        let popupHome = document.getElementById("popup-home");
-
-        let options = {relativeTo: popupHome, keepInside: popupHome}
+        document.querySelector(".elem")?.classList.add("selected");
 
         for (let elem of elems) {
 
@@ -120,47 +143,59 @@
                     selel.classList.remove("selected");
                 }
                 event.target.classList.add("selected");
+
+                const input = document.getElementById("placement-input");
+                placeElement(popup, elem, input.value, options);
+            });
+
+            elem.addEventListener("contextmenu", (event) => {
+
+                let selection = document.getElementsByClassName("selected");
+                for (let selel of selection) {
+                    selel.classList.remove("selected");
+                }
+                event.target.classList.add("selected");
                 
                 let menu = [
                     {
                         "label": "Open here",
-                        "command": () => {PlacementHelper.placeElement(popup, {x: event.pageX, y: event.pageY}, "left top", options); }
+                        "command": () => {placeElement(popup, {x: event.pageX, y: event.pageY}, "left top", options); }
                     },{
                         "label": "Open here centered",
-                        "command": () => {PlacementHelper.placeElement(popup, {x: event.pageX, y: event.pageY}, "center", options); }
+                        "command": () => {placeElement(popup, {x: event.pageX, y: event.pageY}, "center", options); }
                     },
                     "separator",
                     {
                         "label": "Open on the left",
-                        "command": () => {PlacementHelper.placeElement(popup, elem, "left center", options); }
+                        "command": () => {placeElement(popup, elem, "left center", options); }
                     },{
                         "label": "Open on the top",
-                        "command": () => {PlacementHelper.placeElement(popup, elem, "center top", options); }
+                        "command": () => {placeElement(popup, elem, "center top", options); }
                     },{
                         "label": "Open on the right",
-                        "command": () => {PlacementHelper.placeElement(popup, elem, "right center", options);}
+                        "command": () => {placeElement(popup, elem, "right center", options);}
                     },{
                         "label": "Open on the bottom",
-                        "command": () => {PlacementHelper.placeElement(popup, elem, "center bottom", options);}
+                        "command": () => {placeElement(popup, elem, "center bottom", options);}
                     },
                     "separator",
                     {
                         "label": "Open centered",
-                        "command": () => {PlacementHelper.placeElement(popup, elem, "center", options); }
+                        "command": () => {placeElement(popup, elem, "center", options); }
                     },
                     "separator",
                     {
                         "label": "Left top corner",
-                        "command": () => {PlacementHelper.placeElement(popup, elem, "left top", options); }
+                        "command": () => {placeElement(popup, elem, "left top", options); }
                     },{
                         "label": "Right top corner",
-                        "command": () => {PlacementHelper.placeElement(popup, elem, "right top", options); }
+                        "command": () => {placeElement(popup, elem, "right top", options); }
                     },{
                         "label": "Left bottom corner",
-                        "command": () => {PlacementHelper.placeElement(popup, elem, "left bottom", options);}
+                        "command": () => {placeElement(popup, elem, "left bottom", options);}
                     },{
                         "label": "Right bottom corner",
-                        "command": () => {PlacementHelper.placeElement(popup, elem, "right bottom", options);}
+                        "command": () => {placeElement(popup, elem, "right bottom", options);}
                     },
                     "separator",
                     {
@@ -168,30 +203,30 @@
                         "submenu": [
                             {
                                 "label": "Open on the left",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "leftIn center", options); }
+                                "command": () => {placeElement(popup, elem, "leftIn center", options); }
                             },{
                                 "label": "Open on the top",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "center topIn", options); }
+                                "command": () => {placeElement(popup, elem, "center topIn", options); }
                             },{
                                 "label": "Open on the right",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "rightIn center", options);}
+                                "command": () => {placeElement(popup, elem, "rightIn center", options);}
                             },{
                                 "label": "Open on the bottom",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "center bottomIn", options);}
+                                "command": () => {placeElement(popup, elem, "center bottomIn", options);}
                             },
                             "separator",
                             {
                                 "label": "Left top corner",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "leftIn topIn", options); }
+                                "command": () => {placeElement(popup, elem, "leftIn topIn", options); }
                             },{
                                 "label": "Right top corner",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "rightIn topIn", options); }
+                                "command": () => {placeElement(popup, elem, "rightIn topIn", options); }
                             },{
                                 "label": "Left bottom corner",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "leftIn bottomIn", options);}
+                                "command": () => {placeElement(popup, elem, "leftIn bottomIn", options);}
                             },{
                                 "label": "Right bottom corner",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "rightIn bottomIn", options);}
+                                "command": () => {placeElement(popup, elem, "rightIn bottomIn", options);}
                             },
                         ]
                     },{
@@ -199,30 +234,30 @@
                         "submenu": [
                             {
                                 "label": "Open on the left",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "leftOut center", options); }
+                                "command": () => {placeElement(popup, elem, "leftOut center", options); }
                             },{
                                 "label": "Open on the top",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "center topOut", options); }
+                                "command": () => {placeElement(popup, elem, "center topOut", options); }
                             },{
                                 "label": "Open on the right",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "rightOut center", options);}
+                                "command": () => {placeElement(popup, elem, "rightOut center", options);}
                             },{
                                 "label": "Open on the bottom",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "center bottomOut", options);}
+                                "command": () => {placeElement(popup, elem, "center bottomOut", options);}
                             },
                             "separator",
                             {
                                 "label": "Left top corner",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "leftOut topOut", options); }
+                                "command": () => {placeElement(popup, elem, "leftOut topOut", options); }
                             },{
                                 "label": "Right top corner",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "rightOut topOut", options); }
+                                "command": () => {placeElement(popup, elem, "rightOut topOut", options); }
                             },{
                                 "label": "Left bottom corner",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "leftOut bottomOut", options);}
+                                "command": () => {placeElement(popup, elem, "leftOut bottomOut", options);}
                             },{
                                 "label": "Right bottom corner",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "rightOut bottomOut", options);}
+                                "command": () => {placeElement(popup, elem, "rightOut bottomOut", options);}
                             }
                         ]
                     },{
@@ -230,30 +265,30 @@
                         "submenu": [
                             {
                                 "label": "Open on the left",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "leftMid center", options); }
+                                "command": () => {placeElement(popup, elem, "leftMid center", options); }
                             },{
                                 "label": "Open on the top",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "center topMid", options); }
+                                "command": () => {placeElement(popup, elem, "center topMid", options); }
                             },{
                                 "label": "Open on the right",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "rightMid center", options);}
+                                "command": () => {placeElement(popup, elem, "rightMid center", options);}
                             },{
                                 "label": "Open on the bottom",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "center bottomMid", options);}
+                                "command": () => {placeElement(popup, elem, "center bottomMid", options);}
                             },
                             "separator",
                             {
                                 "label": "Left top corner",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "leftMid topMid", options); }
+                                "command": () => {placeElement(popup, elem, "leftMid topMid", options); }
                             },{
                                 "label": "Right top corner",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "rightMid topMid", options); }
+                                "command": () => {placeElement(popup, elem, "rightMid topMid", options); }
                             },{
                                 "label": "Left bottom corner",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "leftMid bottomMid", options);}
+                                "command": () => {placeElement(popup, elem, "leftMid bottomMid", options);}
                             },{
                                 "label": "Right bottom corner",
-                                "command": () => {PlacementHelper.placeElement(popup, elem, "rightMid bottomMid", options);}
+                                "command": () => {placeElement(popup, elem, "rightMid bottomMid", options);}
                             }
                         ]
                     }
