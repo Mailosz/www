@@ -128,11 +128,13 @@
     </style>
 </head>
 <body>
+    <button onclick="h1();">h1</button>
+    <button onclick="p();">p</button>
     <button onclick="embolden();"><b>b</b></button>
     <button onclick="italize();"><i>i</i></button>
     <button onclick="underline()"><u>u</u></button>
     <button onclick="commit((editor) => editor.focus());"><u>Focus</u></button>
-    <ox-editor id="main-editor" srcdoc="<div>Lorem ipsum dolor est Dolores.</div><a href='./controls.html'>Controls html</a>"></ox-editor>
+    <ox-editor id="main-editor" srcdoc="<div>Lorem ipsum dolor est Dolores.</div><div>Lorem <span style='color: red'>ipsum <span style='color: green'>tres</span> dolor</span> est Dolores.</div><div>Lorem ipsum dolor est Dolores.</div><a href='./controls.html'>Controls html</a>"></ox-editor>
     <script>
 
         function forEverySuccessor(element, foo) {
@@ -141,6 +143,21 @@
             while (walker.nextNode()) {
                 foo(walker.currentNode);
             }
+        }
+
+        function h1() {
+            let editor = document.getElementById("main-editor");
+
+            const el = document.createElement("h1");
+            editor.changeBlockElement(el);
+        }
+
+        
+        function p() {
+            let editor = document.getElementById("main-editor");
+
+            const el = document.createElement("p");
+            editor.changeBlockElement(el);
         }
 
         function surroundBySpan(foo) {

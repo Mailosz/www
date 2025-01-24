@@ -6,6 +6,7 @@ const template = /*html*/`
         <slot name="icon" id="icon-slot"></slot>
     </div>
     <div id="label" part="label"></div>
+    <slot id="submenu" name="submenu"></slot>
 `;
 
 const style = /*css*/`
@@ -34,6 +35,7 @@ const style = /*css*/`
 
     #label {
         margin: auto;
+        flex: 1;
     }
 
     :host(:state(checked)) {
@@ -68,6 +70,13 @@ export class OxItem extends OxControl {
 
     connectedCallback() {
         super.connectedCallback();
+
+        this.onclick = (event) => {
+            const elements = this.shadowRoot.getElementById("submenu").assignedElements();
+            if (elements.length > 0) {
+                elements[0].showPopover();
+            }
+        }
     }
 
     attributeChangedCallback(name, oldValue, newValue) {

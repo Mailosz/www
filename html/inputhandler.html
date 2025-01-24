@@ -69,7 +69,10 @@
 <button id="test-button">Test</button>
 <div class="input-box input-handler" contenteditable="true"><h1>Title</h1><h2>subtitle</h2><div><p>qwertyu<span>iop[asd</span>fgh<span>jkl;</span>zxcvbnm</p><p>qwertyu<span>iop[</span><span>asd</span>fghjkl;zxcvbnm<span><span>test</span></span></p>abcd<p>qwertyuiop<span></span>[asdfghjkl;zxcvbnm</p></div></div>
 <br>
-<div class="input-box" contenteditable="true"><div class="test"><div>test</div></div></div>
+<div class="input-box" contenteditable="true">
+    <div class="test"><div>test</div>cbf</div>
+    <div class="text">Text 2 tst</div>
+</div>
 <script type="module">
     import {handleInput, handleKeyDown, handlePointerDown, handlePointerMove, handlePointerUp} from "../js/inputhandler/InputHandler.js";
 
@@ -81,20 +84,18 @@
     document.querySelectorAll(".input-handler").forEach((element) => {
         element.onbeforeinput = handleInput(options);
         element.onkeydown = handleKeyDown;
+        element.onmousedown = (event) => event.preventDefault();
+        element.onmouseup = (event) => event.preventDefault();
+        element.onpointerdown = handlePointerDown;
+        element.onpointermove = handlePointerMove;
+        element.onpointerup = handlePointerUp;
+
     });
 
 
-    document.onmousedown = (event) => event.preventDefault();
-    document.onmouseup = (event) => event.preventDefault();
-    document.onpointerdown = handlePointerDown;
-    document.onpointermove = handlePointerMove;
-    document.onpointerup = handlePointerUp;
-    document.onkeydown = handleKeyDown;
-
-
-    document.onbeforeinput = (event) => {
-        console.log(event.key);
-    }
+    document.querySelectorAll(".input-box").forEach((element) => {
+        element.onbeforeinput = handleInput(options);
+    });
 
 
     let button = document.querySelector("#test-button");

@@ -172,6 +172,16 @@ export class OxCode extends OxControl {
      * @param {InputEvent} event 
      */
     #handleInput(event) {
+        console.log(event.inputType);
+        if (event.inputType == "historyUndo") {
+            event.preventDefault();
+        } else if (event.inputType == "historyRedo") {
+            event.preventDefault();
+        } else {
+            const ranges = event.getTargetRanges();
+
+            const data = event.data;
+        }
         // recolorizing after a time
         const ranges = event.getTargetRanges();
         clearTimeout(this.#tokenizationTimeout);

@@ -13,7 +13,7 @@ function clearSelection() {
  */
 export function handlePointerDown(event) {
     
-
+    event.currentTarget.focus();
 
     const element = document.elementFromPoint(event.x, event.y);
 
@@ -131,34 +131,11 @@ export function handleKeyDown(event) {
             const range = item;//selection.getRangeAt(i);
 
             if (item instanceof Range) {
-                if (range.startOffset > 0) {
-                    console.log("A");
-                    if (isElementNode(range.startContainer)) {
-                        const node = range.startContainer.childNodes.item(range.startOffset - 1);
-                        if (isElementNode(node)) {
-                            range.setStart(node, node.childNodes?.length);
-                        } else {
-                            range.setStart(node, Math.max(0, node.length));
-                        }
-                    } else {
-                        range.setStart(range.startContainer, range.startOffset - 1);
-                    }
-                } else if (range.startContainer.previousSibling) {
+
+                extendRangeBackward(item);
     
-                    console.log("B");
-                    if (range.startContainer.parentElement) {
-                        const index = Array.prototype.indexOf.call(range.startContainer.parentElement.childNodes, range.startContainer);
-                        range.setEnd(range.startContainer.parentElement, index);
-                    } else {
-                        range.setStart(range.startContainer.previousSibling, getNodeLength(range.startContainer.previousSibling));
-                    }
-                } else if (range.startContainer.parentElement) {
-                    console.log("C");
-                    range.setStart(range.startContainer.parentElement, 0);
-                }
-    
-                range.collapse(true);
-                console.log(range);
+                item.collapse(true);
+                console.log(item);
             }
         }
         showSelection(selection);
@@ -167,45 +144,11 @@ export function handleKeyDown(event) {
 
         for (const item of selection) {
             if (item instanceof Range) {
-                const range = item;
 
-                let checkInside = () => {
-                    if (isElementNode(range.endContainer)) {
-                        if (range.endOffset < range.endContainer.childNodes.length) {
-                            console.log("A");
-                            const node = range.endContainer.childNodes.item(range.endOffset);
-                            range.setEnd(node, 0);
-                            return true;
-                        }
-                    } else {
-                        if (range.endOffset < range.endContainer.length) {
-                            console.log("A");
-                            range.setEnd(range.endContainer, range.endOffset + 1);
-                            return true;
-                        }
-                    }
-                    return false;
-                };
+                extendRangeForward(item);
 
-                if (checkInside()) {
-
-                } else if (range.endContainer.nextSibling) {
-                    console.log("B");
-                    if (range.endContainer.parentElement) {
-                        const index = Array.prototype.indexOf.call(range.endContainer.parentElement.childNodes, range.endContainer);
-                        range.setEnd(range.endContainer.parentElement, index + 1);
-                    } else {
-                        range.setEnd(range.endContainer.nextSibling, 0);
-                    }
-                } else if (range.endContainer.parentElement) {
-                    console.log("C");
-                    range.setEnd(range.endContainer.parentElement, range.endContainer.parentElement.childNodes.length);
-                }
-
-
-
-                range.collapse(false);
-                console.log(range);
+                item.collapse(false);
+                console.log(item);
 
             }
         }
@@ -249,88 +192,7 @@ function editStaticRanges(staticRanges, foo) {
     const ranges = staticRanges.map((sr) => rangeFromStatic(sr));
     ranges.forEach(foo);
 
-    const selection = document.getSelection();
-    selection.empty();
-    ranges.forEach((range) => selection.addRange(range));
-}
-
-
-/**
- * Handles user input in a predictive way
- * @param {InputEvent} event 
- */
-export function handleInput(options) {
-
-    return (event) => {
-        console.log(options);
-
-        event.preventDefault();
-    
-        /**
-         * @type {HTMLElement}
-         */
-        const editor = event.target;
-    
-        if (event.inputType == "insertText") {
-            editStaticRanges(event.getTargetRanges(), (range) => {
-                if (!range.collapsed) {
-                    range.deleteContents();
-                }
-                
-                // let container = range.startContainer;
-                // if (container === editor) { // no paragraph element
-                //     const div = document.createElement("div");
-                //     range.insertNode(div);
-                // }
-    
-                const node = document.createTextNode(event.data.replaceAll(" ", "\xA0"));
-                range.insertNode(node);
-                range.setEndAfter(node);
-                range.collapse(false);
-                range.commonAncestorContainer.normalize();
-    
-            });
-        } else if (event.inputType == "insertParagraph") {
-            editStaticRanges(event.getTargetRanges(), (range) => {
-                if (!range.collapsed) {
-                    range.deleteContents();
-                }
-
-                let context = findBlockContext(range.startContainer);
-
-                range.setEnd(context, context.childNodes.length);
-                
-                // this checks if inside this element are other block elements
-                for (const element of iterateBetweenNodes(range.startContainer, range.endContainer)) {
-                    if (isBlockElement(element)) {
-                        range.setEndBefore(element);
-                        break;
-                    }
-                }
-                const frag = range.extractContents();
-
-
-                if (editor === context) {
-                    context = null;
-                }
-
-                const paragraph = (options.paragraph ?? context)?.cloneNode(false) ?? document.createElement("div");
-
-                paragraph.append(frag);
-
-                if (context) {
-                    range.setEndAfter(context);
-                    range.collapse();
-                }
-    
-                range.insertNode(paragraph);
-                range.setStart(paragraph, 0);
-                range.collapse(true);
-            })
-
-        }
-    };
-
+    setSelection(document.getSelection(), ranges);
 }
 
 /**
@@ -499,4 +361,258 @@ function showSelection(selection) {
         }
         console.log(rects);
     }
+}
+/**
+ * 
+ * @param {Range[]} ranges 
+ */
+function setSelection(selection, ranges) {
+    selection.empty();
+    ranges.forEach((range) => selection.addRange(range));
+}
+
+
+/**
+ * Handles user input in a predictive way
+ */
+export function handleInput(options) {
+
+    console.log(options);
+    /**
+     * Handles user input in a predictive way
+     * @param {InputEvent} event 
+     */
+    return (event) => {
+        event.preventDefault();
+    
+        /**
+         * @type {HTMLElement}
+         */
+        const editor = event.target;
+    
+        console.log(event.inputType);
+        if (event.inputType == "insertText") {
+
+            const ranges = insertText(event.data, event.getTargetRanges());
+            ranges.forEach((range) => range.collapse(false));
+            setSelection(document.getSelection(), ranges);
+
+        } else if (event.inputType == "insertParagraph") {
+
+            const ranges = insertParagraph(options.paragraph, event.getTargetRanges());
+            // ranges.forEach((range) => range.collapse(true));
+            setSelection(document.getSelection(), ranges);
+
+        } else if (event.inputType == "deleteContentForward") {
+
+            const ranges = deleteContent("forward", "character", event.getTargetRanges());
+            setSelection(document.getSelection(), ranges);
+
+        } else if (event.inputType == "deleteContentBackward") {
+
+            const ranges = deleteContent("backward", "character", event.getTargetRanges());
+            setSelection(document.getSelection(), ranges);
+
+        } else if (event.inputType == "deleteWordForward") {
+
+            const ranges = deleteContent("forward", "word", event.getTargetRanges());
+            setSelection(document.getSelection(), ranges);
+
+        } else if (event.inputType == "deleteWordBackward") {
+
+            const ranges = deleteContent("backward", "word", event.getTargetRanges());
+            setSelection(document.getSelection(), ranges);
+
+        }
+    };
+
+}
+
+/**
+ * Copies from range A to B
+ * @param {AbstractRange} a
+ * @param {AbstractRange} b 
+ * @returns {AbstractRange} Range B
+ */
+function copyRange(a, b) {
+    b.setStart(a.startContainer, a.startOffset);
+    b.setEnd(a.endContainer, a.endOffset);
+    return b;
+}
+
+/**
+ * Extends range to the left in place
+ * @param {*} range 
+ */
+function extendRangeBackward(range) {
+    if (range.startOffset > 0) {
+        console.log("A");
+        if (isElementNode(range.startContainer)) {
+            const node = range.startContainer.childNodes.item(range.startOffset - 1);
+            if (isElementNode(node)) {
+                range.setStart(node, node.childNodes?.length);
+            } else {
+                range.setStart(node, Math.max(0, node.length));
+            }
+        } else {
+            range.setStart(range.startContainer, range.startOffset - 1);
+        }
+    } else if (range.startContainer.previousSibling) {
+
+        console.log("B");
+        if (range.startContainer.parentElement) {
+            const index = Array.prototype.indexOf.call(range.startContainer.parentElement.childNodes, range.startContainer);
+            range.setEnd(range.startContainer.parentElement, index);
+        } else {
+            range.setStart(range.startContainer.previousSibling, getNodeLength(range.startContainer.previousSibling));
+        }
+    } else if (range.startContainer.parentElement) {
+        console.log("C");
+        range.setStart(range.startContainer.parentElement, 0);
+    }
+}
+
+/**
+ * Extends range to the right in place
+ * @param {*} range 
+ */
+function extendRangeForward(range) {
+    let checkInside = () => {
+        if (isElementNode(range.endContainer)) {
+            if (range.endOffset < range.endContainer.childNodes.length) {
+                console.log("A");
+                const node = range.endContainer.childNodes.item(range.endOffset);
+                range.setEnd(node, 0);
+                return true;
+            }
+        } else {
+            if (range.endOffset < range.endContainer.length) {
+                console.log("X");
+                range.setEnd(range.endContainer, range.endOffset + 1);
+                return true;
+            }
+        }
+        return false;
+    };
+
+    if (checkInside()) {
+
+    } else if (range.endContainer.nextSibling) {
+        console.log("B");
+        if (range.endContainer.parentElement) {
+            const index = Array.prototype.indexOf.call(range.endContainer.parentElement.childNodes, range.endContainer);
+            range.setEnd(range.endContainer.parentElement, index + 1);
+        } else {
+            range.setEnd(range.endContainer.nextSibling, 0);
+        }
+    } else if (range.endContainer.parentElement) {
+        console.log("C");
+        range.setEnd(range.endContainer.parentElement, range.endContainer.parentElement.childNodes.length);
+    }
+}
+
+/**
+ * Inserts a string
+ * @param {String} data 
+ * @param {AbstractRange[]} ranges 
+ */
+export function insertText(data, ranges) {
+
+    const editRanges = ranges.map((sr) => copyRange(sr, sr.startContainer.ownerDocument.createRange()));
+
+    editRanges.forEach((range) => {
+        if (!range.collapsed) {
+            range.deleteContents();
+        }
+        const node = range.startContainer.ownerDocument.createTextNode(data);
+        range.insertNode(node);
+        range.setEndAfter(node);
+        range.commonAncestorContainer.normalize();
+    });
+
+    return editRanges;
+}
+
+/**
+ * 
+ * @param {HTMLElement} paragraphElement 
+ * @param {AbstractRange[]} ranges 
+ */
+function insertParagraph(paragraphElement, ranges) {
+
+    const editRanges = ranges.map((sr) => copyRange(sr, sr.startContainer.ownerDocument.createRange()));
+
+    editRanges.forEach((range) => {
+        if (!range.collapsed) {
+            range.deleteContents();
+        }
+
+        let context = findBlockContext(range.startContainer);
+
+        range.setEnd(context, context.childNodes.length);
+        
+        // this checks if inside this element are other block elements
+        for (const element of iterateBetweenNodes(range.startContainer, range.endContainer)) {
+            if (isBlockElement(element)) {
+                range.setEndBefore(element);
+                break;
+            }
+        }
+        const frag = range.extractContents();
+    
+        const paragraph = (paragraphElement ?? context)?.cloneNode(false) ?? document.createElement("div");
+        paragraph.append(frag);
+    
+        if (context) {
+            range.setStartAfter(context);
+            range.setEndAfter(context);
+            console.log(range);
+            // range.collapse(false);
+        }
+    
+        range.insertNode(paragraph);
+        range.setStart(paragraph, 0);
+        range.collapse(true);
+    });
+
+    return editRanges;
+
+
+    
+}
+
+/**
+ * 
+ * @param {*} direction 
+ * @param {*} granularity 
+ * @param {AbstractRange[]} ranges 
+ * @returns 
+ */
+function deleteContent(direction, granularity, ranges) {
+    const editRanges = ranges.map((sr) => copyRange(sr, sr.startContainer.ownerDocument.createRange()));
+
+    /**
+     * @type {Range[]}
+     */
+    editRanges.forEach((range) => {
+        // option A
+        // const sel = range.startContainer.ownerDocument.getSelection();
+        // sel.empty();
+        // sel.addRange(range);
+        // sel.modify("extend", direction, granularity);
+        // option B
+        // browser automagically selects a text to delete
+        // console.log(range)
+        // if (direction == "forward") {
+        //     range.collapse(true);
+        //     extendRangeForward(range);
+        // } else if (direction == "backward") {
+        //     range.collapse(false);
+        //     extendRangeBackward(range);
+        // }
+        
+        range.deleteContents();
+    });
+
+    return editRanges;
 }

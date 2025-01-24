@@ -1,3 +1,91 @@
+let doc = window.document;
+let last = null;
+export class Builder {
+
+    /**
+     * @returns {TagBuilder} Returns last created tag builder
+     */
+    get last() {
+        return last;
+    }
+
+    /**
+     * Change the currently used document or reset it to window.document (if null is passed)
+     * @param {Document?} document 
+     */
+    static set(document) {
+        doc = document ?? window.document;
+    }
+
+    /**
+     * Creates new tag builder
+     * @returns {TagBuilder}
+     */
+    static tag(tagname, options) {
+        last = new TagBuilder(doc.createElement(tagname, options));
+        return last;
+    }
+
+    /**
+     * Creates new text node
+     * @returns {Text}
+     */
+    static text(text) {
+        return doc.createTextNode(text);
+    }
+
+    /**
+     * Creates new DIV tag builder
+     * Shortcut for .tag("div")
+     * @param {ElementCreationOptions?} options document.createElement(name, options) options
+     * @returns 
+     */
+    static div(options) {
+        return Builder.tag("div", options);
+    }
+
+    /**
+     * Creates new SPAN tag builder
+     * Shortcut for .tag("span")
+     * @param {ElementCreationOptions?} options document.createElement(name, options) options
+     * @returns 
+     */
+    static span(options) {
+        return Builder.tag("span", options);
+    }
+
+    /**
+     * Creates new BUTTON tag builder
+     * Shortcut for .tag("button")
+     * @param {ElementCreationOptions?} options document.createElement(name, options) options
+     * @returns 
+     */
+    static button(options) {
+        return Builder.tag("button", options);
+    }
+
+    /**
+     * Creates new INPUT tag builder
+     * Shortcut for .tag("input")
+     * @param {ElementCreationOptions?} options document.createElement(name, options) options
+     * @returns 
+     */
+    static input(options) {
+        return Builder.tag("input", options);
+    }
+
+    /**
+     * Creates new A tag builder
+     * Shortcut for .tag("a")
+     * @param {ElementCreationOptions?} options document.createElement(name, options) options
+     * @returns 
+     */
+    static a(options) {
+        return Builder.tag("a", options);
+    }
+}
+
+
 export class DocBuilder {
 
     /**
@@ -14,6 +102,14 @@ export class DocBuilder {
             doc = window.document;
         }
         this.#doc = doc;
+    }
+
+    /**
+     * Creates new DocBuilder
+     * @param {Document?} document 
+     */
+    static new(document) {
+        return new DocBuilder(document);
     }
 
     /**
@@ -112,7 +208,7 @@ export class TagBuilder {
     /**
      * Sets the tag's id
      * @param {string} id 
-     * @returns {TagBuilder}
+     * @returns {TagBuilder} itself
      */
     id(id) {
         this.#tag.id = id;
@@ -123,7 +219,7 @@ export class TagBuilder {
     /**
      * Appends CSS class name(s)
      * @param {...string} classNames 
-     * @returns {TagBuilder}
+     * @returns {TagBuilder} itself
      */
     class(...classNames) {
         this.#tag.classList.add(...classNames);
@@ -134,7 +230,7 @@ export class TagBuilder {
     /**
      * Sets the classname
      * @param {string} className 
-     * @returns {TagBuilder}
+     * @returns {TagBuilder} itself
      */
     className(className) {
         this.#tag.className = className;
@@ -146,11 +242,10 @@ export class TagBuilder {
      * Sets the given attribute
      * @param {string} name 
      * @param {string} value 
-     * @returns {TagBuilder}
+     * @returns {TagBuilder} itself
      */
     attr(name, value) {
         this.#tag.setAttribute(name, value);
-
         return this;
     }
 
@@ -158,7 +253,7 @@ export class TagBuilder {
      * Sets the style attribute
      * 
      * @param {string|object} style Properties to set
-     * @returns {TagBuilder}
+     * @returns {TagBuilder} itself
      */
     style(style) {
         if (typeof(style) == "string") {
@@ -176,31 +271,59 @@ export class TagBuilder {
     }
 
     /**
+     * Sets the value attribute
+     * @param {string} value 
+     * @returns {TagBuilder} itself
+     */
+    value(value) {
+        this.#tag.setAttribute("value", value);
+        return this;
+    }
+
+    /**
+     * Sets the name attribute
+     * @param {string} name 
+     * @returns {TagBuilder} itself
+     */
+    name(name) {
+        this.#tag.setAttribute("name", name);
+        return this;
+    }
+
+    /**
      * Sets the innerHTML
      * @param {*} html 
-     * @returns {TagBuilder}
+     * @returns {TagBuilder} itself
      */
     innerHTML(html) {
         this.#tag.innerHTML = html;
-
         return this;
     }
 
     /**
      * Sets the innerText
      * @param {*} html 
-     * @returns {TagBuilder}
+     * @returns {TagBuilder} itself
      */
     innerText(text) {
         this.#tag.innerText = text;
+        return this;
+    }
 
+    /**
+     * Sets the textContent
+     * @param {*} html 
+     * @returns {TagBuilder} itself
+     */
+    textContent(text) {
+        this.#tag.textContent = text;
         return this;
     }
 
     /**
      * Appends children to the end of element
      * @param {...Node} children 
-     * @returns {TagBuilder}
+     * @returns {TagBuilder} itself
      */
     children(...children) {
 
@@ -212,7 +335,7 @@ export class TagBuilder {
     /**
      * Adds event listener to the tag
      * @param {Function} children 
-     * @returns {TagBuilder}
+     * @returns {TagBuilder} itself
      */
     event(name, listener, options) {
 
@@ -233,10 +356,36 @@ export class TagBuilder {
         return this;
     }
 
+    /**
+     * Invokes arbitrary function on the tag (alias for "invoke")
+     * @param {Function} func  funtion to invoke taking one parameter: the element itself
+     * @returns {TagBuilder}
+     */
+    forThis(func) {
+        func(this.#tag);
+        return this;
+    }
+
+    /**
+     * Invokes arbitrary function on the tag conditionally (alias for "invoke")
+     * @param {boolean} condition  the condition
+     * @param {Function} thenFunction  funtion to invoke when the condition is true, takes one parameter: the tag builder itself
+     * @param {Function} elseFunction  funtion to invoke when the condition is false, takes one parameter: the tag builder itself
+     * @returns {TagBuilder}
+     */
+    if(condition,thenFunction,elseFunction) {
+        if (condition) {
+            thenFunction(this);
+        } else {
+            elseFunction(this);
+        }
+        return this;
+    }
+
      /**
      * Invokes arbitrary function for every child of the tag
      * @param {Function} func  funtion to invoke taking one parameter: the element itself
-     * @returns {TagBuilder}
+     * @returns {TagBuilder} itself
      */
     forEveryChild(func) {
 
@@ -268,6 +417,22 @@ export class TagBuilder {
      * @type {Element}
      */
     getElement() {
+        return this.#tag;
+    }
+
+    /**
+     * Get the built HTML element
+     * @type {Element}
+     */
+    get tag() {
+        return this.#tag;
+    }
+
+    /**
+     * Get the built HTML element
+     * @type {Element}
+     */
+    get element() {
         return this.#tag;
     }
 }
