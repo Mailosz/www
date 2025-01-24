@@ -96,5 +96,53 @@ select {
     appearance:auto;
 }
 
+/* PROGRESS BAR */
+
+/* progress {
+    box-sizing: border-box;
+    background-color: rgba(from #aaa r g b / 0.5);
+    accent-color: green;
+    color: blueviolet;
+    height: 20px;
+    border: 2px solid #666;
+    padding: 1px;
+    border-radius: 4px;
+    backdrop-filter: blur(2px);
+}
+
+progress::-moz-progress-bar {
+    background-color: var(--accent-color, cornflowerblue);
+    filter: blur(2px);
+}
+
+::-webkit-progress-bar {
+    background-color: rgba(from #aaa r g b / 0.5);
+}
+
+::-webkit-progress-inner-element {
+    background-color: none;
+}
+
+::-webkit-progress-value {
+    background-color: var(--accent-color, cornflowerblue);
+    filter: blur(2px);
+}
+
+@keyframes progressbar-indeterminate {
+    0% {opacity: 1;}
+    100% {opacity: 0;}
+}
 
 
+
+progress:indeterminate::-webkit-progress-bar {
+    background: var(--accent-color, cornflowerblue);
+     animation: 1s progressbar-indeterminate linear infinite alternate;
+}
+
+progress:indeterminate::-moz-progress-bar  {
+    background: linear-gradient(to right, var(--accent-color, cornflowerblue) 0%, rgba(from var(--accent-color, cornflowerblue) r g b / 0.2) 50%, var(--accent-color, cornflowerblue) 100%);
+    background-size: 100%;
+    background-position: 50% 0% !important;
+    animation: 1s progressbar-indeterminate linear infinite alternate;
+} */

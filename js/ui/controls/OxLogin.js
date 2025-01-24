@@ -74,6 +74,7 @@ const style = /*css*/`
             width: 100%;
             height: 40%;
             border-radius: 100%;
+            box-shadow: 0 -2px 10px rgba(63,63,63,0.3);
         }
 
         #user-icon::after {
@@ -86,6 +87,7 @@ const style = /*css*/`
             width: 50%;
             height: 70%;
             border-radius: 100%;
+            box-shadow: 0 -2px 10px rgba(63,63,63,0.4);
         }
 
     #input-container {

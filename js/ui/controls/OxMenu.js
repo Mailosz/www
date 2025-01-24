@@ -5,7 +5,6 @@ import {OxItem} from "./OxItem.js";
 const template = /*html*/`
     <div id="popup" part="popup">
         <slot id="slot-id"></slot>
-        <div id="submenus"></div>
     </div>
 `;
 
@@ -28,16 +27,17 @@ export class OxMenu extends OxControl {
         
         this.createShadowRoot(template, style, {mode: "open", delegatesFocus: true});
         
-        new MutationObserver((records) => {
-            for (const record of records) {
+        // new MutationObserver((records) => {
+        //     for (const record of records) {
 
-            }
-        }).observe(this, {childList: true});
+        //     }
+        // }).observe(this, {childList: true});
 
     }
 
     connectedCallback() {
         super.connectedCallback();
+        // this.setAttribute("popover", "auto");
 
         this.addEventListener("keydown", this.#keydown);
         this.addEventListener("toggle", (event) => {
@@ -63,6 +63,7 @@ export class OxMenu extends OxControl {
         console.log(event.key);
         event.stopPropagation();
         if (event.key == "ArrowUp") {
+            event.preventDefault();
             const rootNode = this.ownerDocument;
             let prev = rootNode.activeElement.previousElementSibling;
             while (prev != null) {
@@ -73,6 +74,7 @@ export class OxMenu extends OxControl {
                 prev = this.previousElementSibling;
             }
         } else if (event.key == "ArrowDown") {
+            event.preventDefault();
             const rootNode = this.ownerDocument;
             let next = rootNode.activeElement.nextElementSibling;
             while (next != null) {
@@ -87,12 +89,14 @@ export class OxMenu extends OxControl {
             if (el) {
                 this.tryOpenSubmenu(el);
             }
+            event.preventDefault();
         } else if (event.key == "Escape" || event.key == "ArrowLeft") {
             if (this.popover) {
                 this.hidePopover()
             } else {
                 this.previousElementSibling.focus({preventScroll: true});
             }
+            event.preventDefault();
         } else if (event.key == "Enter") {
             this.getRootNode().activeElement?.click();
         }
@@ -104,6 +108,7 @@ export class OxMenu extends OxControl {
             const subitems = [];
             for (const subitem of item.children) {
                 if (!subitem.hasAttribute("slot")) {
+                    // subitem.showPopover();
                     subitems.push(subitem);
                 }
             }
@@ -119,7 +124,6 @@ export class OxMenu extends OxControl {
                     item.append(...subitems);
                 }
                 
-                // const submenus = this.shadowRoot.getElementById("submenus");
                 item.after(submenu);
 
                 submenu.firstElementChild.focus();

@@ -90,10 +90,16 @@ ox-menu>ox-item::part(icon) {
     flex-shrink: 0;
 }
 
-ox-menu>ox-item:has(:not([slot]))::after {
+ox-menu>ox-item:has(:not([slot]))::after,
+ox-menu>ox-item:has(+ox-menu)::after {
     content: '\2B9E';
     margin: auto 0.5em;
     justify-self: end;
+    align-self: end;
+}
+
+ox-menu>ox-item:has(+ox-menu) {
+    filter: brightness(1.1);
 }
 
 ox-menu>ox-item::part(label) {
@@ -115,4 +121,9 @@ ox-menu>ox-menu {
     position: absolute;
     left: calc(100% - 1em);
     width: auto;
+}
+
+ox-menu>hr {
+    border: 2px solid #666;
+    display: flex;
 }
