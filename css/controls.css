@@ -59,12 +59,12 @@ ox-menu::part(popup) {
     padding: 0.25em 0;
 }
 
-ox-menu>ox-item:focus {
+ox-menu>ox-button:focus {
     background-color: var(--weak-accent-color, lightblue);
     z-index: 10;
 }
 
-ox-menu>ox-item {
+ox-menu>ox-button {
     background-color: #eee;
     display: flex;
     flex-direction: row;
@@ -77,11 +77,11 @@ ox-menu>ox-item {
     white-space: nowrap;
 }
 
-ox-menu>ox-item[disabled] {
+ox-menu>ox-button[disabled] {
     filter: brightness(2) saturate(0.1) contrast(0.75);
 }
 
-ox-menu>ox-item::part(icon) {
+ox-menu>ox-button::part(icon) {
     height: 2.5em;
     width: 2.5em;
     padding: 0.25em;
@@ -90,29 +90,29 @@ ox-menu>ox-item::part(icon) {
     flex-shrink: 0;
 }
 
-ox-menu>ox-item:has(:not([slot]))::after,
-ox-menu>ox-item:has(+ox-menu)::after {
+ox-menu>ox-button:has(:not([slot]))::after,
+ox-menu>ox-button:has(+ox-menu)::after {
     content: '\2B9E';
     margin: auto 0.5em;
     justify-self: end;
     align-self: end;
 }
 
-ox-menu>ox-item:has(+ox-menu) {
+ox-menu>ox-button:has(+ox-menu) {
     filter: brightness(1.1);
 }
 
-ox-menu>ox-item::part(label) {
+ox-menu>ox-button::part(label) {
     margin: auto 0.5em auto 0.5em;
     text-overflow: ellipsis;
     overflow: hidden;
 }
 
-ox-menu>ox-item:hover {
+ox-menu>ox-button:hover {
     filter: brightness(1.1);
 }
 
-ox-menu>ox-item:active {
+ox-menu>ox-button:active {
     filter: brightness(0.9);
 }
 

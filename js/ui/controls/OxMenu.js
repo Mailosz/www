@@ -1,5 +1,5 @@
 import {OxControl} from "./OxControl.js";
-import {OxItem} from "./OxItem.js";
+import {OxButton} from "./OxItem.js";
 
 
 const template = /*html*/`
@@ -103,7 +103,7 @@ export class OxMenu extends OxControl {
     }
 
     tryOpenSubmenu(item) {
-        if (item instanceof OxItem) {
+        if (item instanceof OxButton) {
 
             const subitems = [];
             for (const subitem of item.children) {

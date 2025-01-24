@@ -48,7 +48,7 @@ const style = /*css*/`
 
 `;
 
-export class OxItem extends OxControl {
+export class OxButton extends OxControl {
 
     static observedAttributes = ["label", "toggle", "checked", "group", "disabled", "icon"];
 
@@ -175,11 +175,11 @@ export class OxItem extends OxControl {
 
     set groupName(value) {
         if (this.#groupName) {
-            const group = OxItem.#groups.get(this.#groupName);
+            const group = OxButton.#groups.get(this.#groupName);
             if (group) {
                 group.delete(this);
                 if (group.size === 0) {
-                    OxItem.#groups.delete(this.#groupName);
+                    OxButton.#groups.delete(this.#groupName);
                 }
             }
         }
@@ -187,10 +187,10 @@ export class OxItem extends OxControl {
         this.#groupName = value;
 
         if (this.#groupName) {
-            let group = OxItem.#groups.get(this.#groupName);
+            let group = OxButton.#groups.get(this.#groupName);
             if (group === undefined) {
                 group = new Set();
-                OxItem.#groups.set(this.#groupName, group);
+                OxButton.#groups.set(this.#groupName, group);
             }
             group.add(this);
         }
@@ -201,7 +201,7 @@ export class OxItem extends OxControl {
         const oldValue = this.#isChecked;
         
         if (this.#groupName) {
-            const group = OxItem.#groups.get(this.#groupName);
+            const group = OxButton.#groups.get(this.#groupName);
             if (group) {
                 for (const other of group) {
                     if (other != this) {
@@ -219,4 +219,4 @@ export class OxItem extends OxControl {
 
 }
 
-window.customElements.define("ox-item", OxItem);
+window.customElements.define("ox-button", OxButton);
