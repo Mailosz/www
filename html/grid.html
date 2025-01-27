@@ -11,6 +11,7 @@
     <script type="module" src="../js/ui/controls/OxPanel.js"></script>
     <link rel="stylesheet" href="../css/ui/ui.css">
     <link rel="stylesheet" href="../css/ui/switch.css">
+    <link rel="stylesheet" href="../css/controls.css">
     <style>
         
     </style>
@@ -38,22 +39,22 @@
             <span>&emsp;</span>
             <button onclick="console.log(document.getElementById('grid').data)">Show data</button>
             <span>&emsp;</span>
-            <ox-button id="bold-button" type="checkbox"><b>b</b></ox-button>
+            <ox-button id="bold-button" toggle><b>b</b></ox-button>
             <!-- <label class="switch-button"><input id="bold-button" type="checkbox" onchange="updateSelectionProperties(event.target.checked ? {bold: 'true'} : {bold: 'false'})"><b>b</b></label> -->
-            <ox-button id="italic-button" type="checkbox"><i>i</i></ox-button>
-            <ox-button id="underline-button" type="checkbox"><u>u</u></ox-button>
+            <ox-button id="italic-button" toggle><i>i</i></ox-button>
+            <ox-button id="underline-button" toggle ><u>u</u></ox-button>
             <div class="toolbar">
-                <ox-button id="align-left-button" type="radio" group="align-group" onclick="updateSelectionProperties({align: 'left'})">left</ox-button>
-                <ox-button id="align-center-button" type="radio" group="align-group" onclick="updateSelectionProperties({align: 'center'})">center</ox-button>
-                <ox-button id="align-right-button" type="radio" group="align-group" onclick="updateSelectionProperties({align: 'right'})">right</ox-button>
+                <ox-button id="align-left-button" toggle group="align-group" onclick="updateSelectionProperties({align: 'left'})">left</ox-button>
+                <ox-button id="align-center-button" toggle group="align-group" onclick="updateSelectionProperties({align: 'center'})">center</ox-button>
+                <ox-button id="align-right-button" toggle group="align-group" onclick="updateSelectionProperties({align: 'right'})">right</ox-button>
             </div>
             <label>Text:<input id="text-color-input" type="color"></label>
             <label>Bg:<input id="bg-color-input" type="color"></label>
             <div class="toolbar">
-                <ox-button id="text-type-button" type="radio" group="type-group">abc</ox-button>
-                <ox-button id="number-type-button" type="radio" group="type-group">123</ox-button>
-                <ox-button id="boolean-type-button" type="radio" group="type-group">&#x2611;</ox-button>
-                <ox-button id="calendar-type-button" type="radio" group="type-group">&#x1F5D3;</ox-button>
+                <ox-button id="text-type-button" toggle group="type-group">abc</ox-button>
+                <ox-button id="number-type-button" toggle group="type-group">123</ox-button>
+                <ox-button id="boolean-type-button" toggle group="type-group">&#x2611;</ox-button>
+                <ox-button id="calendar-type-button" toggle group="type-group">&#x1F5D3;</ox-button>
             </div>
         </div>
         <ox-grid id="grid" editable="true">
@@ -173,11 +174,11 @@
 
 
                 const boldbutton = document.getElementById("bold-button");
-                boldbutton.oninput = (event) =>{updateSelectionProperties(event.target.checked ? {bold: 'true'} : {bold: 'false'})};
+                boldbutton.onclick = (event) =>{updateSelectionProperties(event.target.isChecked ? {bold: 'true'} : {bold: 'false'})};
                 const italicbutton = document.getElementById("italic-button");
-                italicbutton.oninput = (event) =>updateSelectionProperties(event.target.checked ? {italic: 'true'} : {italic: 'false'});
+                italicbutton.onclick = (event) =>updateSelectionProperties(event.target.isChecked ? {italic: 'true'} : {italic: 'false'});
                 const underlinebutton = document.getElementById("underline-button");
-                underlinebutton.oninput = (event) =>updateSelectionProperties(event.target.checked ? {underline: 'true'} : {underline: 'false'});
+                underlinebutton.onclick = (event) =>updateSelectionProperties(event.target.isChecked ? {underline: 'true'} : {underline: 'false'});
                 const alignLeftbutton = document.getElementById("align-left-button");
                 const alignCenterbutton = document.getElementById("align-center-button");
                 const alignRightbutton = document.getElementById("align-right-button");
@@ -189,32 +190,32 @@
                 const booleanTypeButton = document.getElementById("boolean-type-button");
                 const calendarTypeButton = document.getElementById("calendar-type-button");
 
-                textTypeButton.onclick = (event) => updateSelectionProperties(event.target.checked ? {type: "text"} : null);
-                numberTypeButton.onclick = (event) => updateSelectionProperties(event.target.checked ? {type: "number"} : {});
-                booleanTypeButton.onclick = (event) => updateSelectionProperties(event.target.checked ? {type: "boolean"} : {});
-                calendarTypeButton.onclick = (event) => updateSelectionProperties(event.target.checked ? {type: "date"} : {});
+                textTypeButton.onclick = (event) => updateSelectionProperties(event.target.isChecked ? {type: "text"} : null);
+                numberTypeButton.onclick = (event) => updateSelectionProperties(event.target.isChecked ? {type: "number"} : {});
+                booleanTypeButton.onclick = (event) => updateSelectionProperties(event.target.isChecked ? {type: "boolean"} : {});
+                calendarTypeButton.onclick = (event) => updateSelectionProperties(event.target.isChecked ? {type: "date"} : {});
 
                 grid.oncellselected = (event) => {
                     const style = window.getComputedStyle(event.detail.cell);
 
-                    boldbutton.checked = style.fontWeight > 400;
-                    italicbutton.checked = style.fontStyle != "normal";
-                    underlinebutton.checked = style.textDecorationLine != "none";
+                    boldbutton.isChecked = style.fontWeight > 400;
+                    italicbutton.isChecked = style.fontStyle != "normal";
+                    underlinebutton.isChecked = style.textDecorationLine != "none";
 
-                    alignLeftbutton.checked = true; //event.detail.cell.style.textAlign == "left";
-                    alignCenterbutton.checked = style.textAlign == "center";
-                    alignRightbutton.checked = style.textAlign == "right";
+                    alignLeftbutton.isChecked = true; //event.detail.cell.style.textAlign == "left";
+                    alignCenterbutton.isChecked = style.textAlign == "center";
+                    alignRightbutton.isChecked = style.textAlign == "right";
 
                     textColorInput.value = style.color;
                     bgColorInput.value = style.backgroundColor;
 
                     const cellData = grid.getCellData(event.detail.cell.cellColumn, event.detail.cell.cellRow);
                 
-                    textTypeButton.checked = true;
+                    textTypeButton.isChecked = true;
                     if (cellData instanceof Object) {
-                        numberTypeButton.checked = cellData.type == "number";
-                        booleanTypeButton.checked = cellData.type == "boolean";
-                        calendarTypeButton.checked = cellData.type == "date";
+                        numberTypeButton.isChecked = cellData.type == "number";
+                        booleanTypeButton.isChecked = cellData.type == "boolean";
+                        calendarTypeButton.isChecked = cellData.type == "date";
                     }
 
                 }

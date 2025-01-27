@@ -302,6 +302,7 @@ export class OxGrid extends OxControl {
         editBox.classList.add("edit-box");
         editBox.contentEditable = true;
         editBox.innerText = text ?? "";
+        editBox.inputMode = cell.inputMode;
 
         const confirm = () => {
             const newValue = editBox.innerText;
@@ -718,12 +719,16 @@ export class OxGrid extends OxControl {
             checkbox.onchange = (event) => {
                 this.#updateCellValue(col, row, checkbox.checked);
             }
+            cell.inputMode = "text";
         } else if (data.type == "number") {
             this.#resetCellDataPresentation(cell, textValue);
+            cell.inputMode = "decimal";
         } else if (data.type == "date") {
             this.#resetCellDataPresentation(cell, textValue);
+            cell.inputMode = "text";
         } else {
             this.#resetCellDataPresentation(cell, textValue);
+            cell.inputMode = "text";
         }
     }
 

@@ -31,9 +31,7 @@ const style = /*css*/`
 
         
     #button {
-        all: inherit;
         display: contents;
-
     }
 
     ::slotted(img) {
@@ -85,7 +83,7 @@ export class OxButton extends OxControl {
     connectedCallback() {
         super.connectedCallback();
         this.tabIndex = 0;
-        this.shadowRoot.getElementById("button").tabIndex = 0;
+        const button = this.shadowRoot.getElementById("button");
 
         this.addEventListener("click", this.#submenuClick);
         this.addEventListener("keydown", this.#keydown);
@@ -135,9 +133,22 @@ export class OxButton extends OxControl {
 
     set isChecked(value) {
         const oldValue = this.#isChecked
-        this.#isChecked = value;
-
+        
         if (value != oldValue) {
+            this.#isChecked = value;
+
+            if (value && this.#groupName) {
+                const group = OxButton.#groups.get(this.#groupName);
+                console.log(group)
+                if (group) {
+                    for (const other of group) {
+                        if (other != this) {
+                            other.isChecked = false;
+                        }
+                    }
+                }
+            } 
+
             if (value) {
                 this.#internals.states.add("checked");
             } else {
@@ -213,17 +224,6 @@ export class OxButton extends OxControl {
             return
         }
         const oldValue = this.#isChecked;
-        
-        if (this.#groupName) {
-            const group = OxButton.#groups.get(this.#groupName);
-            if (group) {
-                for (const other of group) {
-                    if (other != this) {
-                        other.isChecked = false;
-                    }
-                }
-            }
-        } 
 
         this.isChecked = !this.isChecked;
 
@@ -237,8 +237,9 @@ export class OxButton extends OxControl {
      */
     #submenuClick(event) {
         if (event.defaultPrevented || this.isDisabled) {
-            return
+            return;
         }
+
         if (this.openSubmenu()) {
             event.preventDefault();
         }

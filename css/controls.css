@@ -33,6 +33,7 @@ ox-button {
     flex-direction: column;
     align-items: safe center;
     overflow: hidden;
+    vertical-align: middle;
 }
 
 ox-button[disabled] {
@@ -90,9 +91,10 @@ ox-menu>:is(ox-button:has([slot=submenu]),ox-button:has(ox-menu))::after {
     align-self: end;
 }
 
-ox-menu>ox-button:has(+ox-menu) {
+ox-menu>ox-button:has(:popover-open) {
     filter: brightness(1.1);
 }
+
 
 ox-menu>ox-button::part(label) {
     margin: auto 0.5em auto 0.5em;
