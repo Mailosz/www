@@ -400,7 +400,7 @@ export class OxGrid extends OxControl {
             const newValue = editBox.innerText;
             const cellData = this.#updateCellValue(col, row, newValue);
             if (cellData instanceof Object) {
-                this.#computeCellDataPresentation(col, row, cell, cellData, newValue);
+                this.#showData(col, row, cell, cellData.type, newValue, true);
             } else {
                 this.#resetCellDataPresentation(cell, cellData);
             }
@@ -498,7 +498,7 @@ export class OxGrid extends OxControl {
         
         if (columnData) {
             this.#computeCellVisual(col, -1, columnHeader, columnData);
-            this.#computeCellDataPresentation(col, -1, columnHeader, columnData, columnData.name);
+            //this.#computeCellDataPresentation(col, -1, columnHeader, columnData, columnData.name);
         }
 
         return columnHeader;
@@ -512,7 +512,7 @@ export class OxGrid extends OxControl {
 
         if (rowData) {
             this.#computeCellVisual(-1, row, rowHeader, rowData);
-            this.#computeCellDataPresentation(-1, row, rowHeader, rowData, rowData.name ?? rowData.id);
+            //this.#computeCellDataPresentation(-1, row, rowHeader, rowData, rowData.name ?? rowData.id);
         }
 
         return rowHeader;
@@ -625,7 +625,7 @@ export class OxGrid extends OxControl {
             
             if (cellData instanceof Object) {
                 this.#computeCellVisual(colNumber, rowNumber, cell, cellData);
-                this.#computeCellDataPresentation(colNumber, rowNumber, cell, cellData, cellData.data);
+                //this.#computeCellDataPresentation(colNumber, rowNumber, cell, cellData, cellData.data);
             } else {
                 this.#resetCellDataPresentation(cell, cellData);
             }
@@ -714,8 +714,8 @@ export class OxGrid extends OxControl {
         console.log("col: " + col + ", row: " + row);
         console.log(properties);
 
-        this.#updateCellDataProperties(col, row, properties);
-        this.#computeCellVisual(col, row, cell, properties);
+        this.#updateCellDataProperties(col, row, cell, properties);
+        //this.#computeCellVisual(col, row, cell, properties);
     }
 
     /**
@@ -797,19 +797,41 @@ export class OxGrid extends OxControl {
      * @param {*} properties 
      * @returns Updated cell with all its properties
      */
-    #updateCellDataProperties(col, row, properties) {
+    #updateCellDataProperties(col, row, cell, properties) {
         console.log("Cell props changed: " + col + ", " + row + "");
-        const cellData = this.#updateData(col, row, (cell) => {
+
+        const computeFunctions = [];
+
+        const cellData = this.#updateData(col, row, (cellData) => {
             
-            if (!(cell instanceof Object)) { // only cells can be a string and not an object
-                cell = {data: cell};
+            if (!(cellData instanceof Object)) { // only cells can be a string and not an object
+                cellData = {data: cellData};
             }
 
             for (const property in properties) {
-                cell[property] = properties[property];
+                const computeVisual = OxGrid.#computeVisualProperties[property];
+                if (computeVisual === undefined) {
+                    console.error(`Unknown property "${property}"`);
+                    continue;
+                }
+
+                const oldValue = cellData[property];
+                const newValue = properties[property]
+
+                if (oldValue != newValue) {
+                    cellData[property] = newValue;
+                    if (computeVisual) {
+                        computeFunctions.push(() => computeVisual(this, col, row, cell, oldValue, cellData));
+                    }
+                }
             }
-            return cell;
+            return cellData;
         });
+
+        for (const compute of computeFunctions) {
+            compute();
+        }
+
         return cellData;
     }
 
@@ -817,64 +839,24 @@ export class OxGrid extends OxControl {
     /**
      * Updates grid cell to match new properties
      * @param {HTMLElement} cell 
-     * @param {*} cellData 
+     * @param {*} cellData partial cellData to update
      */
     #computeCellVisual(col, row, cell, cellData) {
 
-        if (cellData.data != null) {
-            cell.innerText = cellData.data;
-        }
-
-        if (cellData.background != null) {
-            cell.style.background = cellData.background;
-        }
-
-        if (cellData.color != null) {
-            cell.style.color = cellData.color;
-        }
-
-        if (cellData.bold != null) {
-            cell.style.fontWeight = cellData.bold ? 600 : 400;
-        }
-
-        if (cellData.align != null) {
-            cell.style.textAlign = cellData.align;
-        }
-
-        if (cellData.disabled != null) {
-            cell.disabled = cellData.disabled;
-        }
-
-        if (cellData.type) {
-            console.log("update type")
-            if (row == -1) {
-                if (this.#data.columns.length > col) {
-                    //const cellData = this.#data.columns[col];
-                    this.#computeCellDataPresentation(col, row, cell, cellData, cellData.name);
-                } else {
-                    console.error(`Col ${col} too big`);
-                    console.log(this.#data);
+        if (cellData instanceof Object) {
+            for (const property in cellData) {
+                const computeVisual = OxGrid.#computeVisualProperties[property];
+                if (computeVisual === undefined) {
+                    console.error(`Unknown property "${property}"`);
+                    continue;
                 }
-            } else if (this.#data.rows.length > row) {
-                if (col == -1) {
-                    const cellData = this.#data.rows[row];
-                    this.#computeCellDataPresentation(col, row, cell, cellData, cellData.name);
-                } else if (this.#data.rows[row].cells.length > col) {
-                    const cellData = this.#data.rows[row].cells[col];
-                    if (cellData instanceof Object) {
-                        this.#computeCellDataPresentation(col, row, cell, cellData, cellData.data);
-                    } else {
-                        this.#resetCellDataPresentation(cell, cellData);
-                    }
-                } else {
-                    console.error(`Col ${col} too big`);
-                    console.log(this.#data);
+                const oldValue = undefined;
+                if (computeVisual) {
+                    computeVisual(this, col, row, cell, oldValue, cellData)
                 }
-
-            } else {
-                console.error(`Row ${row} too big`);
-                console.log(this.#data);
             }
+        } else {
+            this.#resetCellDataPresentation(cell, this.#getCellText(cell, row, cellData));
         }
 
     }
@@ -893,9 +875,9 @@ export class OxGrid extends OxControl {
             h: range.endY - range.startY + 1,
         }};
 
-        cellData = this.#updateCellDataProperties(range.startX, range.startY, merged);
-        // this.#computeCellVisual(range.startX, range.startY,, cellData);
         const cell = this.getCell(range.startX, range.startY);
+        cellData = this.#updateCellDataProperties(range.startX, range.startY, cell, merged);
+        // this.#computeCellVisual(range.startX, range.startY,, cellData);
         
         const col = range.startX;
         const row = range.startY;
@@ -938,16 +920,26 @@ export class OxGrid extends OxControl {
 
     }
 
-    #computeCellDataPresentation(col, row, cell, cellData, textValue) {
-        if (textValue === undefined) {
-            textValue = this.#getCellText(col, row, cellData)
-        }
+    /**
+     * 
+     * @param {*} col 
+     * @param {*} row 
+     * @param {HTMLDivElement} cell 
+     * @param {*} dataType 
+     * @param {*} textValue 
+     * @param {*} updatePresentation 
+     */
+    #showData(col, row, cell, dataType, textValue, updatePresentation = false) {
 
-        if (cellData.type == "boolean") {
-            cell.innerHTML = "";
-            let checkbox = this.ownerDocument.createElement("input");
-            checkbox.type = "checkbox";
-            cell.appendChild(checkbox);
+        if (dataType == "boolean") {
+            let checkbox;
+            if (updatePresentation || (checkbox = cell.querySelector("input[type=checkbox]"))) {
+                cell.innerHTML = "";
+                checkbox = this.ownerDocument.createElement("input");
+                checkbox.type = "checkbox";
+                cell.appendChild(checkbox);
+            }
+
             
             if (textValue === true || textValue == "true") {
                 checkbox.checked = true;
@@ -965,11 +957,11 @@ export class OxGrid extends OxControl {
                 this.#updateCellValue(col, row, checkbox.checked);
             }
             cell.inputMode = "text";
-        } else if (cellData.type == "number") {
-            this.#resetCellDataPresentation(cell, textValue);
+        } else if (dataType == "number") {
+            cell.innerText = textValue ?? "";
             cell.inputMode = "decimal";
-        } else if (cellData.type == "date") {
-            this.#resetCellDataPresentation(cell, textValue);
+        } else if (dataType == "date") {
+            cell.innerText = textValue ?? "";
             cell.inputMode = "text";
             
             const button = this.ownerDocument.createElement("button");
@@ -982,7 +974,7 @@ export class OxGrid extends OxControl {
                 dateInput.oninput = (event) => {
                     const value =  dateInput.value;
                     this.#updateCellValue(col, row, value);
-                    this.#computeCellDataPresentation(col, row, cell, cellData, value);
+                    this.#showData(col, row, cell, dataType, value, false);
                     button.innerHTML = "";
                 }
                 button.appendChild(dateInput);
@@ -994,13 +986,36 @@ export class OxGrid extends OxControl {
 
         } else {
             this.#resetCellDataPresentation(cell, textValue);
-            cell.inputMode = "text";
         }
     }
-
+    
     #resetCellDataPresentation(cell, textValue) {
         cell.innerText = textValue ?? "";
+        cell.inputMode = "text";
     }
+
+
+    static #computeVisualProperties = {
+        "name": (grid, col, row, cell, oldValue, cellData) => grid.#showData(col, row, cell, cellData.type, cellData.name, false),
+        "id": (grid, col, row, cell, oldValue, cellData) => {
+            if (cellData.name == null && cellData.data == null) {
+                grid.#showData(col, row, cell, cellData.type, cellData.id, false);
+            }
+        },
+        "cells": null,
+        "skip": null,
+        "data": (grid, col, row, cell, oldValue, cellData) => grid.#showData(col, row, cell, cellData.type, cellData.data, false),
+        "background": (grid,col, row, cell, oldValue, cellData) => cell.style.background = cellData.background,
+        "color": (grid,col, row, cell, oldValue, cellData) => cell.style.color = cellData.color,
+        "bold": (grid,col, row, cell, oldValue, cellData) => cell.style.fontWeight = cellData.bold ? 600 : 400,
+        "align": (grid,col, row, cell, oldValue, cellData) => cell.style.textAlign = cellData.align,
+        "disabled": (grid,col, row, cell, oldValue, cellData) => cell.disabled = cellData.disabled,
+        "type": (grid, col, row, cell, oldValue, cellData) => {
+            grid.#showData(col, row, cell, cellData.type, grid.#getCellText(col, row, cellData), true);
+        },
+        "merged": null,
+        
+    };
 
 }
 
