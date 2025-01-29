@@ -163,12 +163,17 @@
                     },{
                         id: 4,
                         cells: [
-                            "123", null, "789", null, {"data": "2019-12-12", "type": "date"}
+                            {"data": "this is merged cell", "merged": {"w": 2, "h": 1}}, null, "789", null, {"data": "2019-12-12", "type": "date"}
                         ]
                     },{
                         id: 6,
                         cells: [
-                            "aaa", "aaa", null, "jkl", null, "555"
+                            {"data": "aaa", "skip": 2}, "aaa", null, "jkl", null, "555"
+                        ]
+                    },{
+                        id: 7,
+                        cells: [
+                            {"skip": 5}, "test"
                         ]
                     }]
                 });
@@ -186,7 +191,7 @@
                 const textColorInput = document.getElementById("text-color-input");
                 const bgColorInput = document.getElementById("bg-color-input");
                 const mergeButton = document.getElementById("merge-button");
-                mergeButton.onclick = (event) => {};
+                mergeButton.onclick = (event) => {if (mergeButton.isChecked) grid.mergeRange(grid.getSelection());};
                 
                 const textTypeButton = document.getElementById("text-type-button");
                 const numberTypeButton = document.getElementById("number-type-button");
@@ -220,7 +225,9 @@
                         booleanTypeButton.isChecked = cellData.type == "boolean";
                         calendarTypeButton.isChecked = cellData.type == "date";
 
-                        mergeButton.isChecked = cellData.merged;
+                        mergeButton.isChecked = cellData.merged != null;
+                    } else {
+                        mergeButton.isChecked = false;
                     }
                 }
             }
