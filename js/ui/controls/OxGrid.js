@@ -49,6 +49,10 @@ const style = /*css*/`
         overflow: visible;
     }
 
+    .cell[inputmode=decimal] {
+        text-overflow: ellipsis;
+    }
+
     .cell {
         background: var(--cell-background);
         min-width: 4em;
@@ -357,7 +361,9 @@ export class OxGrid extends OxControl {
         }
 
         cell.ondblclick = (event) => {
-           this.#editCell(col, row, cell, this.#getCellText(col, row));
+            if (event.target == event.currentTarget) {
+                this.#editCell(col, row, cell, this.#getCellText(col, row));
+            }
         };
 
 
