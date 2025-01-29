@@ -52,7 +52,7 @@ const style = /*css*/`
     }
     .selection>div {
         background: rgba(0,0,255,0.1);
-        border: 2px solid rgba(0,0,255,0.7);
+        border: 1px solid rgba(0,0,255,0.7);
         z-index: 10;
         pointer-events: none;
     }
@@ -124,6 +124,32 @@ const style = /*css*/`
         transform: translate(50%,-50%);
     }
 
+    .calendar-button::before {
+        content: '\\1F4C5';
+    }
+
+    :hover>.calendar-button {
+        display: block;
+    }
+
+    .calendar-button {
+        position: absolute;
+        right: 0;
+        top: 0;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        display: none;
+        padding: 0;
+    }
+
+    .calendar-button:hover {
+        filter: brightness(1.1);
+    }
+
+    .calendar-button:active {
+        filter: brightness(1.1);
+    }
 `;
 
 export class OxGrid extends OxControl {
@@ -350,9 +376,9 @@ export class OxGrid extends OxControl {
                     confirm();
                     cell.focus();
                     this.moveFocusDown();
-                    event.stopPropagation();
                     event.preventDefault();
                 }
+                event.stopPropagation();
             }
         }
         
@@ -838,6 +864,27 @@ export class OxGrid extends OxControl {
         } else if (data.type == "date") {
             this.#resetCellDataPresentation(cell, textValue);
             cell.inputMode = "text";
+            
+            const button = this.ownerDocument.createElement("button");
+            button.classList.add("calendar-button");
+            button.onclick = () => {
+                button.innerHTML = "";
+                const dateInput = this.ownerDocument.createElement("input");
+                dateInput.type = "date";
+                dateInput.style.display = "none";
+                dateInput.oninput = (event) => {
+                    const value =  dateInput.value;
+                    this.#updateCellValue(col, row, value);
+                    this.#computeCellDataPresentation(col, row, cell, data, value);
+                    button.innerHTML = "";
+                }
+                button.appendChild(dateInput);
+
+                dateInput.showPicker();
+            }
+            cell.appendChild(button);
+
+
         } else {
             this.#resetCellDataPresentation(cell, textValue);
             cell.inputMode = "text";

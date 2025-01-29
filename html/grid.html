@@ -56,6 +56,7 @@
                 <ox-button id="boolean-type-button" toggle group="type-group">&#x2611;</ox-button>
                 <ox-button id="calendar-type-button" toggle group="type-group">&#x1F5D3;</ox-button>
             </div>
+            <ox-button id="merge-button" toggle>Merge</ox-button>
         </div>
         <ox-grid id="grid" editable="true">
             <span>test</span>
@@ -162,7 +163,7 @@
                     },{
                         id: 4,
                         cells: [
-                            "123", null, "789", null
+                            "123", null, "789", null, {"data": "2019-12-12", "type": "date"}
                         ]
                     },{
                         id: 6,
@@ -184,6 +185,8 @@
                 const alignRightbutton = document.getElementById("align-right-button");
                 const textColorInput = document.getElementById("text-color-input");
                 const bgColorInput = document.getElementById("bg-color-input");
+                const mergeButton = document.getElementById("merge-button");
+                mergeButton.onclick = (event) => {};
                 
                 const textTypeButton = document.getElementById("text-type-button");
                 const numberTypeButton = document.getElementById("number-type-button");
@@ -216,8 +219,9 @@
                         numberTypeButton.isChecked = cellData.type == "number";
                         booleanTypeButton.isChecked = cellData.type == "boolean";
                         calendarTypeButton.isChecked = cellData.type == "date";
-                    }
 
+                        mergeButton.isChecked = cellData.merged;
+                    }
                 }
             }
             
