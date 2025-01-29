@@ -4,7 +4,8 @@ import {OxControl} from "./OxControl.js";
 
 const template = /*html*/`
     <div id="grid">
-
+        <div style="display: contents;"></div>
+        <div class="selection"></div>
     </div>
 `;
 
@@ -22,6 +23,7 @@ const style = /*css*/`
         --cell-background: white;
         --header-background: #ddd;
         position: relative;
+        min-width: fit-content;
     }
 
     #grid {
@@ -43,6 +45,16 @@ const style = /*css*/`
     .cell.focused {
         outline: 4px rgba(64,128,255,0.7) solid;
         z-index: 10;
+    }
+
+    .selection {
+        display: contents;
+    }
+    .selection>div {
+        background: rgba(0,0,255,0.1);
+        border: 2px solid rgba(0,0,255,0.7);
+        z-index: 10;
+        pointer-events: none;
     }
 
     .cell:focus-within {
@@ -120,6 +132,7 @@ export class OxGrid extends OxControl {
 
     #data;
     #selectedCell;
+    #selection;
 
     constructor() {
         super();
@@ -160,18 +173,7 @@ export class OxGrid extends OxControl {
                     }
                 }
             } else if (event.key === "ArrowDown") {
-                const row = this.shadowRoot.activeElement?.parentElement?.nextElementSibling;
-                if (row) {
-                    let current = this.shadowRoot.activeElement.previousElementSibling;
-                    let cell = row.firstElementChild;
-                    while (current != null) {
-                        current = current.previousElementSibling;
-                        cell = cell.nextElementSibling;
-                    }
-                    if (cell) {
-                        cell.focus();
-                    }
-                }
+                this.moveFocusDown();
             } else if (event.key === "F1") {
                 this.updateCellProperties(this.#getGrid().lastElementChild.lastElementChild);
                 event.preventDefault();
@@ -179,6 +181,10 @@ export class OxGrid extends OxControl {
                 console.log(event.key);
             }
         }
+
+        this.addEventListener("pointerup", this.#endSelection);
+        this.addEventListener("pointercancel", this.#cancelSelection);
+
     }
 
     /**
@@ -186,7 +192,7 @@ export class OxGrid extends OxControl {
      * @returns {HTMLElement}
      */
     #getGrid() {
-        return this.shadowRoot.firstElementChild;
+        return this.shadowRoot.firstElementChild.firstElementChild;
     }
 
     get data() {
@@ -214,6 +220,21 @@ export class OxGrid extends OxControl {
         return this.#selectedCell;
     }
 
+    moveFocusDown() {
+        const row = this.shadowRoot.activeElement?.parentElement?.nextElementSibling;
+        if (row) {
+            let current = this.shadowRoot.activeElement.previousElementSibling;
+            let cell = row.firstElementChild;
+            while (current != null) {
+                current = current.previousElementSibling;
+                cell = cell.nextElementSibling;
+            }
+            if (cell) {
+                cell.focus();
+            }
+        }
+    }
+
     #populateFromData(data) {
         const grid = this.#getGrid();
         grid.innerHTML = "";
@@ -225,6 +246,7 @@ export class OxGrid extends OxControl {
         const topLeftHeader = this.ownerDocument.createElement("div");
         topLeftHeader.id = "top-left-header";
         topLeftHeader.part = "top-left-header";
+        topLeftHeader.style.gridArea = "1 / 1";
         const topLeftSlot = this.ownerDocument.createElement("slot");
         topLeftHeader.appendChild(topLeftSlot);
         headerRow.appendChild(topLeftHeader);
@@ -320,16 +342,23 @@ export class OxGrid extends OxControl {
 
         editBox.onkeydown = (event) => {
             if (event.key == "Escape") {
-                cell.removeChild(editBox);
+                editBox.onblur = null; // it would trigger confirm
+                editBox.remove();
                 cell.focus();
             } else if (event.key == "Enter") {
                 if (!event.shiftKey && !event.ctrlKey) {
                     confirm();
+                    cell.focus();
+                    this.moveFocusDown();
+                    event.stopPropagation();
+                    event.preventDefault();
                 }
             }
         }
         
-        editBox.onblur = (event) => { confirm();};
+        editBox.onblur = (event) => {
+            confirm();
+        };
         
         cell.appendChild(editBox);
         editBox.focus();
@@ -349,6 +378,14 @@ export class OxGrid extends OxControl {
         cell.cellColumn = col;
         cell.cellRow = row;
 
+
+        cell.onkeydown = (event) => {
+            if (event.key == "Enter") {
+                this.#editCell(col, row, cell, this.#getCellText(col, row));
+                event.preventDefault();
+            }
+        }
+
         cell.onkeypress = (event) => {
             if (event.target == event.currentTarget) {
                 this.#editCell(col, row, cell, event.key);
@@ -366,10 +403,24 @@ export class OxGrid extends OxControl {
             }
         };
 
+        cell.onpointerdown = (event) => {
+            this.#beginSelection(col, row);
+        }
+
+        cell.onpointerover = (event) => {
+            if (this.#selection) {
+                if (event.pressure < Number.EPSILON) {
+                    this.#endSelection();
+                } else {
+                    this.#moveSelection(col, row);
+                }
+            }
+        }
 
         cell.onfocus = (event) => {
             this.#focusCell(cell);
         }
+
 
         return cell;
     }
@@ -405,8 +456,63 @@ export class OxGrid extends OxControl {
      * 
      * @param {HTMLElement} cell 
      */
+    #beginSelection(col, row) {
+        this.#clearSelection(); // just for sure
+        this.#selection = {startX: col, startY: row, endX: col, endY: row, element: null};
+    }
+
+    #moveSelection(col, row) {
+
+        if (!this.#selection) {
+            return;
+        }
+
+        this.ownerDocument.getSelection().empty();
+
+        if (this.#selection.element == null) {
+            const selel = this.ownerDocument.createElement("div");
+            this.#selection.element = selel;
+            const selection = this.shadowRoot.firstElementChild.lastElementChild;
+            selection.innerHTML = "";
+            selection.append(selel);
+        }
+
+        this.#selection.endX = col;
+        this.#selection.endY = row;
+
+        this.#selection.element.style.gridColumnStart = Math.min(this.#selection.startX,this.#selection.endX) + 2;
+        this.#selection.element.style.gridRowStart = Math.min(this.#selection.startY,this.#selection.endY) + 2;        
+        this.#selection.element.style.gridColumnEnd = Math.max(this.#selection.startX,this.#selection.endX) + 3;
+        this.#selection.element.style.gridRowEnd = Math.max(this.#selection.startY,this.#selection.endY) + 3;
+
+    }
+
+    #endSelection() {
+        if (this.#selection) {
+            this.#selection = null;
+        }
+    }
+
+    #cancelSelection() {
+        if (this.#selection) {
+            this.#selection.element.remove();
+            this.#selection = null;
+        }
+    }
+
+    #clearSelection() {
+        if (this.#selection) {
+            this.#selection = null;
+        }
+        const selection = this.shadowRoot.firstElementChild.lastElementChild;
+        selection.innerHTML = "";
+    }
+
+    /**
+     * 
+     * @param {HTMLElement} cell 
+     */
     #focusCell(cell) {
-        console.log("Cell selected")
         if (this.#selectedCell) {
             this.#selectedCell.classList.remove("focused");
         }
