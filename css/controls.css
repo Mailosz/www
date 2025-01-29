@@ -160,3 +160,10 @@ ox-menu>hr {
     border: 2px solid #666;
     display: flex;
 }
+
+/* OX-COLOR */
+
+ox-color {
+    height: 400px;
+    border: var(--border-width, 1px) solid var(--border-color);
+}

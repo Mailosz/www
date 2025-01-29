@@ -21,4 +21,6 @@ html {
     --button-background: #eee;
     --border-width: 2px;
     --border-radius: 4px;
+
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }

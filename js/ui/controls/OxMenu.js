@@ -39,6 +39,8 @@ export class OxMenu extends OxControl {
         super.connectedCallback();
         this.setAttribute("popover", "auto");
 
+        this.addEventListener("click", (event)=> event.stopPropagation());
+
         this.addEventListener("keydown", this.#keydown);
         this.addEventListener("toggle", (event) => {
             if (event.newState == "open") {
@@ -56,15 +58,6 @@ export class OxMenu extends OxControl {
                 this.close();
             }
         });
-
-        /**
-         * @type {HTMLSlotElement}
-         */
-        const slot = this.shadowRoot.getElementById("slot-id");
-        slot.onclick = (event) => {
-            console.log(event.target);
-            this.tryOpenSubmenu(event.target);
-        }
     }
     /**
      * 
@@ -114,47 +107,6 @@ export class OxMenu extends OxControl {
 
     close() {
         this.hidePopover();
-    }
-
-    tryOpenSubmenu(item) {
-        // if (item instanceof OxButton) {
-
-        //     const subitems = [];
-        //     for (const subitem of item.children) {
-        //         if (!subitem.hasAttribute("slot")) {
-        //             // subitem.showPopover();
-        //             subitems.push(subitem);
-        //         }
-        //     }
-        //     if (subitems.length > 0) {
-
-        //         const submenu = document.createElement("ox-menu");
-        //         submenu.append(...subitems);
-        //         submenu.part="submenu";
-        //         submenu.classList.add("submenu");
-
-        //         const submenuClose = () => {
-        //             submenu.remove();
-        //             item.append(...subitems);
-        //         }
-                
-        //         item.after(submenu);
-
-        //         submenu.firstElementChild.focus();
-        //         submenu.addEventListener("focusout", (event) => {
-        //             if (!event.relatedTarget) {
-        //                 submenuClose();
-        //             } else if (event.relatedTarget instanceof Node) {
-        //                 if (!submenu.contains(event.relatedTarget)) {
-        //                     submenuClose();
-        //                 }
-        //             } else {
-        //                 submenuClose();
-        //             }
-        //         });
-                
-        //     }
-        // }
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
