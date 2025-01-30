@@ -179,26 +179,11 @@ export class OxGrid extends OxControl {
         // navigation between cells
         this.onkeydown = (event) => {
             if (event.key === "ArrowLeft") {
-                if (this.shadowRoot.activeElement?.previousElementSibling) {
-                    this.shadowRoot.activeElement.previousElementSibling.focus();
-                }
+                this.moveFocusLeft();
             } else if (event.key === "ArrowRight") {
-                if (this.shadowRoot.activeElement?.nextElementSibling) {
-                    this.shadowRoot.activeElement.nextElementSibling.focus();
-                }
+                this.moveFocusRight();
             } else if (event.key === "ArrowUp") {
-                const row = this.shadowRoot.activeElement?.parentElement?.previousElementSibling;
-                if (row) {
-                    let current = this.shadowRoot.activeElement.previousElementSibling;
-                    let cell = row.firstElementChild;
-                    while (current != null) {
-                        current = current.previousElementSibling;
-                        cell = cell.nextElementSibling;
-                    }
-                    if (cell) {
-                        cell.focus();
-                    }
-                }
+                this.moveFocusUp();
             } else if (event.key === "ArrowDown") {
                 this.moveFocusDown();
             } else if (event.key === "F1") {
@@ -252,16 +237,70 @@ export class OxGrid extends OxControl {
     }
 
     moveFocusDown() {
-        const row = this.shadowRoot.activeElement?.parentElement?.nextElementSibling;
-        if (row) {
-            let current = this.shadowRoot.activeElement.previousElementSibling;
-            let cell = row.firstElementChild;
-            while (current != null) {
-                current = current.previousElementSibling;
-                cell = cell.nextElementSibling;
+        let current = this.shadowRoot.activeElement.previousElementSibling;
+        let index = 0;
+        while (current != null) {
+            current = current.previousElementSibling;
+            index++;
+        }
+
+        let row = this.shadowRoot.activeElement?.parentElement.nextElementSibling;
+        while (row != null) {
+            current = row.children.item(index);
+            current.focus();
+            if (this.shadowRoot.activeElement == current) {
+                break
+            } else {
+                row = row.nextElementSibling;
             }
-            if (cell) {
-                cell.focus();
+        }
+    }
+
+    moveFocusUp() {
+        let current = this.shadowRoot.activeElement.previousElementSibling;
+        let index = 0;
+        while (current != null) {
+            current = current.previousElementSibling;
+            index++;
+        }
+        
+        let row = this.shadowRoot.activeElement?.parentElement.previousElementSibling;
+        while (row != null) {
+            current = row.children.item(index);
+            current.focus();
+            if (this.shadowRoot.activeElement == current) {
+                break
+            } else {
+                row = row.previousElementSibling;
+            }
+        }
+    }
+    moveFocusLeft() {
+        let current = this.shadowRoot.activeElement.previousElementSibling;
+        if (current) {
+            current.focus();
+            while (this.shadowRoot.activeElement != current) {
+                current = current.previousElementSibling;
+                if (current == null) {
+                    break;
+                } else {
+                    current.focus()
+                }
+            }
+        }
+
+    }
+    moveFocusRight() {
+        let current = this.shadowRoot.activeElement.nextElementSibling;
+        if (current) {
+            current.focus();
+            while (this.shadowRoot.activeElement != current) {
+                current = current.nextElementSibling;
+                if (current == null) {
+                    break;
+                } else {
+                    current.focus()
+                }
             }
         }
     }

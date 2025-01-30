@@ -55,6 +55,7 @@
                 <ox-button id="number-type-button" toggle group="type-group">123</ox-button>
                 <ox-button id="boolean-type-button" toggle group="type-group">&#x2611;</ox-button>
                 <ox-button id="calendar-type-button" toggle group="type-group">&#x1F5D3;</ox-button>
+                <ox-button id="html-type-button" toggle group="type-group">&lt;/&gt;</ox-button>
             </div>
             <ox-button id="merge-button" toggle>Merge</ox-button>
         </div>
@@ -206,11 +207,13 @@
                 const numberTypeButton = document.getElementById("number-type-button");
                 const booleanTypeButton = document.getElementById("boolean-type-button");
                 const calendarTypeButton = document.getElementById("calendar-type-button");
+                const htmlTypeButton = document.getElementById("html-type-button");
 
                 textTypeButton.onclick = (event) => updateSelectionProperties(event.target.isChecked ? {type: "text"} : null);
                 numberTypeButton.onclick = (event) => updateSelectionProperties(event.target.isChecked ? {type: "number"} : {});
                 booleanTypeButton.onclick = (event) => updateSelectionProperties(event.target.isChecked ? {type: "boolean"} : {});
                 calendarTypeButton.onclick = (event) => updateSelectionProperties(event.target.isChecked ? {type: "date"} : {});
+                htmlTypeButton.onclick = (event) => updateSelectionProperties(event.target.isChecked ? {type: "html"} : {});
 
                 grid.oncellfocused = (event) => {
                     const style = window.getComputedStyle(event.detail.cell);
@@ -233,6 +236,7 @@
                         numberTypeButton.isChecked = cellData.type == "number";
                         booleanTypeButton.isChecked = cellData.type == "boolean";
                         calendarTypeButton.isChecked = cellData.type == "date";
+                        htmlTypeButton.isChecked = cellData.type == "html";
 
                         mergeButton.isChecked = cellData.merged != null;
                     } else {
