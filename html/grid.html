@@ -59,7 +59,6 @@
             <ox-button id="merge-button" toggle>Merge</ox-button>
         </div>
         <ox-grid id="grid" editable="true">
-            <span>test</span>
         </ox-grid>
     </ox-panel>
         
@@ -71,10 +70,10 @@
             function updateSelectionProperties(properties) {
                 console.log("Fired!");
                 const grid = document.getElementById("grid");
-                if (!grid.selectedCell) {
+                if (!grid.activeCell) {
                     return;
                 }
-                grid.updateCellProperties(grid.selectedCell, properties)
+                grid.updateCellProperties(grid.activeCell, properties)
             }
 
             function saveToDatabase() {
@@ -191,7 +190,17 @@
                 const textColorInput = document.getElementById("text-color-input");
                 const bgColorInput = document.getElementById("bg-color-input");
                 const mergeButton = document.getElementById("merge-button");
-                mergeButton.onclick = (event) => {if (mergeButton.isChecked) grid.mergeRange(grid.getSelection());};
+                mergeButton.onclick = (event) => {
+                    if (event.currentTarget.isChecked) {
+                        const sel = grid.getSelectionRanges();
+                        if (sel.length > 0) {
+                            if (mergeButton.isChecked) grid.mergeRange(sel[0]);
+                        }
+                    } else {
+                        grid.unmergeCell(grid.activeCell);
+                    }
+
+                };
                 
                 const textTypeButton = document.getElementById("text-type-button");
                 const numberTypeButton = document.getElementById("number-type-button");
@@ -203,7 +212,7 @@
                 booleanTypeButton.onclick = (event) => updateSelectionProperties(event.target.isChecked ? {type: "boolean"} : {});
                 calendarTypeButton.onclick = (event) => updateSelectionProperties(event.target.isChecked ? {type: "date"} : {});
 
-                grid.oncellselected = (event) => {
+                grid.oncellfocused = (event) => {
                     const style = window.getComputedStyle(event.detail.cell);
 
                     boldbutton.isChecked = style.fontWeight > 400;

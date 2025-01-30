@@ -159,6 +159,7 @@ export class OxGrid extends OxControl {
     #data;
     #selectedCell;
     #selection;
+    #selectionRanges = [];
 
     constructor() {
         super();
@@ -242,17 +243,12 @@ export class OxGrid extends OxControl {
         return this.#getGrid().firstElementChild.children.length - 1;
     }
 
-    get selectedCell() {
+    get activeCell() {
         return this.#selectedCell;
     }
 
-    getSelection() {
-        const selem = this.shadowRoot.firstElementChild.lastElementChild.firstElementChild;
-        if (selem) {
-            return {startX: selem.startX, startY: selem.startY, endX: selem.endX, endY: selem.endY}
-        } else {
-            return null;
-        }
+    getSelectionRanges() {
+        return this.#selectionRanges;
     }
 
     moveFocusDown() {
@@ -273,6 +269,7 @@ export class OxGrid extends OxControl {
     #populateFromData(data) {
         const grid = this.#getGrid();
         grid.innerHTML = "";
+        const postFunctions = [];
 
         const headerRow = this.ownerDocument.createElement("div");
         headerRow.id = "header-row";
@@ -282,22 +279,23 @@ export class OxGrid extends OxControl {
         topLeftHeader.id = "top-left-header";
         topLeftHeader.part = "top-left-header";
         topLeftHeader.style.gridArea = "1 / 1";
-        const topLeftSlot = this.ownerDocument.createElement("slot");
-        topLeftHeader.appendChild(topLeftSlot);
         headerRow.appendChild(topLeftHeader);
         grid.appendChild(headerRow);
 
-
         if (data.columns) {
             for (const columnData of data.columns) {
-                this.insertColumn(columnData, headerRow.children.length - 1);
+                this.#insertColumn(columnData, headerRow.children.length - 1, postFunctions);
             }
         }
 
         if (data.rows) {
             for (const rowData of data.rows) {
-                this.insertRow(rowData, grid.children.length - 1);
+                this.#insertRow(rowData, grid.children.length - 1, postFunctions);
             }
+        }
+
+        for (const postFunction of postFunctions) {
+            postFunction();
         }
     }
 
@@ -400,7 +398,7 @@ export class OxGrid extends OxControl {
             const newValue = editBox.innerText;
             const cellData = this.#updateCellValue(col, row, newValue);
             if (cellData instanceof Object) {
-                this.#showData(col, row, cell, cellData.type, newValue, true);
+                this.#showData(col, row, cell, cellData, newValue, true);
             } else {
                 this.#resetCellDataPresentation(cell, cellData);
             }
@@ -491,27 +489,27 @@ export class OxGrid extends OxControl {
         return cell;
     }
 
-    #createColumnHeaderCell(col, columnData) {
+    #createColumnHeaderCell(col, columnData, postFunctions) {
         const columnHeader = this.#createCell(col, -1, columnData);
         columnHeader.classList.add("col-header");
         columnHeader.part = "column-header";
         
         if (columnData) {
-            this.#computeCellVisual(col, -1, columnHeader, columnData);
+            this.#initiateCellVisual(col, -1, columnHeader, columnData, postFunctions);
             //this.#computeCellDataPresentation(col, -1, columnHeader, columnData, columnData.name);
         }
 
         return columnHeader;
     }
 
-    #createRowHeaderCell(row, rowData) {
+    #createRowHeaderCell(row, rowData, postFunctions) {
 
         const rowHeader = this.#createCell(-1, row, rowData);
         rowHeader.classList.add("row-header");
         rowHeader.part = "row-header";
 
         if (rowData) {
-            this.#computeCellVisual(-1, row, rowHeader, rowData);
+            this.#initiateCellVisual(-1, row, rowHeader, rowData, postFunctions);
             //this.#computeCellDataPresentation(-1, row, rowHeader, rowData, rowData.name ?? rowData.id);
         }
 
@@ -524,7 +522,12 @@ export class OxGrid extends OxControl {
      */
     #beginSelection(col, row) {
         this.#clearSelection(); // just for sure
-        this.#selection = {startX: col, startY: row, endX: col, endY: row, element: null};
+        this.#selection = {startX: col, startY: row, endX: col, endY: row, element: null, range: null};
+
+        if (col == -1 || row == -1) {
+            this.#moveSelection(col, row);
+        }
+        
     }
 
     #moveSelection(col, row) {
@@ -533,39 +536,67 @@ export class OxGrid extends OxControl {
             return;
         }
 
+        //remove text selection
         this.ownerDocument.getSelection().empty();
 
         if (this.#selection.element == null) {
-            const selel = this.ownerDocument.createElement("div");
-            this.#selection.element = selel;
+            const selem = this.ownerDocument.createElement("div");
+            this.#selection.element = selem;
             const selection = this.shadowRoot.firstElementChild.lastElementChild;
             selection.innerHTML = "";
-            selection.append(selel);
+            selection.append(selem);
         }
 
         this.#selection.endX = col;
         this.#selection.endY = row;
 
-        this.#selection.element.startX = Math.min(this.#selection.startX,this.#selection.endX);
-        this.#selection.element.startY = Math.min(this.#selection.startY,this.#selection.endY);
-        this.#selection.element.endX = Math.max(this.#selection.startX,this.#selection.endX);
-        this.#selection.element.endY = Math.max(this.#selection.startY,this.#selection.endY);
+        let selectionRange;
 
-        this.#selection.element.style.gridColumnStart = this.#selection.element.startX + 2;
-        this.#selection.element.style.gridRowStart = this.#selection.element.startY  + 2;        
-        this.#selection.element.style.gridColumnEnd = this.#selection.element.endX + 3;
-        this.#selection.element.style.gridRowEnd = this.#selection.element.endY + 3;
+        if (col == -1) {
+            if (row == -1) { //select all
+                selectionRange = new GridRange(0,0,Number.POSITIVE_INFINITY,Number.POSITIVE_INFINITY);
+            } else { //select row
+                selectionRange = new GridRange(0,this.#selection.startY,Number.POSITIVE_INFINITY,this.#selection.endY);
+            }
+        } else if (row == -1) { //select column
+            selectionRange = new GridRange(this.#selection.startX,0,this.#selection.endX,Number.POSITIVE_INFINITY);
+        } else { // select cells
+
+            const cellData = this.getCellData(col, row);
+            if (cellData instanceof Object && "merged" in cellData) {
+                this.#selection.endX += cellData.merged.w - 1;
+                this.#selection.endY += cellData.merged.h - 1;
+            }
+            selectionRange = new GridRange(this.#selection.startX,this.#selection.startY,this.#selection.endX,this.#selection.endY);
+        }
+        this.#selection.range = selectionRange; 
+
+
+        this.#selection.element.style.gridColumnStart = selectionRange.startX + 2;
+        this.#selection.element.style.gridRowStart = selectionRange.startY  + 2; 
+        const columnEnd = selectionRange.endX + 3;
+        const rowEnd = selectionRange.endY + 3;
+
+        this.#selection.element.style.gridColumnEnd = Math.min(columnEnd, this.columnCount + 2);
+        this.#selection.element.style.gridRowEnd = Math.min(rowEnd, this.rowCount + 2);
     }
 
     #endSelection() {
         if (this.#selection) {
-            this.#selection = null;
+            if (this.#selection.startX == this.#selection.endX && this.#selection.startY == this.#selection.endY && this.#selection.startX != -1 && this.#selection.startY != -1) {
+                this.#cancelSelection();
+            } else {
+                if (this.#selection.range) {
+                    this.#selectionRanges.push(this.#selection.range);
+                }
+                this.#selection = null;
+            }
         }
     }
 
     #cancelSelection() {
         if (this.#selection) {
-            this.#selection.element.remove();
+            this.#selection.element?.remove();
             this.#selection = null;
         }
     }
@@ -574,6 +605,7 @@ export class OxGrid extends OxControl {
         if (this.#selection) {
             this.#selection = null;
         }
+        this.#selectionRanges.splice(0, this.#selectionRanges.length);
         const selection = this.shadowRoot.firstElementChild.lastElementChild;
         selection.innerHTML = "";
     }
@@ -591,10 +623,10 @@ export class OxGrid extends OxControl {
             this.#selectedCell.classList.add("focused");
         }
 
-        const event = new CustomEvent("cellselected", {detail: {cell: cell}});
+        const event = new CustomEvent("cellfocused", {detail: {cell: cell}});
         this.dispatchEvent(event);
-        if (this.oncellselected) {
-            this.oncellselected(event);
+        if (this.oncellfocused) {
+            this.oncellfocused(event);
         }
     }
 
@@ -603,6 +635,15 @@ export class OxGrid extends OxControl {
      * @param {*} rowData 
      */
     insertRow(rowData, rowNumber) {
+        const postFunctions = [];
+        this.#insertRow(rowData, rowNumber, postFunctions);
+
+        for (const postFunction of postFunctions) {
+            postFunction();
+        }
+    }
+
+    #insertRow(rowData, rowNumber, postFunctions) {
 
         if (!rowData) {
             rowData = {cells: []};
@@ -614,7 +655,7 @@ export class OxGrid extends OxControl {
         currentRow.classList.add("row");
 
         //row header
-        const rowHeader = this.#createRowHeaderCell(rowNumber, rowData);
+        const rowHeader = this.#createRowHeaderCell(rowNumber, rowData, postFunctions);
         currentRow.appendChild(rowHeader);
 
         // insert data cells
@@ -624,8 +665,7 @@ export class OxGrid extends OxControl {
             currentRow.appendChild(cell);
             
             if (cellData instanceof Object) {
-                this.#computeCellVisual(colNumber, rowNumber, cell, cellData);
-                //this.#computeCellDataPresentation(colNumber, rowNumber, cell, cellData, cellData.data);
+                this.#initiateCellVisual(colNumber, rowNumber, cell, cellData, postFunctions);
             } else {
                 this.#resetCellDataPresentation(cell, cellData);
             }
@@ -638,7 +678,7 @@ export class OxGrid extends OxControl {
 
             const headerRow = grid.firstElementChild;
             while (headerRow.children.length < currentRowCount) {// add headers
-                headerRow.appendChild(this.#createColumnHeaderCell(headerRow.children.length - 1, null));
+                headerRow.appendChild(this.#createColumnHeaderCell(headerRow.children.length - 1, null, postFunctions));
             }
 
             let rowNumber = 0;
@@ -670,6 +710,15 @@ export class OxGrid extends OxControl {
      * @param {*} columnData 
      */
     insertColumn(columnData, columnNumber) {
+        const postFunctions = [];
+        this.#insertRow(columnData, columnNumber, postFunctions);
+
+        for (const postFunction of postFunctions) {
+            postFunction();
+        }
+    }
+
+    #insertColumn(columnData, columnNumber, postFunctions) {
 
         if (!columnData) {
             columnData = {};
@@ -678,7 +727,7 @@ export class OxGrid extends OxControl {
         const grid = this.#getGrid();
 
         const headerRow = grid.firstElementChild;
-        headerRow.appendChild(this.#createColumnHeaderCell(columnNumber, columnData));
+        headerRow.appendChild(this.#createColumnHeaderCell(columnNumber, columnData, postFunctions));
 
         // insert cells
         let row = headerRow.nextElementSibling;
@@ -837,14 +886,25 @@ export class OxGrid extends OxControl {
 
     
     /**
-     * Updates grid cell to match new properties
+     * Initiates grid cell to match new properties
      * @param {HTMLElement} cell 
      * @param {*} cellData partial cellData to update
      */
-    #computeCellVisual(col, row, cell, cellData) {
+    #initiateCellVisual(col, row, cell, cellData, postFunctions) {
 
         if (cellData instanceof Object) {
             for (const property in cellData) {
+
+                if (property == "merged") { //special handling
+                    if ("w" in cellData.merged && "h" in cellData.merged) {
+                        postFunctions.push(() => {
+                            this.#merge(col, row, cell, cellData.merged);
+                        });
+                    }
+                    continue;
+                }
+
+                // generic handling
                 const computeVisual = OxGrid.#computeVisualProperties[property];
                 if (computeVisual === undefined) {
                     console.error(`Unknown property "${property}"`);
@@ -861,63 +921,82 @@ export class OxGrid extends OxControl {
 
     }
 
+
+
+
+    /**
+     * 
+     * @param {GridRange} range 
+     * @returns 
+     */
     mergeRange(range) {
         let cellData = this.getCellData(range.startX, range.startY);
 
-        if (cellData && cellData.merged) {
+        if (cellData && cellData.merged) { // TODO: better check (forEach every cell)
             return;
         }
 
-        const merged = {"merged":{
-            x: range.startX,
-            y: range.startY,
-            w: range.endX - range.startX + 1,
-            h: range.endY - range.startY + 1,
-        }};
+        const merged = {};
+        if (range.endX == Number.POSITIVE_INFINITY) {
+            merged.w = Math.min(range.endX - range.startX + 1, this.columnCount - range.startX);
+        } else {
+            merged.w = range.endX - range.startX + 1;
+        }
+
+        if (range.endY == Number.POSITIVE_INFINITY) {
+            merged.h = Math.min(range.endY - range.startY + 1, this.rowCount - range.startY);
+        } else {
+            merged.h = range.endY - range.startY + 1;
+        }
+
 
         const cell = this.getCell(range.startX, range.startY);
-        cellData = this.#updateCellDataProperties(range.startX, range.startY, cell, merged);
-        // this.#computeCellVisual(range.startX, range.startY,, cellData);
-        
-        const col = range.startX;
-        const row = range.startY;
-        const w = cellData.merged.w;
-        const h = cellData.merged.h;
-        
-        if (w !== undefined && h !== undefined) {
+        this.#updateCellDataProperties(range.startX, range.startY, cell, {"merged": merged})
+    }
+
+    #merge(col, row, cell, merged) {
+        if (merged && "w" in merged && "h" in merged) {
+
             cell.style.gridColumnStart = col + 2;
             cell.style.gridRowStart = row + 2;
-            cell.style.gridColumnEnd = col + cellData.merged.w + 2;
-            cell.style.gridRowEnd = row + cellData.merged.h + 2;
+            cell.style.gridColumnEnd = col + merged.w + 2;
+            cell.style.gridRowEnd = row + merged.h + 2;
 
             // make sure merged elements are merged
-            const mergeElement = (x,y,current) => {
+            const mergeElement = (current, x, y) => {
                 current.inert = "";
                 current.style.visibility = "hidden";
             };
 
-            let line = cell.parentElement;
-            let current = cell.nextElementSibling;
-            for (let x = 1; current != null && x < w; x++) {
-                mergeElement(x,0, current);
-                current = current.nextElementSibling;
-            }
-            line = line.nextElementSibling;
-            for (let y = 1; line != null && y < h; y++) {
-                current = line.children.item(col+1);
-                for (let x = 0; current != null && x < w; x++) {
-                    mergeElement(x, y, current);
-                    current = current.nextElementSibling;
-                }
-                line = line.nextElementSibling;
-            }
+            forCellRangeExceptFirst(cell, col, merged.w, merged.h, mergeElement)
         }
-
-
     }
 
-    unmergeFocused() {
+    unmergeCell(cell) {
+        if (cell) {
+            const row = cell.cellRow;
+            const col = cell.cellColumn;
+            let cellData = this.getCellData(col, row);
+            this.#updateCellDataProperties(col, row, cell, {"merged": undefined})
+        }
+    }
 
+    #unmerge(col, row, cell, merged) {
+        //cleaning
+        if (merged && merged.w !== undefined && merged.h !== undefined) {
+            cell.style.gridColumnStart = col + 2;
+            cell.style.gridRowStart = row + 2;
+            cell.style.gridColumnEnd = col + 3;
+            cell.style.gridRowEnd = row + 3;
+
+            // make sure merged elements are merged
+            const unmergeElement = (current, x, y) => {
+                current.inert = null;
+                current.style.visibility = "visible";
+            };
+
+            forCellRangeExceptFirst(cell, col, merged.w, merged.h, unmergeElement)
+        }
     }
 
     /**
@@ -925,13 +1004,13 @@ export class OxGrid extends OxControl {
      * @param {*} col 
      * @param {*} row 
      * @param {HTMLDivElement} cell 
-     * @param {*} dataType 
+     * @param {*} cellData 
      * @param {*} textValue 
      * @param {*} updatePresentation 
      */
-    #showData(col, row, cell, dataType, textValue, updatePresentation = false) {
+    #showData(col, row, cell, cellData, textValue, updatePresentation = false) {
 
-        if (dataType == "boolean") {
+        if (cellData.type == "boolean") {
             let checkbox;
             if (updatePresentation || (checkbox = cell.querySelector("input[type=checkbox]"))) {
                 cell.innerHTML = "";
@@ -957,10 +1036,10 @@ export class OxGrid extends OxControl {
                 this.#updateCellValue(col, row, checkbox.checked);
             }
             cell.inputMode = "text";
-        } else if (dataType == "number") {
+        } else if (cellData.type == "number") {
             cell.innerText = textValue ?? "";
             cell.inputMode = "decimal";
-        } else if (dataType == "date") {
+        } else if (cellData.type == "date") {
             cell.innerText = textValue ?? "";
             cell.inputMode = "text";
             
@@ -974,16 +1053,18 @@ export class OxGrid extends OxControl {
                 dateInput.oninput = (event) => {
                     const value =  dateInput.value;
                     this.#updateCellValue(col, row, value);
-                    this.#showData(col, row, cell, dataType, value, false);
+                    this.#showData(col, row, cell, cellData, value, false);
                     button.innerHTML = "";
                 }
                 button.appendChild(dateInput);
 
                 dateInput.showPicker();
-            }
+            } 
             cell.appendChild(button);
 
 
+        } else if (cellData.type == "html") {
+            cell.innerHTML = textValue;
         } else {
             this.#resetCellDataPresentation(cell, textValue);
         }
@@ -996,27 +1077,72 @@ export class OxGrid extends OxControl {
 
 
     static #computeVisualProperties = {
-        "name": (grid, col, row, cell, oldValue, cellData) => grid.#showData(col, row, cell, cellData.type, cellData.name, false),
+        "name": (grid, col, row, cell, oldValue, cellData) => grid.#showData(col, row, cell, cellData, cellData.name, false),
         "id": (grid, col, row, cell, oldValue, cellData) => {
             if (cellData.name == null && cellData.data == null) {
-                grid.#showData(col, row, cell, cellData.type, cellData.id, false);
+                grid.#showData(col, row, cell, cellData, cellData.id, false);
             }
         },
         "cells": null,
         "skip": null,
-        "data": (grid, col, row, cell, oldValue, cellData) => grid.#showData(col, row, cell, cellData.type, cellData.data, false),
+        "data": (grid, col, row, cell, oldValue, cellData) => grid.#showData(col, row, cell, cellData, cellData.data, false),
         "background": (grid,col, row, cell, oldValue, cellData) => cell.style.background = cellData.background,
         "color": (grid,col, row, cell, oldValue, cellData) => cell.style.color = cellData.color,
         "bold": (grid,col, row, cell, oldValue, cellData) => cell.style.fontWeight = cellData.bold ? 600 : 400,
         "align": (grid,col, row, cell, oldValue, cellData) => cell.style.textAlign = cellData.align,
         "disabled": (grid,col, row, cell, oldValue, cellData) => cell.disabled = cellData.disabled,
         "type": (grid, col, row, cell, oldValue, cellData) => {
-            grid.#showData(col, row, cell, cellData.type, grid.#getCellText(col, row, cellData), true);
+            grid.#showData(col, row, cell, cellData, grid.#getCellText(col, row, cellData), true);
         },
-        "merged": null,
+        // force use of mergeRange and unmergeCells
+        "merged": (grid, col, row, cell, oldValue, cellData) => {
+            grid.#unmerge(col, row, cell, oldValue);
+            grid.#merge(col, row, cell, cellData.merged)
+        },
         
     };
 
 }
 
 window.customElements.define("ox-grid", OxGrid);
+
+
+class GridRange {
+    constructor (x1, y1, x2, y2) {
+        if (x1 > x2) {
+            this.startX = x2;
+            this.endX = x1;
+        } else {
+            this.startX = x1;
+            this.endX = x2;
+        }
+
+        if (y1 > y2) {
+            this.startY = y2;
+            this.endY = y1;
+        } else {
+            this.startY = y1;
+            this.endY = y2;
+        }
+    }
+
+}
+
+function forCellRangeExceptFirst(first, offset, w, h, fn) {
+    let line = first.parentElement;
+    let current = first.nextElementSibling;
+    for (let x = 1; current != null && x < w; x++) {
+        fn(current, x, 0);
+        current = current.nextElementSibling;
+    }
+    line = line.nextElementSibling;
+    for (let y = 1; line != null && y < h; y++) {
+        current = line.children.item(offset+1);
+        for (let x = 0; current != null && x < w; x++) {
+            fn(current, x, y);
+            current = current.nextElementSibling;
+        }
+        line = line.nextElementSibling;
+    }
+
+}
