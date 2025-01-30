@@ -275,10 +275,12 @@ export class OxGrid extends OxControl {
         headerRow.id = "header-row";
         headerRow.classList.add("header");
         
-        const topLeftHeader = this.ownerDocument.createElement("div");
+        // top left cell
+        const topLeftHeader = this.#createCell(-1, -1);
         topLeftHeader.id = "top-left-header";
         topLeftHeader.part = "top-left-header";
-        topLeftHeader.style.gridArea = "1 / 1";
+        topLeftHeader.disabled = true;
+        this.#resetCellDataPresentation(topLeftHeader, "");
         headerRow.appendChild(topLeftHeader);
         grid.appendChild(headerRow);
 
@@ -346,11 +348,15 @@ export class OxGrid extends OxControl {
      */
     #getCellText(col, row, cellData) {
         if (row == -1) {
-            if (this.#data.columns.length > col) {
-                if (cellData === undefined) {
-                    cellData = this.#data.columns[col];
-                } 
-                return cellData.name;
+            if (col == -1) {
+                return "";
+            } else {
+                if (this.#data.columns.length > col) {
+                    if (cellData === undefined) {
+                        cellData = this.#data.columns[col];
+                    } 
+                    return cellData.name;
+                }
             }
         } else if (this.#data.rows.length > row) {
             if (col == -1) {
@@ -405,6 +411,7 @@ export class OxGrid extends OxControl {
         }
 
         editBox.onkeydown = (event) => {
+            event.stopPropagation();
             if (event.key == "Escape") {
                 editBox.onblur = null; // it would trigger confirm
                 editBox.remove();
@@ -416,7 +423,6 @@ export class OxGrid extends OxControl {
                     this.moveFocusDown();
                     event.preventDefault();
                 }
-                event.stopPropagation();
             }
         }
         
@@ -1088,13 +1094,14 @@ export class OxGrid extends OxControl {
         "data": (grid, col, row, cell, oldValue, cellData) => grid.#showData(col, row, cell, cellData, cellData.data, false),
         "background": (grid,col, row, cell, oldValue, cellData) => cell.style.background = cellData.background,
         "color": (grid,col, row, cell, oldValue, cellData) => cell.style.color = cellData.color,
-        "bold": (grid,col, row, cell, oldValue, cellData) => cell.style.fontWeight = cellData.bold ? 600 : 400,
+        "bold": (grid,col, row, cell, oldValue, cellData) => cell.style.fontWeight = cellData.bold == "true" ? 600 : 300,
+        "italic": (grid,col, row, cell, oldValue, cellData) => cell.style.fontStyle = cellData.italic == "true" ? "italic" : "normal",
+        "underline": (grid,col, row, cell, oldValue, cellData) => cell.style.textDecoration = cellData.underline == "true" ? "underline 1px solid black" : "none",
         "align": (grid,col, row, cell, oldValue, cellData) => cell.style.textAlign = cellData.align,
         "disabled": (grid,col, row, cell, oldValue, cellData) => cell.disabled = cellData.disabled,
         "type": (grid, col, row, cell, oldValue, cellData) => {
             grid.#showData(col, row, cell, cellData, grid.#getCellText(col, row, cellData), true);
         },
-        // force use of mergeRange and unmergeCells
         "merged": (grid, col, row, cell, oldValue, cellData) => {
             grid.#unmerge(col, row, cell, oldValue);
             grid.#merge(col, row, cell, cellData.merged)
