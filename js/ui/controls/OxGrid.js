@@ -5,7 +5,7 @@ import {OxControl} from "./OxControl.js";
 const template = /*html*/`
     <div id="grid">
         <div style="display: contents;"></div>
-        <div class="selection"></div>
+        <div class="overlay"></div>
     </div>
 `;
 
@@ -38,19 +38,17 @@ const style = /*css*/`
         grid-auto-columns: 1fr;
     }
 
-    .cell.focused:focus{
+    #focus-overlay {
         outline: 4px rgba(0,0,255,0.7) solid;
-    }
-    
-    .cell.focused {
-        outline: 4px rgba(64,128,255,0.7) solid;
+        pointer-events: none;
         z-index: 10;
+        box-shadow: 2px 2px 10px rgba(127,127,127,0.75)
     }
 
-    .selection {
+    .overlay {
         display: contents;
     }
-    .selection>div {
+    .selection {
         background: rgba(0,0,255,0.1);
         border: 1px solid rgba(0,0,255,0.7);
         z-index: 10;
@@ -72,6 +70,7 @@ const style = /*css*/`
         padding: var(--cell-padding);
         position: relative;
         overflow: hidden;
+        outline: none;
     }
 
     .cell:empty::before {
@@ -81,13 +80,15 @@ const style = /*css*/`
     .cell>.edit-box {
         outline: 4px rgba(0,0,255,0.7) solid;
         padding: var(--cell-padding);
-        background: var(--cell-background);
+        background: var(--cell-background, white);
+        color: black;
         min-width: 100%;
         min-height: 100%;
         z-index: 10;
         position: absolute;
         left: 0;
         top: 0;
+        box-shadow: 2px 2px 10px rgba(127,127,127,0.75)
     }
 
     .row, .header {
@@ -180,6 +181,10 @@ export class OxGrid extends OxControl {
         }
 
         // navigation between cells
+        /**
+         * 
+         * @param {KeyboardEvent} event 
+         */
         this.onkeydown = (event) => {
             if (event.key === "ArrowLeft") {
                 this.moveFocusLeft();
@@ -189,6 +194,16 @@ export class OxGrid extends OxControl {
                 this.moveFocusUp();
             } else if (event.key === "ArrowDown") {
                 this.moveFocusDown();
+            } else if ((event.key === "z" || event.key === "Z") && event.ctrlKey) {
+                if (event.shiftKey) {
+                    this.redo();
+                } else {
+                    this.undo();
+                }
+                event.preventDefault();
+            } else if ((event.key === "y" || event.key === "Y") && event.ctrlKey) {
+                this.redo();
+                event.preventDefault();
             } else if (event.key === "F1") {
                 this.updateCellProperties(this.#getGrid().lastElementChild.lastElementChild);
                 event.preventDefault();
@@ -463,6 +478,7 @@ export class OxGrid extends OxControl {
             } else {
                 this.#resetCellDataPresentation(cell, cellData);
             }
+            this.#pushUndoBuffer();
         }
 
         editBox.onkeydown = (event) => {
@@ -489,6 +505,11 @@ export class OxGrid extends OxControl {
         editBox.focus();
         if (editBox.lastChild != null) {
             document.getSelection().setPosition(editBox.lastChild, editBox.lastChild.length)
+        }
+
+        const focusOverlay = this.#getOverlay().querySelector("#focus-overlay");
+        if (focusOverlay) {
+            focusOverlay.remove();
         }
     }
 
@@ -530,6 +551,8 @@ export class OxGrid extends OxControl {
 
         cell.onpointerdown = (event) => {
             this.#beginSelection(col, row);
+            cell.focus({preventScroll: true});
+            event.preventDefault(); // needs to prevent automatic focus from pointer, and do it programatically for Firefox - without it pointerover is broken
         }
 
         cell.onpointerover = (event) => {
@@ -602,10 +625,10 @@ export class OxGrid extends OxControl {
 
         if (this.#selection.element == null) {
             const selem = this.ownerDocument.createElement("div");
+            selem.classList.add("selection")
             this.#selection.element = selem;
-            const selection = this.#getOverlay();
-            selection.innerHTML = "";
-            selection.append(selem);
+            const overlay = this.#getOverlay();
+            overlay.append(selem);
         }
 
         this.#selection.endX = col;
@@ -667,8 +690,10 @@ export class OxGrid extends OxControl {
             this.#selection = null;
         }
         this.#selectionRanges.splice(0, this.#selectionRanges.length);
-        const selection = this.#getOverlay();
-        selection.innerHTML = "";
+        const selection = this.#getOverlay().querySelectorAll(".selection");
+        for (const sel of selection) {
+            sel.remove();
+        }
     }
 
     /**
@@ -676,12 +701,24 @@ export class OxGrid extends OxControl {
      * @param {HTMLElement} cell 
      */
     #focusCell(cell) {
-        if (this.#selectedCell) {
-            this.#selectedCell.classList.remove("focused");
-        }
+        
         this.#selectedCell = cell;
+
+        let focusOverlay = this.#getOverlay().querySelector("#focus-overlay");
         if (this.#selectedCell) {
-            this.#selectedCell.classList.add("focused");
+            if (!focusOverlay) {
+                focusOverlay = document.createElement("div");
+                focusOverlay.id = "focus-overlay";
+                this.#getOverlay().appendChild(focusOverlay);
+            }
+            focusOverlay.style.gridColumnStart = cell.style.gridColumnStart;
+            focusOverlay.style.gridColumnEnd = cell.style.gridColumnEnd;
+            focusOverlay.style.gridRowStart = cell.style.gridRowStart;
+            focusOverlay.style.gridRowEnd = cell.style.gridRowEnd;
+        } else {
+            if (focusOverlay) {
+                focusOverlay.remove();
+            }
         }
 
         const event = new CustomEvent("cellfocused", {detail: {cell: cell}});
@@ -901,9 +938,10 @@ export class OxGrid extends OxControl {
     }
 
     undo() {
+        console.log(this.#undoList);
+        this.#pushUndoBuffer();
         const state = this.#undoList.pop();
 
-        this.#clearUndoBuffer();
         if (state != undefined) {
             for (const row in state) {
                 const line = state[row];
@@ -921,7 +959,13 @@ export class OxGrid extends OxControl {
     }
 
     redo() {
-        const state = this.#redoList.pop();
+        let state;
+        if (!this.#isEmptyObject(this.#changesBuffer)) {
+            state = this.#changesBuffer;
+            this.#clearUndoBuffer();
+        } else {
+            state = this.#redoList.pop();
+        }
 
         this.#clearUndoBuffer();
         if (state != undefined) {
@@ -1298,7 +1342,7 @@ export class OxGrid extends OxControl {
         "cells": null,
         "skip": null,
         "data": (grid, col, row, cell, oldValue, cellData) => grid.#showData(col, row, cell, cellData, cellData.data, false),
-        "background": (grid,col, row, cell, oldValue, cellData) => cell.style.background = cellData.background ?? "white",
+        "background": (grid,col, row, cell, oldValue, cellData) => cell.style.background = cellData.background ?? "var(--cell-background, white)",
         "color": (grid,col, row, cell, oldValue, cellData) => cell.style.color = cellData.color ?? "inherit",
         "bold": (grid,col, row, cell, oldValue, cellData) => cell.style.fontWeight = (cellData.bold == "true" ? 600 : 300) ?? "inherit",
         "italic": (grid,col, row, cell, oldValue, cellData) => cell.style.fontStyle = (cellData.italic == "true" ? "italic" : "normal") ?? "inherit",
