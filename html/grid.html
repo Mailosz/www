@@ -9,6 +9,7 @@
     <script type="module" src="../js/ui/controls/OxGrid.js"></script>
     <script type="module" src="../js/ui/controls/OxButton.js"></script>
     <script type="module" src="../js/ui/controls/OxPanel.js"></script>
+    <script type="module" src="../js/ui/controls/OxMenu.js"></script>
     <link rel="stylesheet" href="../css/ui/ui.css">
     <link rel="stylesheet" href="../css/ui/switch.css">
     <link rel="stylesheet" href="../css/controls.css">
@@ -18,7 +19,7 @@
 </head>
 <body>
     <ox-panel>
-        <div slot="start">
+        <div slot="start" style="display: flex; flex-wrap: wrap; align-items: end; gap: 2px;">
             <div style="display: inline-block;">
                 <span>Local</span><br>
                 <button onclick="window.localStorage['grid'] = JSON.stringify(document.getElementById('grid').data);">Save</button>
@@ -58,6 +59,12 @@
                 <ox-button id="html-type-button" toggle group="type-group">&lt;/&gt;</ox-button>
             </div>
             <ox-button id="merge-button" toggle>Merge</ox-button>
+            <ox-button label="border">
+                <ox-menu slot="submenu">
+                    <ox-button id="hborder-button" label="Horizontal border" toggle></ox-button>
+                    <ox-button id="vborder-button" label="Vertical border" toggle></ox-button>
+                </ox-menu>
+            </ox-button>
         </div>
         <ox-grid id="grid" editable="true">
         </ox-grid>
@@ -74,7 +81,14 @@
                 if (!grid.activeCell) {
                     return;
                 }
-                grid.updateCellProperties(grid.activeCell, properties)
+                const selRanges = grid.getSelectionRanges();
+                if (selRanges.length > 0) {
+                    for (const range of selRanges) {
+                        grid.updateRangeProperties(range, properties);
+                    }
+                } else {
+                    grid.updateCellProperties(grid.activeCell, properties);
+                }
             }
 
             function saveToDatabase() {
@@ -158,12 +172,12 @@
                     },{
                         id: 3,
                         cells: [
-                            "xyz", "qwe", {"type": "boolean", "data": true}
+                            "xyz", "qwe", {"type": "boolean", "data": true}, {"hborder": "5px solid black","vborder": "5px solid black"}
                         ]
                     },{
                         id: 4,
                         cells: [
-                            {"data": "this is merged cell", "merged": {"w": 2, "h": 1}}, null, "789", null, {"data": "2019-12-12", "type": "date"}
+                            {"data": "this is merged cell", "merged": {"w": 2, "h": 1}}, null, "789", {"hborder": "3px solid green"}, {"data": "2019-12-12", "type": "date"}
                         ]
                     },{
                         id: 6,
@@ -180,16 +194,24 @@
 
 
                 const boldbutton = document.getElementById("bold-button");
-                boldbutton.onclick = (event) =>{updateSelectionProperties(event.target.isChecked ? {bold: 'true'} : {bold: 'false'})};
+                boldbutton.onclick = (event) =>{updateSelectionProperties(event.currentTarget.isChecked ? {bold: 'true'} : {bold: 'false'})};
                 const italicbutton = document.getElementById("italic-button");
-                italicbutton.onclick = (event) =>updateSelectionProperties(event.target.isChecked ? {italic: 'true'} : {italic: 'false'});
+                italicbutton.onclick = (event) =>updateSelectionProperties(event.currentTarget.isChecked ? {italic: 'true'} : {italic: 'false'});
                 const underlinebutton = document.getElementById("underline-button");
-                underlinebutton.onclick = (event) =>updateSelectionProperties(event.target.isChecked ? {underline: 'true'} : {underline: 'false'});
+                underlinebutton.onclick = (event) =>updateSelectionProperties(event.currentTarget.isChecked ? {underline: 'true'} : {underline: 'false'});
                 const alignLeftbutton = document.getElementById("align-left-button");
                 const alignCenterbutton = document.getElementById("align-center-button");
                 const alignRightbutton = document.getElementById("align-right-button");
                 const textColorInput = document.getElementById("text-color-input");
+                const hborderButton = document.getElementById("hborder-button");
+                const vborderButton = document.getElementById("vborder-button");
+                textColorInput.onchange = (event) => {
+                    updateSelectionProperties({color: textColorInput.value});
+                }
                 const bgColorInput = document.getElementById("bg-color-input");
+                bgColorInput.onchange = (event) => {
+                    updateSelectionProperties({background: bgColorInput.value});
+                }
                 const mergeButton = document.getElementById("merge-button");
                 mergeButton.onclick = (event) => {
                     if (event.currentTarget.isChecked) {
@@ -202,6 +224,9 @@
                     }
 
                 };
+
+                hborderButton.onclick = (event) => {updateSelectionProperties(event.currentTarget.isChecked ? {hborder: '2px solid black'} : {hborder: 'none'})}
+                vborderButton.onclick = (event) => {updateSelectionProperties(event.currentTarget.isChecked ? {vborder: '2px solid black'} : {vborder: 'none'})}
                 
                 const textTypeButton = document.getElementById("text-type-button");
                 const numberTypeButton = document.getElementById("number-type-button");
@@ -209,11 +234,11 @@
                 const calendarTypeButton = document.getElementById("calendar-type-button");
                 const htmlTypeButton = document.getElementById("html-type-button");
 
-                textTypeButton.onclick = (event) => updateSelectionProperties(event.target.isChecked ? {type: "text"} : null);
-                numberTypeButton.onclick = (event) => updateSelectionProperties(event.target.isChecked ? {type: "number"} : {});
-                booleanTypeButton.onclick = (event) => updateSelectionProperties(event.target.isChecked ? {type: "boolean"} : {});
-                calendarTypeButton.onclick = (event) => updateSelectionProperties(event.target.isChecked ? {type: "date"} : {});
-                htmlTypeButton.onclick = (event) => updateSelectionProperties(event.target.isChecked ? {type: "html"} : {});
+                textTypeButton.onclick = (event) => updateSelectionProperties(event.currentTarget.isChecked ? {type: "text"} : null);
+                numberTypeButton.onclick = (event) => updateSelectionProperties(event.currentTarget.isChecked ? {type: "number"} : {});
+                booleanTypeButton.onclick = (event) => updateSelectionProperties(event.currentTarget.isChecked ? {type: "boolean"} : {});
+                calendarTypeButton.onclick = (event) => updateSelectionProperties(event.currentTarget.isChecked ? {type: "date"} : {});
+                htmlTypeButton.onclick = (event) => updateSelectionProperties(event.currentTarget.isChecked ? {type: "html"} : {});
 
                 grid.oncellfocused = (event) => {
                     const style = window.getComputedStyle(event.detail.cell);
@@ -242,6 +267,9 @@
                     } else {
                         mergeButton.isChecked = false;
                     }
+
+                    hborderButton.isChecked = !(style.borderTopStyle == "none");
+                    vborderButton.isChecked = !(style.borderLeftStyle == "none");
                 }
             }
             

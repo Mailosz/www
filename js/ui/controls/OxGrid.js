@@ -232,6 +232,10 @@ export class OxGrid extends OxControl {
         return this.#selectedCell;
     }
 
+    /**
+     * 
+     * @returns {[GridRange]}
+     */
     getSelectionRanges() {
         return this.#selectionRanges;
     }
@@ -567,7 +571,7 @@ export class OxGrid extends OxControl {
      */
     #beginSelection(col, row) {
         this.#clearSelection(); // just for sure
-        this.#selection = {startX: col, startY: row, endX: col, endY: row, element: null, range: null};
+        this.#selection = {startX: Math.max(col, 0), startY: Math.max(row, 0), endX: Math.max(col, 0), endY: Math.max(row, 0), element: null, range: null};
 
         if (col == -1 || row == -1) {
             this.#moveSelection(col, row);
@@ -756,7 +760,7 @@ export class OxGrid extends OxControl {
      */
     insertColumn(columnData, columnNumber) {
         const postFunctions = [];
-        this.#insertRow(columnData, columnNumber, postFunctions);
+        this.#insertColumn(columnData, columnNumber, postFunctions);
 
         for (const postFunction of postFunctions) {
             postFunction();
@@ -784,13 +788,7 @@ export class OxGrid extends OxControl {
         }
     }
 
-    /**
-     * Update cell visual and data properites
-     * @param {HTMLElement} cell 
-     * @param {*} properties 
-     */
-    updateCellProperties(cell, properties) {
-        if (cell == null || properties == null) return;
+    #findCellRowAndColumn(cell) {
         let col = -1;
         let row = -1;
         console.time("szukaj");
@@ -806,6 +804,36 @@ export class OxGrid extends OxControl {
         }
         console.timeEnd("szukaj");
         console.log("col: " + col + ", row: " + row);
+        return [col, row];
+    }
+
+    /**
+     * Update cell visual and data properites for all cells in the range
+     * @param {GridRange} range 
+     * @param {*} properties 
+     */
+    updateRangeProperties(range, properties) {
+        if (range == null || properties == null) return;
+        
+        let cell = range.firstCell;
+        if (!cell) {
+            cell = this.#getGrid().children.item(range.startY + 1).children.item(range.startX + 1);
+        }
+
+        forCellRange(cell, range.startX, range.endX - range.startX + 1, range.endY - range.startY + 1, (cell, x, y) => {
+            this.#updateCellDataProperties(range.startX + x, range.startY + y, cell, properties);
+        });
+    }
+
+    /**
+     * Update cell visual and data properites
+     * @param {HTMLElement} cell 
+     * @param {*} properties 
+     */
+    updateCellProperties(cell, properties) {
+        if (cell == null || properties == null) return;
+        const [col, row] = this.#findCellRowAndColumn(cell);
+
         console.log(properties);
 
         this.#updateCellDataProperties(col, row, cell, properties);
@@ -1136,6 +1164,14 @@ export class OxGrid extends OxControl {
         "bold": (grid,col, row, cell, oldValue, cellData) => cell.style.fontWeight = cellData.bold == "true" ? 600 : 300,
         "italic": (grid,col, row, cell, oldValue, cellData) => cell.style.fontStyle = cellData.italic == "true" ? "italic" : "normal",
         "underline": (grid,col, row, cell, oldValue, cellData) => cell.style.textDecoration = cellData.underline == "true" ? "underline 1px solid black" : "none",
+        "hborder": (grid,col, row, cell, oldValue, cellData) => {
+            cell.style.borderTop = cellData.hborder;
+            cell.style.marginTop = `calc(-${cell.style.borderTopWidth} / 2)`;
+        },
+        "vborder": (grid,col, row, cell, oldValue, cellData) => {
+            cell.style.borderLeft = cellData.vborder
+            cell.style.marginLeft = `calc(-${cell.style.borderLeftWidth} / 2)`;
+        },
         "align": (grid,col, row, cell, oldValue, cellData) => cell.style.textAlign = cellData.align,
         "disabled": (grid,col, row, cell, oldValue, cellData) => cell.disabled = cellData.disabled,
         "type": (grid, col, row, cell, oldValue, cellData) => {
@@ -1153,8 +1189,8 @@ export class OxGrid extends OxControl {
 window.customElements.define("ox-grid", OxGrid);
 
 
-class GridRange {
-    constructor (x1, y1, x2, y2) {
+export class GridRange {
+    constructor (x1, y1, x2, y2, firstCell) {
         if (x1 > x2) {
             this.startX = x2;
             this.endX = x1;
@@ -1170,8 +1206,9 @@ class GridRange {
             this.startY = y1;
             this.endY = y2;
         }
-    }
 
+        this.firstCell = firstCell;
+    }
 }
 
 function forCellRangeExceptFirst(first, offset, w, h, fn) {
@@ -1190,5 +1227,23 @@ function forCellRangeExceptFirst(first, offset, w, h, fn) {
         }
         line = line.nextElementSibling;
     }
+}
 
+function forCellRange(first, offset, w, h, fn) {
+    let line = first.parentElement;
+    let current = first;
+    for (let y = 0; y < h; y++) {
+        current = line.children.item(offset+1);
+        for (let x = 0; x < w; x++) {
+            fn(current, x, y);
+            current = current.nextElementSibling;
+            if (current == null) {
+                break;
+            }
+        }
+        line = line.nextElementSibling;
+        if (line == null) {
+            break;
+        }
+    }
 }
