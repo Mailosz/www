@@ -866,7 +866,7 @@ export class OxGrid extends OxControl {
         
         let cell = range.firstCell;
         if (!cell) {
-            cell = this.#getCellElement(range.startY, range.startY);
+            cell = this.#getCellElement(range.startX, range.startY);
         }
         this.#clearUndoBuffer();
         forCellRange(cell, range.startX, range.endX - range.startX + 1, range.endY - range.startY + 1, (cell, x, y) => {

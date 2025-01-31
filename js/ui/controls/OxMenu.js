@@ -39,7 +39,11 @@ export class OxMenu extends OxControl {
         super.connectedCallback();
         this.setAttribute("popover", "auto");
 
-        this.addEventListener("click", (event)=> event.stopPropagation());
+        this.addEventListener("click", (event)=> {
+            event.stopPropagation();
+            if (!event.defaultPrevented)
+                this.close();
+        });
 
         this.addEventListener("keydown", this.#keydown);
         this.addEventListener("toggle", (event) => {
