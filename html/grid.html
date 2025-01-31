@@ -65,6 +65,8 @@
                     <ox-button id="vborder-button" label="Vertical border" toggle></ox-button>
                 </ox-menu>
             </ox-button>
+            <ox-button id="undoButton" onclick="undo()">Undo</ox-button>
+            <ox-button id="redoButton" onclick="redo()">Redo</ox-button>
         </div>
         <ox-grid id="grid" editable="true">
         </ox-grid>
@@ -74,6 +76,18 @@
 
         
         <script>
+
+            function undo() {
+                const grid = document.getElementById("grid");
+
+                grid.undo();
+            }
+
+            function redo() {
+                const grid = document.getElementById("grid");
+
+                grid.redo();
+            }
 
             function updateSelectionProperties(properties) {
                 console.log("Fired!");
