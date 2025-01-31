@@ -161,6 +161,7 @@ export class OxGrid extends OxControl {
     #selection;
     #selectionRanges = [];
     #undoList = [];
+    #redoList = [];
     #changesBuffer = {};
 
     constructor() {
@@ -203,10 +204,18 @@ export class OxGrid extends OxControl {
 
     /**
      * 
-     * @returns {HTMLElement}
+     * @returns {HTMLDivElement}
      */
     #getGrid() {
         return this.shadowRoot.firstElementChild.firstElementChild;
+    }
+
+    /**
+     * 
+     * @returns {HTMLDivElement}
+     */
+    #getOverlay() {
+        return this.shadowRoot.firstElementChild.lastElementChild;
     }
 
     get data() {
@@ -447,7 +456,8 @@ export class OxGrid extends OxControl {
 
         const confirm = () => {
             const newValue = editBox.innerText;
-            const cellData = this.#updateCellData(col, row, newValue);
+            const cellData = this.#updateCellDataValue(col, row, newValue);
+            // const cellData = this.#updateCellDataAndVisuals(col, row, cell, newValue);
             if (cellData instanceof Object) {
                 this.#showData(col, row, cell, cellData, newValue, true);
             } else {
@@ -593,7 +603,7 @@ export class OxGrid extends OxControl {
         if (this.#selection.element == null) {
             const selem = this.ownerDocument.createElement("div");
             this.#selection.element = selem;
-            const selection = this.shadowRoot.firstElementChild.lastElementChild;
+            const selection = this.#getOverlay();
             selection.innerHTML = "";
             selection.append(selem);
         }
@@ -657,7 +667,7 @@ export class OxGrid extends OxControl {
             this.#selection = null;
         }
         this.#selectionRanges.splice(0, this.#selectionRanges.length);
-        const selection = this.shadowRoot.firstElementChild.lastElementChild;
+        const selection = this.#getOverlay();
         selection.innerHTML = "";
     }
 
@@ -825,7 +835,7 @@ export class OxGrid extends OxControl {
         forCellRange(cell, range.startX, range.endX - range.startX + 1, range.endY - range.startY + 1, (cell, x, y) => {
             const col = range.startX + x;
             const row = range.startY + y;
-            this.#updateCellDataProperties(col, row, cell, properties);
+            this.#updateCellDataAndVisuals(col, row, cell, properties);
         });
         this.#pushUndoBuffer();
     }
@@ -842,7 +852,7 @@ export class OxGrid extends OxControl {
         console.log(properties);
 
         this.#clearUndoBuffer();
-        this.#updateCellDataProperties(col, row, cell, properties);
+        this.#updateCellDataAndVisuals(col, row, cell, properties);
         this.#pushUndoBuffer();
     }
 
@@ -873,8 +883,20 @@ export class OxGrid extends OxControl {
 
     }
 
+    #isEmptyObject(obj) {
+        for (var prop in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, prop)) {
+              return false;
+            }
+        }
+        
+        return true
+    }
+
     #pushUndoBuffer() {
-        this.#undoList.push(this.#changesBuffer);
+        if (!this.#isEmptyObject(this.#changesBuffer)) {
+            this.#undoList.push(this.#changesBuffer);
+        }
         this.#clearUndoBuffer();
     }
 
@@ -888,14 +910,32 @@ export class OxGrid extends OxControl {
                 for (const col in line) {
                     const cellState = line[col];
     
-                    this.#updateCellDataProperties(+col, +row, this.#getCellElement(+col, +row), cellState);
+                    this.#updateCellDataAndVisuals(+col, +row, this.#getCellElement(+col, +row), cellState);
                 }
             }
         }
+        if (!this.#isEmptyObject(this.#changesBuffer)) {
+            this.#redoList.push(this.#changesBuffer);
+        }
+        this.#clearUndoBuffer();
     }
 
     redo() {
+        const state = this.#redoList.pop();
 
+        this.#clearUndoBuffer();
+        if (state != undefined) {
+            for (const row in state) {
+                const line = state[row];
+                for (const col in line) {
+                    const cellState = line[col];
+    
+                    this.#updateCellDataAndVisuals(+col, +row, this.#getCellElement(+col, +row), cellState);
+                }
+            }
+        }
+        this.#pushUndoBuffer();
+        this.#clearUndoBuffer();
     }
 
     /**
@@ -944,29 +984,37 @@ export class OxGrid extends OxControl {
      * @param {*} value 
      * @returns Updated cell with all its properties, and new value
      */
-    #updateCellData(col, row, value) {
+    #updateCellDataValue(col, row, value) {
         console.log("Cell edited: " + col + ", " + row + ", value: " + value);
 
-        const cellData = this.#updateData(col, row, (cell) => {
+        let beforeState;
+
+        const cellData = this.#updateData(col, row, (cellData) => {
+
             if (row == -1 || col == -1) {
-                cell.name = value;
-                return cell;
+                beforeState = cellData.name;
+                cellData.name = value;
+                return cellData;
             } else {
-                if (cell instanceof Object) {
-                    cell.data = value;
-                    return cell;
+                if (cellData instanceof Object) {
+                    beforeState = cellData.data;
+                    cellData.data = value;
+                    return cellData;
                 } else {
+                    beforeState = cellData;
                     return value;
                 }
             }
         });
 
-        this.#dispatchValueChangedEvent(col, row, cellData, value);
+        this.#saveState(col, row, beforeState);
+
+        this.#dispatchValueChangedEvent(col, row, beforeState, cellData, value);
         return cellData;
     }
 
-    #dispatchValueChangedEvent(col, row, cellData, value) {
-        const event = new CustomEvent("valuechanged", {detail: {cellColumn: col, cellRow: row, cellData: cellData, value: value}});
+    #dispatchValueChangedEvent(col, row, oldValues, cellData, value) {
+        const event = new CustomEvent("valuechanged", {detail: {cellColumn: col, cellRow: row, oldValues: oldValues, cellData: cellData, value: value}});
         this.dispatchEvent(event);
         if (this.onvaluechanged) {
             this.onvaluechanged(event);
@@ -978,22 +1026,39 @@ export class OxGrid extends OxControl {
      * Updates cell data and recomputes visuals
      * @param {*} col 
      * @param {*} row 
-     * @param {*} properties 
+     * @param {*} value either an object containing properties to modify (not existing properties are left the same), or a value of the cell
      * @returns Updated cell with all its properties
      */
-    #updateCellDataProperties(col, row, cell, properties) {
-        console.log("Cell props changed: " + col + ", " + row + "");
-
-        const beforeState = {};
-
+    #updateCellDataAndVisuals(col, row, cell, value) {
+        
+        let beforeState = {};
+        
         const computeFunctions = [];
         const cellData = this.#updateData(col, row, (cellData) => {
             
-            if (!(cellData instanceof Object)) { // only cells can be a string and not an object
-                cellData = {data: cellData};
-            }
+            console.log("Cell props changed: " + col + ", " + row + "", cellData, value);
 
-            for (const property in properties) {
+            if (value instanceof Object) {
+                if (!(cellData instanceof Object)) { // only cells can be a string and not an object
+                    cellData = {data: cellData};
+                }
+            } else {
+                if (!(cellData instanceof Object)) { // only cells can be a string and not an object
+                    beforeState = cellData;
+                    cellData = value;
+
+                    computeFunctions.push(() => this.#resetCellDataPresentation(cell, cellData));
+                    return cellData;
+                } else {
+                    if (col == -1 || row == -1) {
+                        value = {name: value};
+                    } else {
+                        value = {data: value};
+                    }
+                }
+            }
+            
+            for (const property in value) {
                 const computeVisual = OxGrid.#computeVisualProperties[property];
                 if (computeVisual === undefined) {
                     console.error(`Unknown property "${property}"`);
@@ -1001,7 +1066,7 @@ export class OxGrid extends OxControl {
                 }
 
                 const oldValue = cellData[property];
-                const newValue = properties[property]
+                const newValue = value[property]
 
                 if (oldValue != newValue) {
                     if (newValue === undefined) {
@@ -1015,6 +1080,8 @@ export class OxGrid extends OxControl {
                     beforeState[property] = oldValue;
                 }
             }
+
+            
             return cellData;
         });
 
@@ -1094,7 +1161,7 @@ export class OxGrid extends OxControl {
 
 
         const cell = this.getCell(range.startX, range.startY);
-        this.#updateCellDataProperties(range.startX, range.startY, cell, {"merged": merged})
+        this.#updateCellDataAndVisuals(range.startX, range.startY, cell, {"merged": merged})
     }
 
     #merge(col, row, cell, merged) {
@@ -1120,7 +1187,7 @@ export class OxGrid extends OxControl {
             const row = cell.cellRow;
             const col = cell.cellColumn;
             let cellData = this.getCellData(col, row);
-            this.#updateCellDataProperties(col, row, cell, {"merged": undefined})
+            this.#updateCellDataAndVisuals(col, row, cell, {"merged": undefined})
         }
     }
 
@@ -1176,7 +1243,8 @@ export class OxGrid extends OxControl {
             }
 
             checkbox.onchange = (event) => {
-                this.#updateCellData(col, row, checkbox.checked);
+                this.#updateCellDataValue(col, row, checkbox.checked);
+                this.#pushUndoBuffer();
             }
             cell.inputMode = "text";
         } else if (cellData.type == "number") {
@@ -1195,7 +1263,8 @@ export class OxGrid extends OxControl {
                 dateInput.style.display = "none";
                 dateInput.oninput = (event) => {
                     const value =  dateInput.value;
-                    this.#updateCellData(col, row, value);
+                    this.#updateCellDataValue(col, row, value);
+                    this.#pushUndoBuffer();
                     this.#showData(col, row, cell, cellData, value, false);
                     button.innerHTML = "";
                 }
@@ -1229,7 +1298,7 @@ export class OxGrid extends OxControl {
         "cells": null,
         "skip": null,
         "data": (grid, col, row, cell, oldValue, cellData) => grid.#showData(col, row, cell, cellData, cellData.data, false),
-        "background": (grid,col, row, cell, oldValue, cellData) => cell.style.background = cellData.background ?? "inherit",
+        "background": (grid,col, row, cell, oldValue, cellData) => cell.style.background = cellData.background ?? "white",
         "color": (grid,col, row, cell, oldValue, cellData) => cell.style.color = cellData.color ?? "inherit",
         "bold": (grid,col, row, cell, oldValue, cellData) => cell.style.fontWeight = (cellData.bold == "true" ? 600 : 300) ?? "inherit",
         "italic": (grid,col, row, cell, oldValue, cellData) => cell.style.fontStyle = (cellData.italic == "true" ? "italic" : "normal") ?? "inherit",
