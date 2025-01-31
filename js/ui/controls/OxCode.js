@@ -186,7 +186,7 @@ export class OxCode extends OxControl {
         const ranges = event.getTargetRanges();
         clearTimeout(this.#tokenizationTimeout);
         if (this.tokenizerLanguage) {
-            setTimeout(() => {
+            this.#tokenizationTimeout = setTimeout(() => {
                 let firstNode = null;
                 for (const range of ranges) {
                     let currentNode = range.startContainer;
@@ -355,7 +355,7 @@ export class OxCode extends OxControl {
             getRange = (i) => selection.getRangeAt(i);
         }
         const oldRanges = [];
-        if (this.ownerDocument.activeElement == this) {
+        if (this.getRootNode().activeElement == this) {
             for (let i = 0; i < selection.rangeCount; i++) {
                 let range = getRange(i);
                 let start = countDivOffset(range.startContainer, range.startOffset);
@@ -424,13 +424,14 @@ export class OxCode extends OxControl {
         for (let oldRange of oldRanges) {
             const range = document.createRange();
             const start = findElementFromOffset(oldRange.start);
-            // start is ok, but for some reason still doesn't work on safari - probably has to do with selection being inside the shadowRoot
+
             range.setStart(start.element, start.offset);
             if (oldRange.end) {
                 const end = findElementFromOffset(oldRange.end);
                 range.setEnd(end.element, end.offset);
             } else {
                 range.setEnd(start.element, start.offset);
+                selection.setPosition(start.element, start.offset); // for safari
             }
             selection.addRange(range);
         }

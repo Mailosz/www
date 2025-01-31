@@ -20,8 +20,6 @@ const template = /*html*/`
         </div>
     </div>
 `;
-const scriptUrl = new URL(import.meta.url);
-const baseUrl = scriptUrl.origin + scriptUrl.pathname.substring(0, scriptUrl.pathname.lastIndexOf("/"));
 
 const style = /*css*/`
     * {
@@ -188,8 +186,8 @@ export class OxExample extends OxControl {
         const codeBox = this.shadowRoot.getElementById("code-box");
         codeBox.setCode(this.textContent);
 
-        codeBox.setAttribute("tokenizer-language", baseUrl + "/../../tokenizer/html.json");
-        codeBox.setAttribute("code-style", baseUrl + "/../../../css/langs/html-lang.css");
+        codeBox.setAttribute("tokenizer-language", import.meta.resolve("../../tokenizer/html.json"));
+        codeBox.setAttribute("code-style", import.meta.resolve("../../../css/langs/html-lang.css"));
 
         if (this.autorun) {
             this.run();
