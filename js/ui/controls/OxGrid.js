@@ -169,7 +169,7 @@ export class OxGrid extends OxControl {
         super();
         this.editable = false;
         this.createShadowRoot(template, style);
-
+        this.contentEditable = true;
         let db = new DocBuilder(this.ownerDocument);
 
         this.shadowRoot.appendChild(db.button().innerText("+").class("add-row").event("click", () => this.insertRow(null, this.rowCount)).get());
@@ -472,7 +472,6 @@ export class OxGrid extends OxControl {
         const confirm = () => {
             const newValue = editBox.innerText;
             const cellData = this.#updateCellDataValue(col, row, newValue);
-            // const cellData = this.#updateCellDataAndVisuals(col, row, cell, newValue);
             if (cellData instanceof Object) {
                 this.#showData(col, row, cell, cellData, newValue, true);
             } else {
@@ -526,9 +525,16 @@ export class OxGrid extends OxControl {
 
 
         cell.onkeydown = (event) => {
-            if (event.key == "Enter") {
+            if (event.key == "Enter") {debugger
                 this.#editCell(col, row, cell, this.#getCellText(col, row));
                 event.preventDefault();
+            } else if (event.key == " ") {
+                const cellData = this.getCellData(col, row);
+                if (cellData?.type == "boolean") {
+                    const checkbox = this.activeCell?.querySelector("input[type=checkbox]");
+                    this.#updateCellDataAndVisuals(col, row, cell, {data: !(cellData.data == true)});
+                    event.preventDefault();
+                }
             }
         }
 
@@ -552,7 +558,6 @@ export class OxGrid extends OxControl {
         cell.onpointerdown = (event) => {
             this.#beginSelection(col, row);
             cell.focus({preventScroll: true});
-            event.preventDefault(); // needs to prevent automatic focus from pointer, and do it programatically for Firefox - without it pointerover is broken
         }
 
         cell.onpointerover = (event) => {
