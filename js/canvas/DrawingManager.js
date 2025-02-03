@@ -2,12 +2,13 @@
 
 export class DrawingManager {
 
+    /**
+     * @type {CanvasManager} cm 
+     */
+    cm;
+
     constructor () {
 
-        this.zoom = 1;
-
-        /** @type {CanvasManager} */
-        this.cm = null;
     }
     
     /**
@@ -30,12 +31,8 @@ export class DrawingManager {
         throw "prepare not implemented";
     }
 
-    zoomBy(factor, origin) {
-        throw "zoomBy not implemented";
-    }
 
-
-    redraw() {
+    redraw(viewport) {
         throw "redraw not implemented";
     }
 

@@ -27,6 +27,9 @@ export class CanvasManager {
         // this.drawing.setCanvasManager(this);
         this.drawing = null;
 
+        this.viewport = {x: -50, y: -20, w: 100, h: 100}
+        this.zoom = 1;
+
         /** @type {InputManager} */
         this.inputManager = null;
         this.currentManipulation = null;
@@ -84,6 +87,9 @@ export class CanvasManager {
 
                 console.log(`width: ${w}, height: ${h}, ratio: ${window.devicePixelRatio}`);
 
+                this.viewport.w = w / this.zoom;
+                this.viewport.h = h / this.zoom;
+
                 if (this.drawing != null) {
                     this.drawing.resize(w, h);
                 }
@@ -128,11 +134,36 @@ export class CanvasManager {
     }
 
     /**
+     * 
+     * @param {*} factor 
+     * @param {x:Number, y:Number} origin 
+     */
+    zoomBy(factor, origin) {
+        this.zoom = Math.max(0.0001,Math.min(this.zoom * factor, 10000));
+        console.log("zoom: " + this.zoom * 100 + "%");
+
+        this.updateViewport(this.viewport.x, this.viewport.y, this.zoom);
+    }
+
+    updateViewport(x, y, zoom) {
+        this.viewport.x = x;
+        this.viewport.y = y;
+        this.viewport.w = this.drawing.width / zoom;
+        this.viewport.h = this.drawing.height / zoom;
+        console.log(this.viewport)
+    }
+
+
+    scrollBy(x, y) {
+        this.updateViewport(this.viewport.x + x, this.viewport.y + y, this.zoom);
+    }
+
+    /**
      * Informs DrawingManager to redraw the canvas
      */
-    redraw() {
+    redraw(viewport) {
         if (this.drawing != null) {
-            this.drawing.redraw();
+            this.drawing.redraw(viewport);
         }
     }
 
@@ -200,10 +231,22 @@ export class CanvasManager {
         let by = Math.sign(event.deltaY);
         if (this.settings.invertMouseWheel) {by *= -1;}
         let factor = (10 + by) / 10;
-        const dpr = window.devicePixelRatio;
-        const x = event.offsetX * dpr;
-        const y = event.offsetY * dpr;
-        this.drawing.zoomBy(factor, {x: x, y: y});
+
+        const [x, y] = this.#getPointerPosition(event.offsetX, event.offsetY);
+        this.zoomBy(factor, {x: x, y: y});
+        this.redraw();
+    }
+
+    #getPointerPosition(pointerX, pointerY) {
+    const dpr = window.devicePixelRatio;
+    
+    const x = this.viewport.x + ((pointerX * dpr) * (this.viewport.w / this.drawing.width));
+    const y = this.viewport.y + ((pointerY * dpr) * (this.viewport.h / this.drawing.height));
+
+        return [
+            x,
+            y
+        ];
     }
 
     /**
@@ -222,20 +265,28 @@ export class CanvasManager {
         //this is to allow capturing for keyboard input
         this.canvasElement.focus({focusVisible: false, preventScroll: true});
 
-        const dpr = window.devicePixelRatio;
+        const [x,y] = this.#getPointerPosition(event.offsetX, event.offsetY);
 
-        pointer.x = event.offsetX * dpr;
-        pointer.y = event.offsetY * dpr;
-        pointer.pressX = event.offsetX * dpr;
-        pointer.pressY = event.offsetY * dpr;
+        pointer.realX = event.offsetX;
+        pointer.realY = event.offsetY;
+        pointer.x = x;
+        pointer.y = y;
+        pointer.pressX = x;
+        pointer.pressY = y;
         pointer.pressed = true;
         pointer.pressTime = Date.now();
         pointer.moving = false;
-
+        pointer.button = event.button;
 
         this.canvasElement.setPointerCapture(event.pointerId);
     }
 
+    /**
+     * 
+     * @param {PointerData} pointer 
+     * @param {*} id 
+     * @returns 
+     */
     #makePointerData(pointer, id) {
         return {
             id: id,
@@ -247,6 +298,8 @@ export class CanvasManager {
             pressY: pointer.pressY,
             lastX: pointer.lastX,
             lastY: pointer.lastY,
+            consecutiveClickCount: pointer.consecutiveClickCount,
+            button: pointer.button
         };
     }
 
@@ -263,12 +316,11 @@ export class CanvasManager {
             this.pointers[event.pointerId] = pointer;
         }
 
-        const dpr = window.devicePixelRatio;
-
+        const [x,y] = this.#getPointerPosition(event.offsetX, event.offsetY);
         pointer.lastX = pointer.x;
         pointer.lastY = pointer.y;
-        pointer.x = event.offsetX * dpr;
-        pointer.y = event.offsetY * dpr;
+        pointer.x = x;
+        pointer.y = y;
         pointer.lastTime = Date.now();
 
         if (pointer.pressed) {
@@ -330,28 +382,32 @@ export class CanvasManager {
             this.pointers[event.pointerId] = pointer;
         }
 
-        const dpr = window.devicePixelRatio;
+        const [x,y] = this.#getPointerPosition(event.offsetX, event.offsetY);
+        pointer.realX = event.offsetX;
+        pointer.realY = event.offsetY;
         pointer.lastX = pointer.x;
         pointer.lastY = pointer.y;
-        pointer.x = event.offsetX * dpr;
-        pointer.y = event.offsetY * dpr;
+        pointer.x = x;
+        pointer.y = y;
 
         pointer.releaseTime = Date.now();
 
-        let primaryButton = (pointer, data) => {
+        let primaryButton = (pointer) => {
             // double click
             if (pointer.lastClickTime != null && (pointer.releaseTime - pointer.lastClickTime) < this.settings.dbClickTime) { 
                 let dis = Math.sqrt((pointer.pressX - pointer.lastClickX) ** 2 + (pointer.pressY - pointer.lastClickY) ** 2);
 
                 if (dis > this.settings.pointerMoveDistance) { // too far - this is a normal click
-                    this.inputManager.click(data);
-                    pointer.lastClickTime = Date.now();
+                    pointer.consecutiveClickCount = 0;
+                    this.inputManager.click(this.#makePointerData(pointer, event.pointerId));
                 } else { // two consecutive clicks near each other - doubleclick
-                    this.inputManager.doubleClick(data);
-                    pointer.lastClickTime = null; // to prevent consecutive "doubleclicks" by firing after every next quick single click
+                    pointer.consecutiveClickCount++;
+                    this.inputManager.click(this.#makePointerData(pointer, event.pointerId));
                 }
+                pointer.lastClickTime = Date.now();
             } else { //single click
-                this.inputManager.click(data);
+                pointer.consecutiveClickCount = 0;
+                this.inputManager.click(this.#makePointerData(pointer, event.pointerId));
                 pointer.lastClickTime = Date.now();
             }
             pointer.lastClickX = pointer.x;
@@ -372,17 +428,17 @@ export class CanvasManager {
                     let data = this.#makePointerData(pointer, event.pointerId);
                     
                     if (event.pointerType == "mouse") {
-                        if (event.button == 0) { //primary button
+                        if (pointer.button == 0) { //primary button
                             primaryButton(pointer, data);
                         } else {
-                            this.inputManager.alternativeClick(data);
+                            this.inputManager.alternativeClick(this.#makePointerData(pointer, event.pointerId));
                         }
                     } else {
                         /** Time of touch after which it is considered secondary touch */
                         if ((pointer.releaseTime - pointer.pressTime) < this.settings.touchTime) {
                             primaryButton(pointer, data);
                         } else {
-                            this.inputManager.alternativeClick(data);
+                            this.inputManager.alternativeClick(this.#makePointerData(pointer, event.pointerId));
                         }
                     }
                 }
@@ -503,6 +559,8 @@ class PointerInstance {
         this.releaseTime = null;
         /** @type {Date} */
         this.lastClickTime = null;
+        this.consecutiveClickCount = 0;
+        this.button = 0;
     }
 }
 

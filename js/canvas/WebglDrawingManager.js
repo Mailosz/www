@@ -5,6 +5,11 @@ import { WebglEngine } from "./webgl/WebglEngine.js";
 
 export class WebglDrawingManager extends DrawingManager {
 
+    /**
+     * @type {CanvasManager} cm 
+     */
+    cm;
+
     constructor () {
         super();
 

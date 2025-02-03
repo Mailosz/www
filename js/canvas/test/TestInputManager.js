@@ -1,6 +1,5 @@
 
-import { InputManager } from "../InputManager.js";
-
+import { InputManager, Manipulation, ScrollManipulation } from "../InputManager.js";
 
 
 /**
@@ -22,8 +21,15 @@ export class TestInputManager extends InputManager {
      * @param {PointerData} pointer 
      */
     click(pointer) {
-        this.cm.drawing.click = {x: pointer.x, y: pointer.y};
-        this.cm.redraw();
+        if (pointer.consecutiveClickCount == 0) {
+            this.cm.drawing.click = {x: pointer.x, y: pointer.y};
+            this.cm.redraw();
+        } else {
+            console.log(pointer.consecutiveClickCount)
+            this.cm.drawing.dbClick = {x: pointer.x, y: pointer.y};
+            this.cm.redraw();
+        }
+
     }
 
     /**
@@ -31,8 +37,7 @@ export class TestInputManager extends InputManager {
      * @param {PointerData} pointer 
      */
     doubleClick(pointer) {
-        this.cm.drawing.dbClick = {x: pointer.x, y: pointer.y};
-        this.cm.redraw();
+
     }
 
     /**
@@ -59,7 +64,9 @@ export class TestInputManager extends InputManager {
      * @returns {Manipulation} A manipulation object that manages further inputs or null.
      */
     beginManipulation(pointer) {
-
+        if (pointer.button == 1) {
+            return new ScrollManipulation(this.cm, pointer);
+        }
         return new TestManipulation(this.cm, pointer);
 
     }
@@ -78,9 +85,8 @@ export class TestManipulation extends Manipulation {
      * @param {Number} index 
      */
     constructor(canvas, pData) {
-        super(canvas);
-        this.canvas = canvas;
-        this.canvas.drawing.lines = [{x: pData.pressX, y: pData.pressY}];
+        super();
+        canvas.drawing.lines = [{x: pData.pressX, y: pData.pressY}];
     }
 
     /**
@@ -88,8 +94,8 @@ export class TestManipulation extends Manipulation {
      * @param {GestureData} data 
      */
     update(pData) {
-        this.canvas.drawing.lines.push({x: pData.x, y: pData.y})
-        this.canvas.redraw();
+        this.cm.drawing.lines.push({x: pData.x, y: pData.y})
+        this.cm.redraw();
     }
     
     complete() {

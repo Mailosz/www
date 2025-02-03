@@ -9,6 +9,11 @@ export class InputManager {
      */
     keyboardActions = [];
 
+    /**
+     * @type {CanvasManager} cm 
+     */
+    cm;
+
     constructor() {
 
         if (this.constructor == InputManager) {
@@ -123,6 +128,11 @@ export class Manipulation {
     keyboardActions = [];
     
     /**
+     * @type {CanvasManager} cm 
+     */
+    cm;
+    
+    /**
      * 
      * @param {CanvasManager} cm 
      * @param {Number} index 
@@ -180,3 +190,34 @@ export class Manipulation {
     }
 }
 
+export class ScrollManipulation extends Manipulation {
+
+    scrollX = 0;
+    scrollY = 0;
+    /**
+     * Occurs everytime a user moves pointer over the canvas
+     * @param {GestureData} data 
+     */
+    update(data) {
+        this.scrollX = data.lastX - data.x+ this.scrollX;
+        this.scrollY = data.lastY - data.y+ this.scrollY;
+        this.cm.scrollBy(this.scrollX, this.scrollY);
+
+        this.cm.redraw();
+    }
+
+        /**
+     * Occurs whenever the manipulation is finished (e.g. pointer is lifted).
+     * @returns Return a UserChange that will be executed by CanvasManager
+     */
+    complete() {
+        // Nothing
+    }
+
+    /**
+     * Manipulation canceled - restore everything to initial values
+     */
+    cancel() {
+        // Nothing
+    }
+}

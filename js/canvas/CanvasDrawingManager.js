@@ -4,6 +4,11 @@ import { DrawingManager } from "./DrawingManager.js";
 
 export class CanvasDrawingManager extends DrawingManager {
 
+    /**
+     * @type {CanvasManager} cm 
+     */
+    cm;
+
     constructor () {
         super();
         /** @type {CanvasRenderingContext2D} */
@@ -28,17 +33,6 @@ export class CanvasDrawingManager extends DrawingManager {
     }
 
     /**
-     * 
-     * @param {*} factor 
-     * @param {x:Number, y:Number} origin 
-     */
-    zoomBy(factor, origin) {
-        this.zoom = Math.max(0.0001,Math.min(this.zoom * factor, 10000));
-        console.log("zoom: " + this.zoom * 100 + "%");
-    }
-
-
-    /**
      * Drawing viewport has been changed
      * @param {Number} w width of the viewport
      * @param {Number} h height of the viewport
@@ -53,25 +47,28 @@ export class CanvasDrawingManager extends DrawingManager {
         this.redraw();
     }
 
-    redraw() {
+    redraw(viewport) {
         if (this.ctx == null) {
             this.prepare();
         }
-        this.draw(this.ctx);
+        if (!viewport) {
+            viewport = this.cm.viewport;
+        }
+        this.draw(this.ctx, viewport);
     }
 
     /** 
      * Drawing testing implementation - to override
      * @param {CanvasRenderingContext2D} ds
      */
-    draw(ds) {
+    draw(ds, viewport) {
 
-        //const scale = window.devicePixelRatio;
         ds.resetTransform();
-        //ds.scale(scale, scale);
+        ds.clearRect(0,0,this.width,this.height);
+        ds.scale(this.width / viewport.w, this.height / viewport.h);
+        ds.translate(-viewport.x, -viewport.y);
 
-        
-        ds.clearRect(0, 0, this.width, this.height);
+    
 
         ds.moveTo(0,0);
         ds.lineTo(this.width, this.height);
