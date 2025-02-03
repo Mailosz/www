@@ -27,7 +27,9 @@ export class CanvasManager {
         // this.drawing.setCanvasManager(this);
         this.drawing = null;
 
-        this.viewport = {x: -50, y: -20, w: 100, h: 100}
+        this.width = 100;
+        this.height = 100;
+        this.viewport = {x: -50, y: -20, w: 100, h: 100};
         this.zoom = 1;
 
         /** @type {InputManager} */
@@ -85,8 +87,10 @@ export class CanvasManager {
                     h *= window.devicePixelRatio;
                 }
 
-                console.log(`width: ${w}, height: ${h}, ratio: ${window.devicePixelRatio}`);
+                // console.log(`width: ${w}, height: ${h}, ratio: ${window.devicePixelRatio}`);
 
+                this.width = w;
+                this.height = h;
                 this.viewport.w = w / this.zoom;
                 this.viewport.h = h / this.zoom;
 
@@ -148,9 +152,8 @@ export class CanvasManager {
     updateViewport(x, y, zoom) {
         this.viewport.x = x;
         this.viewport.y = y;
-        this.viewport.w = this.drawing.width / zoom;
-        this.viewport.h = this.drawing.height / zoom;
-        console.log(this.viewport)
+        this.viewport.w = this.width / zoom;
+        this.viewport.h = this.height / zoom;
     }
 
 
@@ -240,8 +243,8 @@ export class CanvasManager {
     #getPointerPosition(pointerX, pointerY) {
     const dpr = window.devicePixelRatio;
     
-    const x = this.viewport.x + ((pointerX * dpr) * (this.viewport.w / this.drawing.width));
-    const y = this.viewport.y + ((pointerY * dpr) * (this.viewport.h / this.drawing.height));
+    const x = this.viewport.x + ((pointerX * dpr) * (this.viewport.w / this.width));
+    const y = this.viewport.y + ((pointerY * dpr) * (this.viewport.h / this.height));
 
         return [
             x,
