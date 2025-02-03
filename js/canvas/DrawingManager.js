@@ -19,6 +19,15 @@ export class DrawingManager {
         this.cm = canvas;
     }
 
+
+    /**
+     * Called whenever the viewport changes
+     * @param {*} viewport 
+     */
+    updateViewport(viewport) {
+        
+    }
+
     
     resize(width, height) {
         throw "resize not implemented";
@@ -29,7 +38,8 @@ export class DrawingManager {
      */
     prepare() {
         throw "prepare not implemented";
-    }
+    }    
+
 
 
     redraw(viewport) {

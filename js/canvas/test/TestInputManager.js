@@ -33,14 +33,6 @@ export class TestInputManager extends InputManager {
     }
 
     /**
-     * Double click action (pointer clicked twice quickly)
-     * @param {PointerData} pointer 
-     */
-    doubleClick(pointer) {
-
-    }
-
-    /**
      * Alternative click action (e.g. right mouse button)
      * @param {PointerData} pointer 
      */

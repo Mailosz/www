@@ -29,7 +29,7 @@ export class CanvasManager {
 
         this.width = 100;
         this.height = 100;
-        this.viewport = {x: -50, y: -20, w: 100, h: 100};
+        this.viewport = {x: 0, y: 0, w: 100, h: 100};
         this.zoom = 1;
 
         /** @type {InputManager} */
@@ -91,8 +91,7 @@ export class CanvasManager {
 
                 this.width = w;
                 this.height = h;
-                this.viewport.w = w / this.zoom;
-                this.viewport.h = h / this.zoom;
+                this.updateViewport(this.viewport.x, this.viewport.y, this.zoom);
 
                 if (this.drawing != null) {
                     this.drawing.resize(w, h);
@@ -154,6 +153,8 @@ export class CanvasManager {
         this.viewport.y = y;
         this.viewport.w = this.width / zoom;
         this.viewport.h = this.height / zoom;
+
+        this.drawing?.updateViewport(this.viewport);
     }
 
 
