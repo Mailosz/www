@@ -31,6 +31,8 @@ export class CanvasManager {
         this.height = 100;
         this.viewport = {x: 0, y: 0, w: 100, h: 100};
         this.zoom = 1;
+        this.minzoom = 0.0001;
+        this.maxzoom = 100000;
 
         /** @type {InputManager} */
         this.inputManager = null;
@@ -142,10 +144,19 @@ export class CanvasManager {
      * @param {x:Number, y:Number} origin 
      */
     zoomBy(factor, origin) {
-        this.zoom = Math.max(0.0001,Math.min(this.zoom * factor, 10000));
-        console.log("zoom: " + this.zoom * 100 + "%");
+        const screenX = (origin.x - this.viewport.x);
+        const screenY = (origin.y - this.viewport.y);
 
-        this.updateViewport(this.viewport.x, this.viewport.y, this.zoom);
+        let oldzoom = this.zoom;
+        this.zoom = Math.max(this.minzoom,Math.min(this.zoom * factor, this.maxzoom));
+        const realFactor = oldzoom / this.zoom;
+        
+        const scrollX = this.viewport.x - (screenX) * (realFactor - 1);
+        const scrollY = this.viewport.y - (screenY) * (realFactor - 1);
+        
+        this.updateViewport(scrollX, scrollY, this.zoom);
+
+        console.log("zoom: " + this.zoom * 100 + "%");
     }
 
     updateViewport(x, y, zoom) {
@@ -271,8 +282,6 @@ export class CanvasManager {
 
         const [x,y] = this.#getPointerPosition(event.offsetX, event.offsetY);
 
-        pointer.realX = event.offsetX;
-        pointer.realY = event.offsetY;
         pointer.x = x;
         pointer.y = y;
         pointer.pressX = x;
