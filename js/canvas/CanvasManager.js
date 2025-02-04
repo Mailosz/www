@@ -354,8 +354,9 @@ export class CanvasManager {
 
                 let dis = Math.sqrt((pointer.pressX - pointer.x) ** 2 + (pointer.pressY - pointer.y) ** 2);
 
+                const moveDistance = this.settings.pointerMoveDistance / this.zoom;
                 // manipulation starts
-                if (dis > this.settings.pointerMoveDistance) {
+                if (dis > moveDistance) {
                     pointer.moving = true;
                     pointer.startX = pointer.x;
                     pointer.startY = pointer.y;
