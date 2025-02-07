@@ -112,6 +112,11 @@ export class OxCode extends OxControl {
     tokenizationDelay = 1000;
 
     #tokenizationTimeout = null;
+    /**
+     * @type {HTMLElement}
+     */
+    #codeBox;
+    #earliestChange = null;
 
     constructor() {
         super();
@@ -124,13 +129,13 @@ export class OxCode extends OxControl {
     connectedCallback() {
         super.connectedCallback();
 
-        const codeBox = this.shadowRoot.querySelector("#code-box");
+        this.#codeBox = this.shadowRoot.querySelector("#code-box");
 
         /**
          * @param {InputEvent} event 
          */
-        codeBox.onbeforeinput = (event) => {this.#handleInput(event);}
-        codeBox.oninput = (event) => this.dispatchEvent(new Event("input"));
+        this.#codeBox.addEventListener("beforeinput", (event) => {this.#handleBeforeInput(event);});
+        this.#codeBox.addEventListener("input", (event) => this.#handleAfterInput(event));
 
         const code = this.textContent;
         this.#createCodeBox(code);
@@ -142,6 +147,7 @@ export class OxCode extends OxControl {
                 lineCounters.style.height = entry.contentBoxSize[0].blockSize + "px";
             }
         }).observe(container);
+
 
     }
 
@@ -171,7 +177,7 @@ export class OxCode extends OxControl {
      * 
      * @param {InputEvent} event 
      */
-    #handleInput(event) {
+    #handleBeforeInput(event) {
         console.log(event.inputType);
         if (event.inputType == "historyUndo") {
             event.preventDefault();
@@ -186,26 +192,47 @@ export class OxCode extends OxControl {
         const ranges = event.getTargetRanges();
         clearTimeout(this.#tokenizationTimeout);
         if (this.tokenizerLanguage) {
-            this.#tokenizationTimeout = setTimeout(() => {
-                let firstNode = null;
-                for (const range of ranges) {
-                    let currentNode = range.startContainer;
-                    while (currentNode != null) {
-                        if ("DIV" == currentNode.nodeName) {
-                            if (firstNode == null || firstNode.compareDocumentPosition(currentNode) & Node.DOCUMENT_POSITION_PRECEDING) {
-                                firstNode = currentNode;
-                            }
-                            break;
+            for (const range of ranges) {
+                let currentNode = range.startContainer;
+                
+                while (currentNode != null) {
+                    if ("DIV" == currentNode.nodeName) {
+                        if (this.#earliestChange == null || this.#earliestChange.compareDocumentPosition(currentNode) & Node.DOCUMENT_POSITION_PRECEDING) {
+                            this.#earliestChange = currentNode;
                         }
-                        currentNode = currentNode.parentElement;
+                        break;
                     }
+                    currentNode = currentNode.parentElement;
                 }
-    
-                if (firstNode != null) {
-                    this.tokenizeCode(firstNode);
+            }
+
+            if (this.#earliestChange != null) {
+                if (this.#earliestChange == this.#codeBox || !this.#codeBox.contains(this.#earliestChange)) {
+                    this.#earliestChange = null;
                 }
+            }
+
+
+            this.#tokenizationTimeout = setTimeout(() => {
+                this.tokenizeCode(this.#earliestChange);
+                this.#earliestChange = null;
             }, this.tokenizationDelay);
         }
+    }
+
+    /**
+     * 
+     * @param {InputEvent} event 
+     */
+    #handleAfterInput(event) { 
+
+        if (this.#codeBox.firstElementChild == null) {
+            const div = this.ownerDocument.createElement("div");
+            div.textContent = this.#codeBox.textContent;
+            this.#codeBox.replaceChildren(div);
+        }
+
+        this.dispatchEvent(new Event("input"));
     }
 
     #isWhitespace(c) {
@@ -259,8 +286,7 @@ export class OxCode extends OxControl {
             }
         }
 
-        let codeBox = this.shadowRoot.querySelector("#code-box");
-        codeBox.textContent = "";
+        this.#codeBox.textContent = "";
         for (const line of lines){    
             let linePadding = whitespacePadding;
             for (let i = 0; i < whitespacePadding; i++) {
@@ -272,7 +298,7 @@ export class OxCode extends OxControl {
             }        
             const lineElement = document.createElement("div");
             lineElement.textContent = line.substring(linePadding) + "\n";
-            codeBox.appendChild(lineElement);
+            this.#codeBox.appendChild(lineElement);
         }
 
         if (this.tokenizerLanguage) {
@@ -286,15 +312,16 @@ export class OxCode extends OxControl {
      */
     tokenizeCode(startingFrom) {
 
-        const codeBox = this.shadowRoot.querySelector("#code-box");
-
         if (!this.tokenizerLanguage) return;
         
         const tokenizer = new StringTokenizer(this.tokenizerLanguage);
 
+        /**
+         * @type {Node}
+         */
         let lineElement;
         if (!startingFrom) {
-            lineElement = codeBox.firstElementChild;
+            lineElement = this.#codeBox.firstElementChild;
         } else {
             lineElement = startingFrom;
             if (startingFrom.firstElementChild != null && startingFrom.firstElementChild.tokenState != null) {
@@ -326,7 +353,7 @@ export class OxCode extends OxControl {
                     return null;
                 }
 
-                if (current.parentElement.isSameNode(codeBox)) {
+                if (current.parentElement === this.#codeBox) {
                     return {container: current, offset: offset};
                 }
 
@@ -376,8 +403,15 @@ export class OxCode extends OxControl {
         //
 
         while (lineElement != null) {
-            tokenizer.resetText(lineElement.innerText);
-            lineElement.innerText = "";
+            tokenizer.resetText(lineElement.textContent);
+
+            if (lineElement.nodeType == Node.TEXT_NODE) {
+                const div = this.ownerDocument.createElement("div");
+                this.#codeBox.replaceChild(div, lineElement);
+                lineElement = div;
+            } else {
+                lineElement.innerText = "";
+            }
             
                 while (!tokenizer.isFinished()) {
                 let token = tokenizer.getNextToken();
