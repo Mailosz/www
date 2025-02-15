@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathML</title>
+    <link rel="stylesheet" href="../../css/main.css">
+</head>
+<body>
+    <main>
+        <h1>Math ML</h1>
+        <p>
+            <button onclick="insertFraction()">
+                <math>
+                    <mfrac>
+                        <mi>a</mi>
+                        <mi>b</mi>
+                    </mfrac>
+                </math>
+            </button>
+            <div contenteditable="true">
+                <math>
+                    <mn>5</mn>
+                    <mo>+</mo>
+                    <mfrac>
+                        <mn>2</mn>
+                        <mn>3</mn>
+                    </mfrac>
+                </math>
+                <p>
+1
+                </p>
+            </div>
+
+        </p>
+    </main>
+    <script>
+        const mathNS = "http://www.w3.org/1998/Math/MathML";
+        function insertFraction() {
+            const sel = document.getSelection();
+            for (let i = 0; i < sel.rangeCount; i++) {
+                const range = sel.getRangeAt(i);
+                range.deleteContents();
+
+                const math = document.createElementNS(mathNS, "math");
+                const frac = document.createElementNS(mathNS, "mfrac");
+                const a = document.createElementNS(mathNS, "mn");
+                a.textContent = "1";
+                const b = document.createElementNS(mathNS, "mn");
+                b.textContent = "2";
+                frac.append(a, b);
+
+                math.append(frac);
+            
+
+                range.insertNode(math);
+
+                sel.selectAllChildren(a);
+            }
+            
+        }
+    </script>
+</body>
+</html>
