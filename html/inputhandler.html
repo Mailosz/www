@@ -67,14 +67,20 @@
         <div id="test-elem" style="display: inline flex;"></div>
     </div>
 <button id="test-button">Test</button>
-<div class="input-box input-handler" contenteditable="true"><h1>Title</h1><h2>subtitle</h2><div><p>qwertyu<span>iop[asd</span>fgh<span>jkl;</span>zxcvbnm</p><p>qwertyu<span>iop[</span><span>asd</span>fghjkl;zxcvbnm<span><span>test</span></span></p>abcd<p>qwertyuiop<span></span>[asdfghjkl;zxcvbnm</p></div></div>
+<button id="undo-button">Undo</button>
+<div is="input-1" class="input-box input-handler" contenteditable="true"><h1>Title</h1><h2>subtitle</h2><div><p>qwertyu<span>iop[asd</span>fgh<span>jkl;</span>zxcvbnm</p><p>qwertyu<span>iop[</span><span>asd</span>fghjkl;zxcvbnm<span><span>test</span></span></p>abcd<p>qwertyuiop<span></span>[asdfghjkl;zxcvbnm</p></div></div>
 <br>
-<div class="input-box" contenteditable="true">
+<div id="input-2" class="input-box" contenteditable="true">
     <div class="test"><div>test</div>cbf</div>
     <div class="text">Text 2 tst</div>
+    <p>111111</p>
+    <p>222222</p>
+    <p>333333</p>
+    <p>444444</p>
 </div>
 <script type="module">
     import {handleInput, handleKeyDown, handlePointerDown, handlePointerMove, handlePointerUp} from "../js/inputhandler/InputHandler.js";
+    import {MutationRecorder} from "../js/utils/MutationRecorder.js";
 
     let p = document.createElement("p");
     let options = {
@@ -115,6 +121,15 @@
     // document.onselectionchange = (event) => {
     //     console.log(event);
     // }
+
+    const mutationRecorder = new MutationRecorder(document.getElementById("input-2"), {});
+    mutationRecorder.startRecording();
+
+    document.getElementById("undo-button").onclick = () => {
+        mutationRecorder.stopRecording();
+        mutationRecorder.undo();
+    };
+
 </script>
 </body>
 </html>
