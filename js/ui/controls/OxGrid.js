@@ -1309,7 +1309,8 @@ export class OxGrid extends OxControl {
                 button.innerHTML = "";
                 const dateInput = this.ownerDocument.createElement("input");
                 dateInput.type = "date";
-                dateInput.style.display = "none";
+                dateInput.style.visibility = "hidden";
+                dateInput.style.position = "absolute";
                 dateInput.oninput = (event) => {
                     const value =  dateInput.value;
                     this.#updateCellDataValue(col, row, value);
