@@ -1,15 +1,21 @@
 import { OxControl } from "./OxControl.js";
 
 const template = /*html*/`
+    <div id="prev" class="active"></div>
     <div id="container">
-        <div id="first"></div>
-        <div id="start"></div>
-        <div id="prev"></div>
-        <div id="current" class="page-number" part="selected"></div>
-        <div id="next"></div>
-        <div id="end"></div>
-        <div id="last"></div>
+        <div class="page-index"></div>
+        <div class="page-index"></div>
+        <div class="page-index"></div>
+        <div class="page-index"></div>
+        <div class="page-index"></div>
+        <div class="page-index"></div>
+        <div class="page-index"></div>
+        <div class="page-index"></div>
+        <div class="page-index"></div>
+        <div class="page-index"></div>
+        <div class="page-index"></div>
     </div>
+    <div id="next" class="active"></div>
 `;
 
 const style = /*css*/`
@@ -17,11 +23,19 @@ const style = /*css*/`
         box-sizing: border-box;
     }
 
-    :host {
-
+    #prev.active::before {
+        content: "\\276E";
     }
 
-    #current {
+    #next.active::before {
+        content: "\\276F";
+    }
+
+    :host {
+        display: flex;
+    }
+
+    .page-index.current {
         font-weight: 600;
         background: var(--weak-accent-color, lightblue); 
     }
@@ -41,13 +55,7 @@ const style = /*css*/`
         gap: 0.5em;
     }
 
-    #first.active::before {
-        content: "\\276E";
-    }
 
-    #last.active::before {
-        content: "\\276F";
-    }
 
     #start:not(:empty)::after,
     #end:not(:empty)::before {
@@ -59,8 +67,8 @@ const style = /*css*/`
         max-width: 4em;
     }
 
-    #first, #last,
-    .page-number {
+    #prev, #next,
+    .page-index {
         display: inline-block;
         text-align: center;
         min-width: 2em;
@@ -68,26 +76,26 @@ const style = /*css*/`
         line-height: 1em;
     }
 
-    .active, .page-number {
+    .active, .page-index {
         cursor: pointer;
     }
 
 
-    div.page-number::before {
+    div.page-index::before {
         content: attr(page-index);
     }
 
-    div.page-number:hover,
+    div.page-index:hover,
     .active:hover {
         background: rgba(127,127,127,0.2);
     }
 
-    div.page-number:active,
+    div.page-index:active,
     .active:active {
         background: rgba(127,127,127,0.5);
     }
 
-    div.page-number {
+    div.page-index {
         border: 1px solid black;
     }
 `;
@@ -95,6 +103,7 @@ const style = /*css*/`
 export class OxPaging extends OxControl {
     static observedAttributes = ["first-index", "last-index", "current-index", "has-more"];
 
+    #created = false;
     constructor(opts) {
         super(opts);
 
@@ -109,6 +118,15 @@ export class OxPaging extends OxControl {
 
         this.createShadowRoot(template, style);
         
+
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+
+        this.shadowRoot.firstElementChild.onclick = (event) => this.previousPage();
+        this.shadowRoot.lastElementChild.onclick = (event) => this.nextPage();
+
         this.#build();
     }
 
@@ -123,104 +141,87 @@ export class OxPaging extends OxControl {
         } else if (name == "last-index") {
             this.opts.lastIndex = newValue;
         }
-        this.#build();
+        if (this.#created) {
+            this.#build();
+        }
     }
 
     #build() {
-        this.shadowRoot.innerHTML = template;
+        const firstIndex = +this.opts.firstIndex;
+        const lastIndex = +this.opts.lastIndex ?? +this.opts.currentIndex;
 
-        const first = +this.opts.firstIndex;
-        const last = +this.opts.lastIndex ?? +this.opts.currentIndex;
-
-        const current = +this.opts.currentIndex;
-        const container = this.shadowRoot.firstElementChild;
-
+        const currentIndex = +this.opts.currentIndex;
+        const container = this.shadowRoot.firstElementChild.nextElementSibling;
 
         
-        let maxnum = 10;
+        let size = container.childElementCount;
 
-        const currentEl = this.shadowRoot.querySelector("#current");
-        currentEl.setAttribute("page-index", current);
+        let mid = Math.round(size / 2);
 
+        let element = container.firstElementChild;
 
-        let createPageNumber = (number) => {
-            const indexEl = document.createElement("div");
-            indexEl.setAttribute("page-index", number);
-            indexEl.classList.add("page-number");
-            indexEl.onclick = (event) => {
-                this.setAttribute("current-index", number);
-            }
-            return indexEl;
-        }
-
-        const prevEl = this.shadowRoot.querySelector("#prev");
-        const prevMax = Math.max(maxnum / 2, maxnum - (last - current));
-        for (let i = 1; i <= prevMax && current - i >= first; i++) {
-            const indexEl = createPageNumber(current - i);
-            prevEl.insertBefore(indexEl, prevEl.firstChild);
-        }
-
-        const nextEl = this.shadowRoot.querySelector("#next");
-        const nextMax = Math.max(maxnum / 2, maxnum - (current - first));
-        for (let i = 1; i <= nextMax && current + i <= last; i++) {
-            const indexEl = createPageNumber(current + i);
-            nextEl.appendChild(indexEl);
-        }
-
-        const ro = new ResizeObserver((entry) => {
-            const target = entry[0].target;
-            let child = target.firstElementChild;
-            while (child != null) {
-
-                if (target.scrollWidth > target.clientWidth) {
-                    target.style.display = none;
+        let setIndex = (element, index) => {
+            element.setAttribute("page-index", index);
+            if (index !== null) {
+                if (Number.isNaN(index)) {
+                    element.onclick = null;
                 } else {
-                    break;
+                    if (index == currentIndex) {
+                        element.classList.add("current");
+                        element.onclick = null;
+                    } else {
+                        element.classList.remove("current");
+                        element.onclick = (event) => this.setAttribute("current-index", index);
+                    }
                 }
-                child = child.nextElementSibling;
-            }
+            } 
+        }
+        
+        let last = currentIndex + (size - mid);
+        let start = currentIndex - mid;
+        if (index < firstIndex) {
+            index = firstIndex;
+        } else if (index >= firstIndex) {
+            setIndex(element, firstIndex);
+            
+            element = element.nextElementSibling;
+            setIndex(element, "...");
+            element = element.nextElementSibling;
+            index += 3;
+        }
+        let index = start;
 
-
-            child = target.firstElementChild;
-            while (child != null) {
-
-                if (target.scrollWidth > target.clientWidth) {
-                    target.style.display = none;
-                } else {
-                    break;
-                }
-                child = child.nextElementSibling;
-            }
-        });
-        ro.observe(prevEl);
-        ro.observe(nextEl);
-
-        const lower = current - prevMax;
-        if (lower > first) {
-            const startEl = this.shadowRoot.querySelector("#start");
-
-            const indexEl = createPageNumber(first);
-            startEl.appendChild(indexEl);
+        while (index < currentIndex) {
+            setIndex(element, index);
+            element = element.nextElementSibling;
+            index++;
         }
 
-        const upper = current + nextMax;
-        if (upper < last) {
-            const endEl = this.shadowRoot.querySelector("#end");
+        setIndex(element, currentIndex);
+        element.onclick = null;
+        element.classList.add("current");
+        element = element.nextElementSibling;
+        index++;
 
-            const indexEl = createPageNumber(last);
-            endEl.appendChild(indexEl);
+        if (last > lastIndex) {
+            last = lastIndex;
+        } else if (last < lastIndex) {
+            let lastElement = container.lastElementChild;
+            setIndex(lastElement, lastIndex);
+            lastElement = lastElement.previousElementSibling;
+            setIndex(lastElement, "...");
+            last -= 2;
         }
 
-        const firstEl = this.shadowRoot.querySelector("#first");
-        if (current > first) {
-            firstEl.onclick = () => this.previousPage();
-            firstEl.classList.add("active");
+        while (index <= last) {
+            setIndex(element, index);
+            element.classList.remove("current");
+            element = element.nextElementSibling;
+            index++;
         }
-        const lastEl = this.shadowRoot.querySelector("#last");
-        if (current < last) {
-            lastEl.onclick = () => this.nextPage();
-            lastEl.classList.add("active");
-        }
+
+        this.#created = true;
+
     }
 
     previousPage() {

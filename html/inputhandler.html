@@ -67,9 +67,10 @@
         <div id="test-elem" style="display: inline flex;"></div>
     </div>
 <button id="test-button">Test</button>
-<button id="undo-button">Undo</button>
 <div is="input-1" class="input-box input-handler" contenteditable="true"><h1>Title</h1><h2>subtitle</h2><div><p>qwertyu<span>iop[asd</span>fgh<span>jkl;</span>zxcvbnm</p><p>qwertyu<span>iop[</span><span>asd</span>fghjkl;zxcvbnm<span><span>test</span></span></p>abcd<p>qwertyuiop<span></span>[asdfghjkl;zxcvbnm</p></div></div>
 <br>
+<button id="undo-button">Undo</button>
+<button id="redo-button">Redo</button>
 <div id="input-2" class="input-box" contenteditable="true">
     <div class="test"><div>test</div>cbf</div>
     <div class="text">Text 2 tst</div>
@@ -80,7 +81,7 @@
 </div>
 <script type="module">
     import {handleInput, handleKeyDown, handlePointerDown, handlePointerMove, handlePointerUp} from "../js/inputhandler/InputHandler.js";
-    import {MutationRecorder} from "../js/utils/MutationRecorder.js";
+    import {MutationUndoer} from "../js/utils/MutationUndoer.js";
 
     let p = document.createElement("p");
     let options = {
@@ -121,13 +122,21 @@
     // document.onselectionchange = (event) => {
     //     console.log(event);
     // }
+    const ce = document.getElementById("input-2");
+    const mutationUndoer = new MutationUndoer(ce, {});
+    mutationUndoer.startRecording();
 
-    const mutationRecorder = new MutationRecorder(document.getElementById("input-2"), {});
-    mutationRecorder.startRecording();
+    ce.addEventListener("input", (event) => {
+        console.log("y");
+        mutationUndoer.startRecording();
+    });
 
     document.getElementById("undo-button").onclick = () => {
-        mutationRecorder.stopRecording();
-        mutationRecorder.undo();
+        mutationUndoer.undo();
+    };
+
+    document.getElementById("redo-button").onclick = () => {
+        mutationUndoer.redo();
     };
 
 </script>

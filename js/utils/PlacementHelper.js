@@ -1,3 +1,45 @@
+
+
+
+/**
+ * 
+ * @param {DOMRect} anchor 
+ * @param {{horizontal: string, vertical: string}} placement 
+ */
+function computePosition(anchor, placement) {
+
+    placement = readPlacement(placement);
+
+    
+   
+}
+
+function readPlacement(placement) {
+    // read placement string
+    let horizontalPlacement = "center";
+    let verticalPlacement = "center";
+
+    if (placement != null) {
+        if (Object.prototype.toString.call(placement) === "[object String]") {
+            let args = placement.split(" ");
+            if (args.length == 1) {
+                horizontalPlacement = args[0];
+                verticalPlacement = args[0];
+            } else if (args.length == 2) {
+                horizontalPlacement = args[0];
+                verticalPlacement = args[1];
+            } else {
+                throw "Too many placement args";
+            }
+        } else {
+            horizontalPlacement = placement.horizontal;
+            verticalPlacement = placement.vertical;
+        }
+    }
+    return {horizontal: horizontalPlacement, vertical: verticalPlacement};
+}
+
+
 /**
  * @typedef {{x: number, y: number, w: number, h: number}} Rectangle
  * @typedef {{x: number, y: number}} Point

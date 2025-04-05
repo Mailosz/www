@@ -24,6 +24,7 @@ export class OxControl extends HTMLElement {
         
             shadowRoot.adoptedStyleSheets.push(styleSheet);
         }
+        return shadowRoot;
     }
 
     connectedCallback() {

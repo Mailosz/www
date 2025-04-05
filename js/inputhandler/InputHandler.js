@@ -1,3 +1,6 @@
+import { MutationRecorder } from "../utils/MutationRecorder.js";
+import { revertMutationChanges } from "../utils/MutationUndoer.js";
+
 const selection = [];
 let currentSelection = null;
 let pointerPressed = false;
@@ -153,6 +156,11 @@ export function handleKeyDown(event) {
             }
         }
         showSelection(selection);
+    } else if (event.key == "z" && event.ctrlKey) {
+
+        const inputEvent = new InputEvent("beforeinput", {inputType: "historyUndo"});
+        event.currentTarget.dispatchEvent(inputEvent);
+
     }
 }
 
@@ -372,12 +380,22 @@ function setSelection(selection, ranges) {
 }
 
 
+const observerOptions = {
+    subtree: true, 
+    childList: true, 
+    attibutes: true, 
+    attributeOldValue: true, 
+    characterData: true, 
+    characterDataOldValue: true,
+};
+
 /**
  * Handles user input in a predictive way
  */
 export function handleInput(options) {
 
     console.log(options);
+    const undoList = [];
     /**
      * Handles user input in a predictive way
      * @param {InputEvent} event 
@@ -390,12 +408,18 @@ export function handleInput(options) {
          */
         const editor = event.target;
     
-        console.log(event.inputType);
+        console.log(event);
         if (event.inputType == "insertText") {
+
+            const mr = new MutationObserver(() => {});
+            mr.observe(event.target, observerOptions)
 
             const ranges = insertText(event.data, event.getTargetRanges());
             ranges.forEach((range) => range.collapse(false));
             setSelection(document.getSelection(), ranges);
+
+            undoList.push(mr.takeRecords());
+            mr.disconnect();
 
         } else if (event.inputType == "insertParagraph") {
 
@@ -423,7 +447,19 @@ export function handleInput(options) {
             const ranges = deleteContent("backward", "word", event.getTargetRanges());
             setSelection(document.getSelection(), ranges);
 
-        }
+        } else if (event.inputType == "historyUndo") {
+            console.log(undoList);
+            if (undoList.length > 0) {
+                const changes = undoList.pop();
+                revertMutationChanges(changes);
+            }
+
+        } else if (event.inputType == "historyRedo") {
+
+
+        } 
+
+
     };
 
 }

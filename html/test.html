@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .input {
+            background: #eee; 
+            border: 1px solid black; 
+            padding: 10px; min-height: 1em;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="input" contenteditable="true" onbeforeinput="console.log(event);">
+
+    </div>
+
+    <div class="input" contenteditable="plaintext-only" onbeforeinput="console.log(event);">
+
+    </div>
+
+    <div class="input" contenteditable="typing" tabindex="0" onbeforeinput="console.log(event);">
+
+    </div>
+
+    <div class="input" contenteditable="caret" tabindex="0" onbeforeinput="console.log(event);">
+
+    </div>
+
+    <div class="input" contenteditable="cursor" tabindex="0" onbeforeinput="console.log(event);">
+
+    </div>
+    
+    <div class="input" contenteditable="events" tabindex="0" onbeforeinput="console.log(event);">
+
+    </div>
+</body>
+</html>

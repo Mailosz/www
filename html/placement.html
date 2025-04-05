@@ -7,8 +7,13 @@
     <title>Document</title>
     <link rel="stylesheet" href="../css/popupmenu.css">
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         .elem{
             flex: 1;
+            
         }
 
 
@@ -53,13 +58,16 @@
         #popup {
             color: black;
             position: absolute;
+            left:0;
+            top:0;
             border: 1px black solid;
             padding: 10px;
-            background-color: white;
+            background-color: rgba(255,255,255,0.8);
             box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
             pointer-events: all;
             width: 208px;
             resize: both;
+            z-index: 10;
         }
 
         #parent{
@@ -77,11 +85,12 @@
     <div id="parent">
         
     </div>
+    <div id="popup">
+        <div>Insert placement here, and click  a rectangle to set anchor.</div>
+        <div><input id="placement-input" value="left top"></div>
+    </div>
     <div id="popup-home">
-        <div id="popup">
-            <div>Insert placement here, and click  a rectangle to set anchor.</div>
-            <div><input id="placement-input" value="left top"></div>
-        </div>
+
     </div>
     <script type="module">
         import {Popup} from '../js/ui/Popup.js';
@@ -91,7 +100,7 @@
         let popup = document.getElementById("popup");
         let popupHome = document.getElementById("popup-home");
         
-        let options = {relativeTo: popupHome, keepInside: popupHome}
+        let options = {relativeTo: null, keepInside: null}
         
         const input = document.getElementById("placement-input");
         input.onkeydown = (event) => {

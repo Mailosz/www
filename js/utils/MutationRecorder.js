@@ -13,7 +13,7 @@ export class MutationRecorder {
     /**
      * @type {MutationRecord[]}
      */
-    #recordedChanges = [];
+    recordedChanges = [];
 
 
     /**
@@ -41,7 +41,7 @@ export class MutationRecorder {
      */
     #detectChanges(changes) {
         for (const change of changes) {
-            this.#recordedChanges.unshift(change);
+            this.recordedChanges.unshift(change);
         }
     }
 
@@ -54,7 +54,7 @@ export class MutationRecorder {
     }
 
     undo() {
-        for (const change of this.#recordedChanges) {
+        for (const change of this.recordedChanges) {
             if (change.type == "characterData") {
                 change.target.data = change.oldValue;
             } else if (change.type == "attributes") {
