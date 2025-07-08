@@ -376,7 +376,7 @@ export class OxCode extends OxControl {
         }
         let getRange;
         if (selection.getComposedRanges) { // right way but only works in safari
-            const composedRanges = selection.getComposedRanges(this.shadowRoot);
+            const composedRanges = selection.getComposedRanges({shadowRoots: [this.shadowRoot]});
             getRange = (i) => composedRanges[i];
         } else {
             getRange = (i) => selection.getRangeAt(i);
