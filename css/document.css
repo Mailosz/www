@@ -70,7 +70,8 @@ h6 {
 
 hr {
     margin: 2em 0;
-    border: 2px solid #999;
+    margin-left: 0;
+    border: 1px solid #999;
 }
 
 /* MARK */
