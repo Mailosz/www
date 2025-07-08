@@ -25,12 +25,13 @@ html {
 .button, button, input[type=button], input[type=submit], input[type=reset], ::file-selector-button {
     display: inline-block;
     background-color: var(--button-background);
-    border: var(--border-width) solid var(--border-color);
+    border: var(--border-width, 1px) solid var(--border-color);
     border-radius: var(--border-radius);
     padding: 0.25em 0.5em;
     cursor: pointer;
     text-decoration: none;
     color: var(--text-color, black);
+    min-height: 2em;
 }
 
     .button:hover, button:hover, input[type=button]:hover, input[type=submit]:hover, input[type=reset]:hover, ::file-selector-button:hover {
@@ -50,6 +51,10 @@ html {
         border: var(--border-width, 2px) solid var(--strong-accent-color, green);
         background-color: var(--weak-accent-color, #afa);
     }
+
+button:empty:not([value]){
+    vertical-align: bottom;
+}
 
 /* arranges buttons in a single toolbar */
 .toolbar, .horizontal-toolbar {
@@ -101,21 +106,42 @@ input:indeterminate {
     accent-color: gray;
 }
 
-input:is([type=text],[type=number],[type=password],[type=date],[type=datetime]), select {
-    border: 2px solid var(--border-color, #666);
+input:is(:not([type]),[type=text],[type=number],[type=password],[type=date],[type=datetime]), select {
+    border: var(--border-width, 1px) solid var(--border-color, #666);
     border-radius: var(--border-radius);
-    padding: 2px 4px;
+    padding: 0.25em 0.5em;
+    min-width: 8em;
+    field-sizing: content;
 }
 
-input:is([type=text],[type=number],[type=password],[type=date],[type=datetime]):focus, select:focus {
-    border-color: var(--accent-color, cornflowerblue);
+input:is(:not([type]),[type=text],[type=number],[type=password],[type=date],[type=datetime]):focus, select:focus {
+    border-color: var(--strong-accent-color, cornflowerblue);
     box-shadow: 0 0 10px rgba(127,127,127,0.5);
     outline: none;
-}   
+}
 
 select {
     appearance:auto;
 }
+
+select[multiple] {
+    padding: 0;
+    field-sizing: content;
+    overflow: auto;
+}
+
+select[multiple][size] {
+    field-sizing: fixed;
+}
+
+select[multiple] option {
+    padding: 0.25em 0.5em;
+}
+
+select[multiple] optgroup {
+    padding: 0.25em 0;
+}
+
 
 /* SEAMLESS */
 
@@ -131,6 +157,12 @@ ox-button.seamless:state(checked) {
 ox-button.seamless:hover,
 ox-button.seamless:active {
     background-color: var(--weaker-accent-color, lightblue);
+}
+
+select[multiple].seamless {
+    border: none;
+    padding: 0;
+    border-radius: 0;
 }
 
 /* PROGRESS BAR */
