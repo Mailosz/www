@@ -1,4 +1,12 @@
 /* markboxes */
+:root {
+    color: var(--text-color, black);
+    background-color: var(--background-color, #f8f8f8);
+}
+
+main {
+    background-color: var(--page-color, white);
+}
 
 .sample:not(.fullscreen) {
     padding: 2px;
@@ -90,21 +98,21 @@ mark.green {
 }
 
 mark.red {
-    outline-color: lightcoral;
-    background-color: lightcoral;
-    color: maroon;
+    outline-color: #f88;
+    background-color: #f88;
+    color: #800;
 }
 
 mark.yellow {
     outline-color: #ffa;
     background-color: #ffa;
-    color: #660;
+    color: #440;
 }
 
 mark.orange {
-    outline-color: lightsalmon;
-    background-color: lightsalmon;
-    color: brown;
+    outline-color: #fa7;
+    background-color: #fa7;
+    color: #883500;
 }
 
 mark.blue {
@@ -115,8 +123,8 @@ mark.blue {
 
 
 mark.gray {
-    outline-color: lightgray;
-    background-color: lightgray;
+    outline-color: var(--emphasized-background, #ddd);;
+    background-color: var(--emphasized-background, #ddd);;
     color: black;
 }
 
@@ -137,11 +145,11 @@ main>img, section>img, article>img, figure>img, aside>img {
 figure {
     clear: both;
     margin: 1em 0;
-    background-color: #ddd;
+    background-color: var(--emphasized-background, #ddd);
 }
 
 aside {
-    background-color: #ddd;
+    background-color: var(--emphasized-background, #ddd);
 }
 
 p {
