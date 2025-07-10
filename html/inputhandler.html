@@ -14,7 +14,7 @@
         }
 
         @keyframes caret-blinking {
-            0% {background-color: transparent};
+            0% {background-color: transparent;}
             100% {background-color: black;}
         }
 
@@ -61,6 +61,7 @@
             outline: 2px dashed red;
         }
     </style>
+    <script type="module" src="../js/ui/controls/OxCode.js"></script>
 </head>
 <body>
     <div>
@@ -79,6 +80,7 @@
     <p>333333</p>
     <p>444444</p>
 </div>
+    <ox-code id="source-code" tokenizer-language="../js/tokenizer/html.json" code-style="../css/langs/html-lang.css"></ox-code>
 <script type="module">
     import {handleInput, handleKeyDown, handlePointerDown, handlePointerMove, handlePointerUp} from "../js/inputhandler/InputHandler.js";
     import {MutationUndoer} from "../js/utils/MutationUndoer.js";
@@ -126,9 +128,11 @@
     const mutationUndoer = new MutationUndoer(ce, {});
     mutationUndoer.startRecording();
 
+    let sourceCodeBox = document.getElementById("source-code");
     ce.addEventListener("input", (event) => {
         console.log("y");
-        mutationUndoer.startRecording();
+       // mutationUndoer.startRecording();
+        sourceCodeBox.setCode(ce.innerHTML);
     });
 
     document.getElementById("undo-button").onclick = () => {

@@ -46,7 +46,11 @@
 			}
 		}],
 		"data": {
-			"color": "maroon"
+			"color": "maroon",
+			"formatter": {
+				"newline": 1,
+				"indent": 1
+			}
 		}
 	},
 	"tagName": {
@@ -223,7 +227,11 @@
 				"by": ">"
 			},
 			"data": {
-				"color": "maroon"
+				"color": "maroon",
+				"formatter": {
+					"newline": 1,
+					"indent": -1
+				}
 			}
 		},
 	"htmlCommentStart": {

@@ -402,6 +402,8 @@ export function handleInput(options) {
      */
     return (event) => {
         event.preventDefault();
+        event.stopPropagation();
+
     
         /**
          * @type {HTMLElement}
@@ -434,6 +436,10 @@ export function handleInput(options) {
 
         } else if (event.inputType == "deleteContentBackward") {
 
+            let r = event.getTargetRanges();
+            let r2 = r.pop();
+            let range = rangeFromStatic(r2);
+
             const ranges = deleteContent("backward", "character", event.getTargetRanges());
             setSelection(document.getSelection(), ranges);
 
@@ -459,7 +465,7 @@ export function handleInput(options) {
 
         } 
 
-
+        event.target.dispatchEvent(new InputEvent("input"));
     };
 
 }
@@ -498,7 +504,7 @@ function extendRangeBackward(range) {
         console.log("B");
         if (range.startContainer.parentElement) {
             const index = Array.prototype.indexOf.call(range.startContainer.parentElement.childNodes, range.startContainer);
-            range.setEnd(range.startContainer.parentElement, index);
+            range.setStart(range.startContainer.parentElement, index - 1);
         } else {
             range.setStart(range.startContainer.previousSibling, getNodeLength(range.startContainer.previousSibling));
         }
@@ -621,7 +627,7 @@ function insertParagraph(paragraphElement, ranges) {
  * 
  * @param {*} direction 
  * @param {*} granularity 
- * @param {AbstractRange[]} ranges 
+ * @param {Range[]} ranges
  * @returns 
  */
 function deleteContent(direction, granularity, ranges) {
