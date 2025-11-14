@@ -68,8 +68,8 @@ export class CanvasDrawingManager extends DrawingManager {
         ds.scale(this.width / viewport.w, this.height / viewport.h);
         ds.translate(-viewport.x, -viewport.y);
 
-    
 
+        ds.beginPath();
         ds.moveTo(0,0);
         ds.lineTo(this.width, this.height);
         ds.moveTo(this.width,0);
@@ -112,15 +112,14 @@ export class CanvasDrawingManager extends DrawingManager {
         
         if (this.lines != null && this.lines.length > 0) {
             ds.strokeStyle = "black";
-            
+
             ds.beginPath();
             ds.moveTo(this.lines[0].x, this.lines[0].y);
             for (let i = 1; i < this.lines.length; i++) {
                 ds.lineTo(this.lines[i].x, this.lines[i].y);
             }
-
+            ds.stroke();
         }
-        ds.stroke();
 
         if (this.drag != null) {
             ds.beginPath();
