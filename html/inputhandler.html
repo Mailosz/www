@@ -60,6 +60,42 @@
             outline-offset: 2px;
             outline: 2px dashed red;
         }
+
+        #node-tree {
+            border: 1px solid black;
+            padding: 10px;
+        }
+
+        #node-tree div.node-element {
+            padding: 0.25em 0 0.25em 1em;
+            min-height: 1.5em;
+        }
+
+        #node-tree div.node-element:hover:not(:has(.node-element:hover)) {
+            background-color: #eee;
+        }
+
+        #node-tree .selection-start {
+            background-color: #dff6fe;
+        }
+
+        #node-tree .selection-start::before {
+            content: attr(offset-start);
+            margin-right: 1em;
+        }
+
+        #node-tree .selection-end {
+            background-color: #ffaa77;
+        }
+
+        #node-tree .selection-end::after {
+            content: attr(offset-end);
+            margin-left: 1em;
+        }
+
+        #node-tree .selection-start.selection-end {
+            background-color: #88ee77;
+        }
     </style>
     <script type="module" src="../js/ui/controls/OxCode.js"></script>
 </head>
@@ -68,30 +104,57 @@
         <div id="test-elem" style="display: inline flex;"></div>
     </div>
 <button id="test-button">Test</button>
-<div id="input-1" class="input-box input-handler" contenteditable="true"><h1>Title</h1><h2>subtitle</h2><div><p>qwertyu<span>iop[asd</span>fgh<span>jkl;</span>zxcvbnm</p><p>qwertyu<span>iop[</span><span>asd</span>fghjkl;zxcvbnm<span><span>test</span></span></p>abcd<p>qwertyuiop<span></span>[asdfghjkl;zxcvbnm</p></div></div>
-<br>
 <button id="undo-button">Undo</button>
 <button id="redo-button">Redo</button>
-<div id="input-2" class="input-box" contenteditable="true">
-    <div class="test"><div>test</div>cbf</div>
-    <div class="text">Text 2 tst</div>
-    <p>111111</p>
-    <p>222222</p>
-    <p>333333</p>
-    <p>444444</p>
-</div>
-    <ox-code id="source-code" tokenizer-language="../js/tokenizer/html.json" code-style="../css/langs/html-lang.css"></ox-code>
+    &emsp;
+<button id="insert-inline-button">Insert inline</button>
+<button id="insert-block-button">Insert block</button>
+<div id="input-1" class="input-box input-handler" contenteditable="true"><h1>Title</h1><h2>subtitle</h2><div><p>qwertyu<span>iop[asd</span>fgh<span>jkl;</span>zxcvbnm</p><p>qwertyu<span>iop[</span><span>asd</span>fghjkl;zxcvbnm<span><span>test</span></span></p>abcd<p>qwertyuiop<span></span>[asdfghjkl;zxcvbnm</p></div></div>
+<br>
+    <div id="node-tree"></div>
+
+<!--<div id="input-2" class="input-box" contenteditable="true">-->
+<!--    <div class="test"><div>test</div>cbf</div>-->
+<!--    <div class="text">Text 2 tst</div>-->
+<!--    <p>111111</p>-->
+<!--    <p>222222</p>-->
+<!--    <p>333333</p>-->
+<!--    <p>444444</p>-->
+<!--</div>-->
+
 <script type="module">
     import {handleInput, handleKeyDown, handlePointerDown, handlePointerMove, handlePointerUp} from "../js/inputhandler/InputHandler.js";
     import {MutationUndoer} from "../js/utils/MutationUndoer.js";
+
+    document.onselectionchange = (event) => {
+        showSelection(document.getSelection());
+    }
 
     let p = document.createElement("p");
     let options = {
         paragraph: p
     };
 
+    let input = document.getElementById("input-1");
+    let target = document.getElementById("node-tree");
+
+    document.body.onload = () => {
+        print();
+    }
+
+    function print() {
+        if (target != null) {
+            target.innerHTML = "";
+            printNodeTree(input, target);
+        }
+    }
+
     document.querySelectorAll("#input-1").forEach((element) => {
         element.onbeforeinput = handleInput(options);
+        element.oninput = (event) => {
+            print();
+        }
+
         // element.onkeydown = handleKeyDown;
         // element.onmousedown = (event) => event.preventDefault();
         // element.onmouseup = (event) => event.preventDefault();
@@ -124,15 +187,15 @@
     // document.onselectionchange = (event) => {
     //     console.log(event);
     // }
-    const ce = document.getElementById("input-2");
+    const ce = document.getElementById("input-1");
     const mutationUndoer = new MutationUndoer(ce, {});
     mutationUndoer.startRecording();
 
     let sourceCodeBox = document.getElementById("source-code");
     ce.addEventListener("input", (event) => {
         console.log("y");
-       // mutationUndoer.startRecording();
-        sourceCodeBox.setCode(ce.innerHTML);
+       mutationUndoer.startRecording();
+       //  sourceCodeBox.setCode(ce.innerHTML);
     });
 
     document.getElementById("undo-button").onclick = () => {
@@ -142,6 +205,77 @@
     document.getElementById("redo-button").onclick = () => {
         mutationUndoer.redo();
     };
+
+    document.getElementById("insert-inline-button").onclick = () => {
+        mutationUndoer.undo();
+    };
+
+    document.getElementById("insert-block-button").onclick = () => {
+        mutationUndoer.undo();
+    };
+
+    /**
+     *
+     * @param {HTMLElement} root
+     * @param {HTMLElement} target
+     */
+    function printNodeTree(root, target) {
+        if (root != null) {
+            let node = printNode(root);
+            target.appendChild(node);
+
+            let child = root.firstChild;
+            while (child != null) {
+                printNodeTree(child, node)
+                child = child.nextSibling;
+            }
+        }
+    }
+
+    /**
+     *
+     * @param {Node} node
+     */
+    function printNode(node) {
+        let div = document.createElement("div");
+        if (node.nodeType === Node.TEXT_NODE) {
+            div.innerText = node.textContent;
+        } else {
+            div.innerText = "<" + node.nodeName.toLowerCase() + ">";
+        }
+        div.nodeRef = node;
+        div.classList.add("node-element");
+        node.nodeRef = div;
+
+        return div;
+    }
+
+    /**
+     *
+     * @param {Selection} selection
+     */
+    function showSelection(selection) {
+
+        document.querySelectorAll(".selection-start").forEach((element) => {element.classList.remove("selection-start");});
+        document.querySelectorAll(".selection-end").forEach((element) => {element.classList.remove("selection-end");});
+
+        for (let i = 0; i < selection.rangeCount; i++) {
+            let range = selection.getRangeAt(i)
+
+            let start = range.startContainer.nodeRef;
+            if (start) {
+                start.classList.add("selection-start");
+                start.setAttribute("offset-start", range.startOffset);
+            }
+
+            let end = range.endContainer.nodeRef;
+            if (end) {
+                end.classList.add("selection-end");
+                end.setAttribute("offset-end", range.endOffset);
+            }
+        }
+
+    }
 
 </script>
 </body>

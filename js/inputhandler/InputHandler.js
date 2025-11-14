@@ -413,7 +413,7 @@ export function handleInput(options) {
         event.preventDefault();
         event.stopPropagation();
 
-        let targetRanges = event.getTargetRanges();
+        let targetRanges = [document.getSelection().getRangeAt(0)];
     
         /**
          * @type {HTMLElement}
@@ -421,7 +421,7 @@ export function handleInput(options) {
         const editor = event.target;
     
         console.log(event);
-        if (event.inputType == "insertText") {
+        if (event.inputType === "insertText") {
 
             const mr = new MutationObserver(() => {});
             mr.observe(event.target, observerOptions)
@@ -433,18 +433,18 @@ export function handleInput(options) {
             undoList.push(mr.takeRecords());
             mr.disconnect();
 
-        } else if (event.inputType == "insertParagraph") {
+        } else if (event.inputType === "insertParagraph") {
 
             const ranges = insertParagraph(options.paragraph, targetRanges);
             // ranges.forEach((range) => range.collapse(true));
             setSelection(document.getSelection(), ranges);
 
-        } else if (event.inputType == "deleteContentForward") {
+        } else if (event.inputType === "deleteContentForward") {
 
             const ranges = deleteContent("forward", "character", targetRanges);
             setSelection(document.getSelection(), ranges);
 
-        } else if (event.inputType == "deleteContentBackward") {
+        } else if (event.inputType === "deleteContentBackward") {
 
             // let r2 = targetRanges.pop();
             // let range = rangeFromStatic(r2);
@@ -452,24 +452,24 @@ export function handleInput(options) {
             const ranges = deleteContent("backward", "character", targetRanges);
             setSelection(document.getSelection(), ranges);
 
-        } else if (event.inputType == "deleteWordForward") {
+        } else if (event.inputType === "deleteWordForward") {
 
             const ranges = deleteContent("forward", "word", targetRanges);
             setSelection(document.getSelection(), ranges);
 
-        } else if (event.inputType == "deleteWordBackward") {
+        } else if (event.inputType === "deleteWordBackward") {
 
             const ranges = deleteContent("backward", "word", targetRanges);
             setSelection(document.getSelection(), ranges);
 
-        } else if (event.inputType == "historyUndo") {
+        } else if (event.inputType === "historyUndo") {
             console.log(undoList);
             if (undoList.length > 0) {
                 const changes = undoList.pop();
                 revertMutationChanges(changes);
             }
 
-        } else if (event.inputType == "historyRedo") {
+        } else if (event.inputType === "historyRedo") {
 
 
         } 
@@ -654,14 +654,28 @@ function deleteContent(direction, granularity, ranges) {
         // option B
         // browser automagically selects a text to delete
         // console.log(range)
-        // if (direction == "forward") {
-        //     range.collapse(true);
-        //     extendRangeForward(range);
-        // } else if (direction == "backward") {
-        //     range.collapse(false);
-        //     extendRangeBackward(range);
-        // }
-        
+
+        if (range.collapsed) {
+            if (direction === "forward") {
+                // range.collapse(true);
+                extendRangeForward(range);
+            } else if (direction === "backward") {
+                // range.collapse(false);
+                extendRangeBackward(range);
+            }
+        }
+
+
+        if (range.startContainer.nodeType === Node.ELEMENT_NODE && range.startOffset === 0 ) {
+            //delete node, add its contents after selection to the parent
+
+        }
+        if (range.endContainer.nodeType === Node.ELEMENT_NODE && range.endOffset === range.endContainer.childNodes.length) {
+            //delete node, add its contents before selection to the parent
+
+        }
+
+
         range.deleteContents();
     });
 
