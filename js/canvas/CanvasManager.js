@@ -17,14 +17,10 @@ export class CanvasManager {
         this.canvasElement = canvasElement;
         this.canvasElement.tabIndex = "0"; // without tab index canvasElement wouldn't produce keyboard events
 
-        /**
-         * @type {CanvasSettings}
-         */
+        /** @type {CanvasSettings} */
         this.settings = {...(new CanvasSettings()), ...settings};
 
-        // /** @type {DrawingManager} */
-        // this.drawing = drawing;
-        // this.drawing.setCanvasManager(this);
+        /** @type {DrawingManager} */
         this.drawing = null;
 
         this.width = 100;
@@ -56,6 +52,9 @@ export class CanvasManager {
         this.canvasElement.addEventListener("pointercancel", this.#pointercancel.bind(this));
         this.canvasElement.addEventListener("wheel", this.#pointerwheel.bind(this));
 
+        // context lost
+        this.canvasElement.addEventListener("contextlost", this.#contextLost.bind(this));
+        this.canvasElement.addEventListener("contextrestored", this.#contextRestored.bind(this));
 
         // disable default contextmenu
         this.canvasElement.addEventListener("contextmenu", (event) => event.preventDefault());
@@ -112,7 +111,7 @@ export class CanvasManager {
     }
 
     /**
-     * Sets the DrawingManager used to handle user input
+     * Sets the InputManager used to handle user input
      * @param {InputManager} inputManager 
      */
     setInputManager(inputManager) {
@@ -542,6 +541,25 @@ export class CanvasManager {
             console.log("Perform change")
             this.commitChange(change);
         }
+    }
+
+
+    /**
+     * Handles the darawingContext.contextlost event
+     * @param {Event} event
+     */
+    #contextLost(event) {
+        console.log("Drawing context lost");
+        this.drawing?.close();
+    }
+
+    /**
+     * Handles the darawingContext.contextrestored event
+     * @param {Event} event
+     */
+    #contextRestored(event) {
+        console.log("Drawing context restored");
+        this.drawing?.prepare();
     }
 }
 
