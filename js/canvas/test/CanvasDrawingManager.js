@@ -1,6 +1,6 @@
 //draw
 
-import { DrawingManager } from "./DrawingManager.js";
+import { DrawingManager } from "../DrawingManager.js";
 
 export class CanvasDrawingManager extends DrawingManager {
 
@@ -9,18 +9,12 @@ export class CanvasDrawingManager extends DrawingManager {
      */
     cm;
 
-    constructor () {
+    constructor (state) {
         super();
         /** @type {CanvasRenderingContext2D} */
         this.ctx = null;
-    }
 
-    /**
-     * Canvas manager sets itself as context once the InputManager is set
-     * @param {CanvasManager} canvasManager 
-     */
-    setCanvasManager(canvas) {
-        this.cm = canvas;
+        this.state = state;
     }
 
     prepare() {
@@ -81,50 +75,50 @@ export class CanvasDrawingManager extends DrawingManager {
         ds.stroke();
 
         
-        if (this.click != null) {
+        if (this.state.click != null) {
             ds.beginPath();
             ds.fillStyle = "violet";
-            ds.ellipse(this.click.x, this.click.y, 7, 7, 0, 0, 2*Math.PI, false);
+            ds.ellipse(this.state.click.x, this.state.click.y, 7, 7, 0, 0, 2*Math.PI, false);
             ds.fill();
         }
 
-        if (this.dbClick != null) {
+        if (this.state.dbClick != null) {
             ds.beginPath();
             ds.fillStyle = "lime";
-            ds.ellipse(this.dbClick.x, this.dbClick.y, 7, 7, 0, 0, 2*Math.PI, false);
+            ds.ellipse(this.state.dbClick.x, this.state.dbClick.y, 7, 7, 0, 0, 2*Math.PI, false);
             ds.fill();
         }
 
-        if (this.altClick != null) {
+        if (this.state.altClick != null) {
             ds.beginPath();
             ds.fillStyle = "cyan";
-            ds.ellipse(this.altClick.x, this.altClick.y, 7, 7, 0, 0, 2*Math.PI, false);
+            ds.ellipse(this.state.altClick.x, this.state.altClick.y, 7, 7, 0, 0, 2*Math.PI, false);
             ds.fill();
         }
 
-        if (this.mouse != null) {
+        if (this.state.mouse != null) {
             ds.beginPath();
             ds.fillStyle = "green";
-            ds.ellipse(this.mouse.x, this.mouse.y, 5, 5, 0, 0, 2*Math.PI, false);
+            ds.ellipse(this.state.mouse.x, this.state.mouse.y, 5, 5, 0, 0, 2*Math.PI, false);
             ds.fill();
         }
 
         
-        if (this.lines != null && this.lines.length > 0) {
+        if (this.state.lines != null && this.state.lines.length > 0) {
             ds.strokeStyle = "black";
 
             ds.beginPath();
-            ds.moveTo(this.lines[0].x, this.lines[0].y);
-            for (let i = 1; i < this.lines.length; i++) {
-                ds.lineTo(this.lines[i].x, this.lines[i].y);
+            ds.moveTo(this.state.lines[0].x, this.state.lines[0].y);
+            for (let i = 1; i < this.state.lines.length; i++) {
+                ds.lineTo(this.state.lines[i].x, this.state.lines[i].y);
             }
             ds.stroke();
         }
 
-        if (this.drag != null) {
+        if (this.state.drag != null) {
             ds.beginPath();
             ds.fillStyle = "red";
-            ds.ellipse(this.drag.x, this.drag.y, 5, 5, 0, 0, 2*Math.PI, false);
+            ds.ellipse(this.state.drag.x, this.state.drag.y, 5, 5, 0, 0, 2*Math.PI, false);
             ds.fill();
         }
     }

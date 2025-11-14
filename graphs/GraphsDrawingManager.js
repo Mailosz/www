@@ -1,7 +1,7 @@
 //draw
 
 import { Graph } from "./Graphs.js";
-import { CanvasDrawingManager } from "../js/canvas/CanvasDrawingManager.js";
+import { CanvasDrawingManager } from "../js/canvas/test/CanvasDrawingManager.js";
 
 
 export class GraphsDrawingManager extends CanvasDrawingManager {

@@ -7,12 +7,13 @@ import { InputManager, Manipulation, ScrollManipulation } from "../InputManager.
  */
 export class TestInputManager extends InputManager {
 
-
-    constructor() {
+    constructor(state) {
         super();
         this.interaction = null;
         /** @type {CanvasManager} */
         this.cm = null;
+
+        this.state = state;
     }
 
 
@@ -22,11 +23,11 @@ export class TestInputManager extends InputManager {
      */
     click(pointer) {
         if (pointer.consecutiveClickCount == 0) {
-            this.cm.drawing.click = {x: pointer.x, y: pointer.y};
+            this.state.click = {x: pointer.x, y: pointer.y};
             this.cm.redraw();
         } else {
             console.log(pointer.consecutiveClickCount)
-            this.cm.drawing.dbClick = {x: pointer.x, y: pointer.y};
+            this.state.dbClick = {x: pointer.x, y: pointer.y};
             this.cm.redraw();
         }
 
@@ -37,7 +38,7 @@ export class TestInputManager extends InputManager {
      * @param {PointerData} pointer 
      */
     alternativeClick(pointer) {
-        this.cm.drawing.altClick = {x: pointer.x, y: pointer.y};
+        this.state.altClick = {x: pointer.x, y: pointer.y};
         this.cm.redraw();
     }
 
@@ -46,7 +47,7 @@ export class TestInputManager extends InputManager {
      * @param {PointerData} data 
      */;
     hover(pointer) {
-        this.cm.drawing.mouse = {x: pointer.x, y: pointer.y};
+        this.state.mouse = {x: pointer.x, y: pointer.y};
         this.cm.redraw();
     }
 
@@ -57,9 +58,9 @@ export class TestInputManager extends InputManager {
      */
     beginManipulation(pointer) {
         if (pointer.button == 1) {
-            return new ScrollManipulation(this.cm, pointer);
+            return new ScrollManipulation();
         }
-        return new TestManipulation(this.cm, pointer);
+        return new TestManipulation(this.state, pointer);
 
     }
 
@@ -74,11 +75,12 @@ export class TestManipulation extends Manipulation {
     /**
      * @param {PointerData} pData
      * @param {CanvasManager} canvas 
-     * @param {Number} index 
+     * @param {object} state
      */
-    constructor(canvas, pData) {
+    constructor(state, pData) {
         super();
-        canvas.drawing.lines = [{x: pData.pressX, y: pData.pressY}];
+        this.state = state;
+        this.state.lines = [{x: pData.pressX, y: pData.pressY}];
     }
 
     /**
@@ -86,7 +88,7 @@ export class TestManipulation extends Manipulation {
      * @param {GestureData} data 
      */
     update(pData) {
-        this.cm.drawing.lines.push({x: pData.x, y: pData.y})
+        this.state.lines.push({x: pData.x, y: pData.y})
         this.cm.redraw();
     }
     
@@ -95,7 +97,7 @@ export class TestManipulation extends Manipulation {
     }
 
     cancel() {
-        this.canvas.drawing.lines = null;
+        this.state.lines = null;
         this.canvas.redraw();
     }
 }

@@ -1,4 +1,4 @@
-import {CanvasDrawingManager} from "../../../js/canvas/CanvasDrawingManager.js";
+import {CanvasDrawingManager} from "../../../js/canvas/test/CanvasDrawingManager.js";
 import { MathUtils } from "../../../js/utils/MathUtils.js";
 import { SEGMENT_KIND } from "./data/Paths.js";
 
