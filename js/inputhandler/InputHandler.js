@@ -192,6 +192,15 @@ function rangeFromStatic(staticRange) {
 }
 
 /**
+ *
+ * @param {Range} range
+ * @returns {StaticRange} A new range same as passed StaticRange
+ */
+function staticFromRange(range) {
+    return new StaticRange({startContainer: range.startContainer, startOffset: range.startOffset, endContainer: range.endContainer, endOffset: range.endOffset})
+}
+
+/**
  * 
  * @param {[StaticRange]} staticRanges 
  * @param {function(Range)} foo 
@@ -404,6 +413,7 @@ export function handleInput(options) {
         event.preventDefault();
         event.stopPropagation();
 
+        let targetRanges = event.getTargetRanges();
     
         /**
          * @type {HTMLElement}
@@ -416,7 +426,7 @@ export function handleInput(options) {
             const mr = new MutationObserver(() => {});
             mr.observe(event.target, observerOptions)
 
-            const ranges = insertText(event.data, event.getTargetRanges());
+            const ranges = insertText(event.data, targetRanges);
             ranges.forEach((range) => range.collapse(false));
             setSelection(document.getSelection(), ranges);
 
@@ -425,32 +435,31 @@ export function handleInput(options) {
 
         } else if (event.inputType == "insertParagraph") {
 
-            const ranges = insertParagraph(options.paragraph, event.getTargetRanges());
+            const ranges = insertParagraph(options.paragraph, targetRanges);
             // ranges.forEach((range) => range.collapse(true));
             setSelection(document.getSelection(), ranges);
 
         } else if (event.inputType == "deleteContentForward") {
 
-            const ranges = deleteContent("forward", "character", event.getTargetRanges());
+            const ranges = deleteContent("forward", "character", targetRanges);
             setSelection(document.getSelection(), ranges);
 
         } else if (event.inputType == "deleteContentBackward") {
 
-            let r = event.getTargetRanges();
-            let r2 = r.pop();
-            let range = rangeFromStatic(r2);
+            // let r2 = targetRanges.pop();
+            // let range = rangeFromStatic(r2);
 
-            const ranges = deleteContent("backward", "character", event.getTargetRanges());
+            const ranges = deleteContent("backward", "character", targetRanges);
             setSelection(document.getSelection(), ranges);
 
         } else if (event.inputType == "deleteWordForward") {
 
-            const ranges = deleteContent("forward", "word", event.getTargetRanges());
+            const ranges = deleteContent("forward", "word", targetRanges);
             setSelection(document.getSelection(), ranges);
 
         } else if (event.inputType == "deleteWordBackward") {
 
-            const ranges = deleteContent("backward", "word", event.getTargetRanges());
+            const ranges = deleteContent("backward", "word", targetRanges);
             setSelection(document.getSelection(), ranges);
 
         } else if (event.inputType == "historyUndo") {
@@ -472,9 +481,9 @@ export function handleInput(options) {
 
 /**
  * Copies from range A to B
- * @param {AbstractRange} a
- * @param {AbstractRange} b 
- * @returns {AbstractRange} Range B
+ * @param {Range} a
+ * @param {Range} b
+ * @returns {Range} Range B
  */
 function copyRange(a, b) {
     b.setStart(a.startContainer, a.startOffset);
@@ -657,4 +666,12 @@ function deleteContent(direction, granularity, ranges) {
     });
 
     return editRanges;
+}
+
+/**
+ * Returns true if node is empty
+ * @param {Node} node
+ */
+function isEmpty(node) {
+    return !node.firstChild && !node.textContent;
 }

@@ -68,7 +68,7 @@
         <div id="test-elem" style="display: inline flex;"></div>
     </div>
 <button id="test-button">Test</button>
-<div is="input-1" class="input-box input-handler" contenteditable="true"><h1>Title</h1><h2>subtitle</h2><div><p>qwertyu<span>iop[asd</span>fgh<span>jkl;</span>zxcvbnm</p><p>qwertyu<span>iop[</span><span>asd</span>fghjkl;zxcvbnm<span><span>test</span></span></p>abcd<p>qwertyuiop<span></span>[asdfghjkl;zxcvbnm</p></div></div>
+<div id="input-1" class="input-box input-handler" contenteditable="true"><h1>Title</h1><h2>subtitle</h2><div><p>qwertyu<span>iop[asd</span>fgh<span>jkl;</span>zxcvbnm</p><p>qwertyu<span>iop[</span><span>asd</span>fghjkl;zxcvbnm<span><span>test</span></span></p>abcd<p>qwertyuiop<span></span>[asdfghjkl;zxcvbnm</p></div></div>
 <br>
 <button id="undo-button">Undo</button>
 <button id="redo-button">Redo</button>
@@ -90,19 +90,19 @@
         paragraph: p
     };
 
-    document.querySelectorAll(".input-handler").forEach((element) => {
+    document.querySelectorAll("#input-1").forEach((element) => {
         element.onbeforeinput = handleInput(options);
-        element.onkeydown = handleKeyDown;
-        element.onmousedown = (event) => event.preventDefault();
-        element.onmouseup = (event) => event.preventDefault();
-        element.onpointerdown = handlePointerDown;
-        element.onpointermove = handlePointerMove;
-        element.onpointerup = handlePointerUp;
+        // element.onkeydown = handleKeyDown;
+        // element.onmousedown = (event) => event.preventDefault();
+        // element.onmouseup = (event) => event.preventDefault();
+        // element.onpointerdown = handlePointerDown;
+        // element.onpointermove = handlePointerMove;
+        // element.onpointerup = handlePointerUp;
 
     });
 
 
-    document.querySelectorAll(".input-box").forEach((element) => {
+    document.querySelectorAll("#input-2").forEach((element) => {
         element.onbeforeinput = handleInput(options);
     });
 
