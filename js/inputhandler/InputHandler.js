@@ -154,33 +154,26 @@ export function handleKeyDown(event) {
     console.log(event.key);
     if (event.key === "ArrowLeft") {
         event.preventDefault();
+        let selection = document.getSelection();
+        for (let i = 0; i < selection.rangeCount; i++) {
+            const range = selection.getRangeAt(i);
 
-        for (const item of selection) {
-            const range = item;//selection.getRangeAt(i);
+            extendRangeBackward(range);
 
-            if (item instanceof Range) {
-
-                extendRangeBackward(item);
-    
-                item.collapse(true);
-                console.log(item);
-            }
+            range.collapse(true);
         }
-        showSelection(selection);
+
     } else if (event.key === "ArrowRight") {
         event.preventDefault();
 
-        for (const item of selection) {
-            if (item instanceof Range) {
+        let selection = document.getSelection();
+        for (let i = 0; i < selection.rangeCount; i++) {
+            const range = selection.getRangeAt(i);
+            extendRangeForward(range);
 
-                extendRangeForward(item);
-
-                item.collapse(false);
-                console.log(item);
-
-            }
+            range.collapse(false);
         }
-        showSelection(selection);
+
     } else if (event.key == "z" && event.ctrlKey) {
 
         const inputEvent = new InputEvent("beforeinput", {inputType: "historyUndo"});
@@ -191,10 +184,10 @@ export function handleKeyDown(event) {
 
 /**
  * 
- * @param {*} startContainer 
- * @param {*} startOffset 
- * @param {*} endContainer 
- * @param {*} endOffset 
+ * @param {Node} startContainer
+ * @param {Number} startOffset
+ * @param {Node?} endContainer
+ * @param {Number?} endOffset
  * @returns {Range}
  */
 function createRange(startContainer, startOffset, endContainer, endOffset) {
@@ -518,7 +511,7 @@ function copyRange(a, b) {
 
 /**
  * Extends range to the left in place
- * @param {*} range 
+ * @param {Range} range
  */
 function extendRangeBackward(range) {
     if (range.startOffset > 0) {
@@ -528,7 +521,7 @@ function extendRangeBackward(range) {
             if (isElementNode(node)) {
                 range.setStart(node, node.childNodes?.length);
             } else {
-                range.setStart(node, Math.max(0, node.length - 1));
+                range.setStart(node, Math.max(0, node.length));
             }
         } else {
             range.setStart(range.startContainer, range.startOffset - 1);
@@ -538,7 +531,7 @@ function extendRangeBackward(range) {
         console.log("B");
         if (range.startContainer.parentElement) {
             const index = Array.prototype.indexOf.call(range.startContainer.parentElement.childNodes, range.startContainer);
-            range.setStart(range.startContainer.parentElement, index - 1);
+            range.setStart(range.startContainer.parentElement, index);
         } else {
             range.setStart(range.startContainer.previousSibling, getNodeLength(range.startContainer.previousSibling));
         }
@@ -546,6 +539,30 @@ function extendRangeBackward(range) {
         console.log("C");
         range.setStart(range.startContainer.parentElement, 0);
     }
+}
+
+/**
+ * Moves caret backwards to the previous character
+ * @param {Node} container
+ * @param {Number} offset
+ */
+function moveCaretBackwards(container, offset) {
+    if (offset > 0) {
+        if (container.nodeType === Node.TEXT_NODE) {
+            return [container,  offset - 1];
+        } else {
+            let child =container.childNodes.item(offset - 1);
+            return moveCaretBackwards(child, getNodeLength(child));
+        }
+    } else {
+        if (container.previousSibling) {
+            return moveCaretBackwards(container.previousSibling, getNodeLength(container.previousSibling));
+        } else {
+            const index = Array.prototype.indexOf.call(container.parentElement.childNodes, container);
+            return moveCaretBackwards(container.parentElement, index);
+        }
+    }
+
 }
 
 /**
@@ -684,13 +701,30 @@ function deleteContent(direction, granularity, ranges) {
             if (direction === "forward") {
                 // range.collapse(true);
                 extendRangeForward(range);
+                range.deleteContents();
             } else if (direction === "backward") {
-                // range.collapse(false);
-                extendRangeBackward(range);
+                let r = deleteBackward(range.startContainer, range.startOffset);
+                range.setStart(r.startContainer, r.startOffset);
+                // // range.collapse(false);
+                // if (range.startOffset === 0) {
+                //     // delete whole container
+                //     if (range.startContainer.previousSibling) {
+                //         range.selectNodeContents(range.startContainer);
+                //         let contents = range.cloneContents();
+                //         range.startContainer.previousSibling.insertBefore(contents, null);
+                //     } else {
+                //         range.startContainer.parentNode.insertBefore(contents, range.startContainer);
+                //     }
+                //     range.startContainer.parentNode.removeChild(range.startContainer);
+                //
+                // } else {
+                //     extendRangeBackward(range);
+                // }
+                // extendRangeBackward(range);
             }
         }
 
-        range.deleteContents();
+
 
         if (range.startContainer.nodeType === Node.ELEMENT_NODE && range.startOffset === 0 ) {
             //delete node, add move its contents after selection to the parent
@@ -706,6 +740,48 @@ function deleteContent(direction, granularity, ranges) {
     });
 
     return editRanges;
+}
+
+/**
+ * Deletes backwards
+ * @param {Node} container
+ * @param {Number} offset
+ */
+function deleteBackward(container, offset) {
+    if (offset > 0) {
+        console.log("A");
+        if (isElementNode(container)) {
+            const node = container.childNodes.item(offset - 1);
+            return deleteBackward(node, getNodeLength(node));
+        } else {
+            container.textContent = container.textContent.substring(0, offset - 1) + container.textContent.substring(offset);
+            return createRange(container, offset - 1);
+        }
+    } else if (isElementNode(container)) {
+
+        const range = document.createRange();
+        range.selectNodeContents(container);
+        const contents = range.cloneContents();
+        if (container.previousSibling) {
+            range.setStart(container.previousSibling, getNodeLength(container.previousSibling));
+        } else {
+            range.setStart(container.parentNode, 0);
+        }
+        range.collapse(true);
+
+        container.parentNode.insertBefore(contents, container);
+        const parent = container.parentNode;
+        container.parentNode.removeChild(container);
+        parent.normalize();
+
+
+
+        return range;
+
+    } else {
+        offset = Array.prototype.indexOf.call(container.parentElement.childNodes, container);
+        return deleteBackward(container.parentElement, offset);
+    }
 }
 
 /**
