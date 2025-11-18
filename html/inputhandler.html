@@ -56,7 +56,7 @@
             outline: 2px solid black;
         }
 
-        .selected, .selection.element {
+        .selected-element, .selection.element {
             outline-offset: 2px;
             outline: 2px dashed red;
         }
@@ -127,7 +127,7 @@
     import {MutationUndoer} from "../js/utils/MutationUndoer.js";
 
     document.onselectionchange = (event) => {
-        showSelection(document.getSelection());
+        updateSelection(document.getSelection());
     }
 
     let p = document.createElement("p");
@@ -155,12 +155,12 @@
             print();
         }
 
-        // element.onkeydown = handleKeyDown;
-        // element.onmousedown = (event) => event.preventDefault();
-        // element.onmouseup = (event) => event.preventDefault();
-        // element.onpointerdown = handlePointerDown;
-        // element.onpointermove = handlePointerMove;
-        // element.onpointerup = handlePointerUp;
+        element.onkeydown = handleKeyDown;
+        element.onmousedown = (event) => event.preventDefault();
+        element.onmouseup = (event) => event.preventDefault();
+        element.onpointerdown = handlePointerDown;
+        element.onpointermove = handlePointerMove;
+        element.onpointerup = handlePointerUp;
 
     });
 
@@ -254,27 +254,44 @@
      *
      * @param {Selection} selection
      */
-    function showSelection(selection) {
+    function updateSelection(selection) {
 
         document.querySelectorAll(".selection-start").forEach((element) => {element.classList.remove("selection-start");});
         document.querySelectorAll(".selection-end").forEach((element) => {element.classList.remove("selection-end");});
+        document.querySelectorAll(".selected-element").forEach((e)=>e.classList.remove("selected-element"));
 
         for (let i = 0; i < selection.rangeCount; i++) {
+
             let range = selection.getRangeAt(i)
 
-            let start = range.startContainer.nodeRef;
-            if (start) {
-                start.classList.add("selection-start");
-                start.setAttribute("offset-start", range.startOffset);
-            }
-
-            let end = range.endContainer.nodeRef;
-            if (end) {
-                end.classList.add("selection-end");
-                end.setAttribute("offset-end", range.endOffset);
-            }
+            updateSelectionRange(range);
         }
 
+    }
+
+    /**
+     *
+     * @param {Range} range
+     */
+    function updateSelectionRange(range) {
+
+        let element = range.commonAncestorContainer;
+        if (element.nodeType === Node.ELEMENT_NODE) {
+            // let node = element.childNodes.item(range.st)
+            element.classList.add("selected-element");
+        }
+
+        let start = range.startContainer.nodeRef;
+        if (start) {
+            start.classList.add("selection-start");
+            start.setAttribute("offset-start", range.startOffset);
+        }
+
+        let end = range.endContainer.nodeRef;
+        if (end) {
+            end.classList.add("selection-end");
+            end.setAttribute("offset-end", range.endOffset);
+        }
     }
 
 </script>

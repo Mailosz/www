@@ -1,12 +1,8 @@
 import { MutationRecorder } from "../utils/MutationRecorder.js";
 import { revertMutationChanges } from "../utils/MutationUndoer.js";
 
-const selection = [];
 let currentSelection = null;
 let pointerPressed = false;
-function clearSelection() {
-    selection.length = 0;
-}
 
 
 
@@ -18,26 +14,31 @@ export function handlePointerDown(event) {
     
     event.currentTarget.focus();
 
-    const element = document.elementFromPoint(event.x, event.y);
 
-    document.querySelectorAll(".selected").forEach((e)=>e.classList.remove("selected"));
-    element.classList.add("selected");
+    const caret = document.caretPositionFromPoint(event.x, event.y);
+    currentSelection = {anchor: caret, point: {x: event.x, y: event.y}};
 
-    const range = document.createRange();
-    range.selectNodeContents(element);
 
-    clearSelection();
-    const clientRects = range.getClientRects();
-    if (pointInsideClientRects(event.x, event.y, clientRects)) {
-        const caret = document.caretPositionFromPoint(event.x, event.y);
-        
-        currentSelection = {anchor: caret};
-    } else {
-        selection.push(element);
-    }
+    //const element = document.elementFromPoint(event.x, event.y);
+
+    document.getSelection().empty();
+    document.getSelection().addRange(selectionToRange(currentSelection));
+
+    // const range = document.createRange();
+    // range.selectNodeContents(element);
+    //
+    // clearSelection();
+    // const clientRects = range.getClientRects();
+    // if (pointInsideClientRects(event.x, event.y, clientRects)) {
+    //
+    //
+    //
+    // } else {
+    //     selection.push(element);
+    // }
     pointerPressed = true;
     
-    showSelection(selection);
+    // showSelection(selection);
     event.preventDefault();
 }
 
@@ -54,7 +55,7 @@ function pointInsideClientRects(x, y, clientRects) {
 function selectionToRange(currentSelection) {
     let range;
     if (currentSelection.caret) {
-        if (currentSelection.anchor.offsetNode == currentSelection.caret.offsetNode) {
+        if (currentSelection.anchor.offsetNode === currentSelection.caret.offsetNode) {
             if (currentSelection.anchor.offset > currentSelection.caret.offset) {
                 range = createRange(currentSelection.caret.offsetNode, currentSelection.caret.offset, currentSelection.anchor.offsetNode, currentSelection.anchor.offset);
             } else {
@@ -62,9 +63,9 @@ function selectionToRange(currentSelection) {
             }
         } else {
             const comp = currentSelection.caret.offsetNode.compareDocumentPosition(currentSelection.anchor.offsetNode);
-            if (comp == Node.DOCUMENT_POSITION_FOLLOWING) {
+            if (comp === Node.DOCUMENT_POSITION_FOLLOWING) {
                 range = createRange(currentSelection.caret.offsetNode, currentSelection.caret.offset, currentSelection.anchor.offsetNode, currentSelection.anchor.offset);
-            } else if (comp == Node.DOCUMENT_POSITION_PRECEDING) {
+            } else if (comp === Node.DOCUMENT_POSITION_PRECEDING) {
                 range = createRange(currentSelection.anchor.offsetNode, currentSelection.anchor.offset, currentSelection.caret.offsetNode, currentSelection.caret.offset);
             } else {
                 console.log("TODO");
@@ -89,9 +90,8 @@ export function handlePointerMove(event) {
 
             currentSelection.caret = caret;
 
-            const range = selectionToRange(currentSelection);
-
-            showSelection([range]);
+            document.getSelection().empty();
+            document.getSelection().addRange(selectionToRange(currentSelection));
         }
     }
     event.preventDefault();
@@ -105,17 +105,42 @@ export function handlePointerUp(event) {
     pointerPressed = false;
     
     if (currentSelection) {
-        clearSelection();
+
+        if (Math.sqrt(Math.pow(currentSelection.point.x - event.x,2) + Math.pow(currentSelection.point.y - event.y,2)) <= 10) {
+
+            const element = document.elementFromPoint(currentSelection.point.x, currentSelection.point.y);
+
+            let range = document.createRange();
+            range.selectNodeContents(element);
+
+            const clientRects = range.getClientRects();
+            if (pointInsideClientRects(event.x, event.y, clientRects)) {
+                document.getSelection().empty();
+                document.getSelection().addRange(selectionToRange(currentSelection));
+
+            } else {
+                range.selectNode(element);
+                document.getSelection().empty();
+                document.getSelection().addRange(range);
+            }
+
+
+
+        } else {
+            document.getSelection().empty();
+            document.getSelection().addRange(selectionToRange(currentSelection));
+        }
+
+
 
         const range = selectionToRange(currentSelection);
 
-        selection.push(range);
-        showSelection(selection);
-
-        currentSelection = null;
-    } else {
+        // selection.push(range);
+        // showSelection(selection);
 
     }
+
+    currentSelection = null;
     event.preventDefault();
 }
 
@@ -503,7 +528,7 @@ function extendRangeBackward(range) {
             if (isElementNode(node)) {
                 range.setStart(node, node.childNodes?.length);
             } else {
-                range.setStart(node, Math.max(0, node.length));
+                range.setStart(node, Math.max(0, node.length - 1));
             }
         } else {
             range.setStart(range.startContainer, range.startOffset - 1);
@@ -665,18 +690,19 @@ function deleteContent(direction, granularity, ranges) {
             }
         }
 
+        range.deleteContents();
 
         if (range.startContainer.nodeType === Node.ELEMENT_NODE && range.startOffset === 0 ) {
-            //delete node, add its contents after selection to the parent
+            //delete node, add move its contents after selection to the parent
 
         }
         if (range.endContainer.nodeType === Node.ELEMENT_NODE && range.endOffset === range.endContainer.childNodes.length) {
-            //delete node, add its contents before selection to the parent
+            //delete node, add move its contents before selection to the parent
 
         }
 
 
-        range.deleteContents();
+
     });
 
     return editRanges;
