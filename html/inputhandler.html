@@ -13,10 +13,6 @@
             min-height: 200px;
         }
 
-        @keyframes caret-blinking {
-            0% {background-color: transparent;}
-            100% {background-color: black;}
-        }
 
         p {
             padding: 10px;
@@ -35,28 +31,7 @@
             margin: 4px;
         }
 
-        .selection {
-            outline: 2px solid red;
-            min-width: 1px;
-            z-index: 10000;
-        }
-        .selection.caret {
-            outline: 2px solid orange;
-            background-color: black;
-            animation: caret-blinking 500ms alternate infinite;
-        }
-        .selection.end {
-            outline: 2px dotted blue;
-
-        }
-        .selection.start {
-            outline: 2px dotted green;
-        }
-        .selection.between {
-            outline: 2px solid black;
-        }
-
-        .selected-element, .selection.element {
+        .selected-element {
             outline-offset: 2px;
             outline: 2px dashed red;
         }
@@ -96,6 +71,25 @@
         #node-tree .selection-start.selection-end {
             background-color: #88ee77;
         }
+
+        .input-box {
+            caret-color: transparent;
+        }
+
+        .selection-caret {
+            width: 1px;
+            backdrop-filter: invert(100%) contrast(1.5);
+            user-select: none;
+            pointer-events: none;
+            animation: caret-blink 1000ms infinite;
+        }
+
+        @keyframes caret-blink {
+            0% {opacity: 1;}
+            50% {opacity: 1;}
+            75% {opacity: 0;}
+            100% {opacity: 1;}
+        }
     </style>
     <script type="module" src="../js/ui/controls/OxCode.js"></script>
 </head>
@@ -127,6 +121,7 @@
     import {MutationUndoer} from "../js/utils/MutationUndoer.js";
 
     document.onselectionchange = (event) => {
+        console.log("update SEL");
         updateSelection(document.getSelection());
     }
 
@@ -207,11 +202,36 @@
     };
 
     document.getElementById("insert-inline-button").onclick = () => {
-        mutationUndoer.undo();
+
+        let count = document.getSelection().rangeCount;
+
+        for (let i = 0; i < count; i++) {
+
+            let range = document.getSelection().getRangeAt(i);
+
+            let contents = range.cloneContents();
+            range.deleteContents();
+            let span = document.createElement("span");
+            span.appendChild(contents);
+            range.insertNode(span);
+        }
+
     };
 
     document.getElementById("insert-block-button").onclick = () => {
-        mutationUndoer.undo();
+        let count = document.getSelection().rangeCount;
+
+        for (let i = 0; i < count; i++) {
+
+            let range = document.getSelection().getRangeAt(i);
+
+            let contents = range.cloneContents();
+            range.deleteContents();
+            let span = document.createElement("div");
+            span.appendChild(contents);
+            range.insertNode(span);
+        }
+
     };
 
     /**
@@ -256,9 +276,14 @@
      */
     function updateSelection(selection) {
 
+
+
         document.querySelectorAll(".selection-start").forEach((element) => {element.classList.remove("selection-start");});
         document.querySelectorAll(".selection-end").forEach((element) => {element.classList.remove("selection-end");});
         document.querySelectorAll(".selected-element").forEach((e)=>e.classList.remove("selected-element"));
+
+        document.querySelectorAll(".selection-range").forEach((e)=>e.remove());
+        document.querySelectorAll(".selection-caret").forEach((e)=>e.remove());
 
         for (let i = 0; i < selection.rangeCount; i++) {
 
@@ -274,6 +299,20 @@
      * @param {Range} range
      */
     function updateSelectionRange(range) {
+
+        if (range.collapsed) {
+            let rects = range.getClientRects();
+            for (let rect of rects) {
+                let el = document.createElement("div");
+                el.classList.add("selection-caret");
+                el.style.left = rect.left + window.scrollX + "px";
+                el.style.top = rect.top + window.scrollY + "px";
+                el.style.width = 1 + "px";
+                el.style.height = rect.height + "px";
+                el.style.position = "absolute";
+                document.body.appendChild(el);
+            }
+        }
 
         let element = range.commonAncestorContainer;
         if (element.nodeType === Node.ELEMENT_NODE) {

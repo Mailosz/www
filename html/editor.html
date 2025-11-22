@@ -18,7 +18,7 @@
             
             const findMatchingEndAncestor = (node) => {
 
-                if (endPos == NodeHelper.START) {
+                if (endPos === NodeHelper.START) {
                     let parent = range.endContainer;// potencjalnie może trza zaczynać od parenta
                     while (parent != null) {
                         if (node == parent.previousSibling) {
@@ -30,7 +30,7 @@
                         parent = parent.parentElement;
                     }
                     return null;
-                } else if (endPos == NodeHelper.MIDDLE) {
+                } else if (endPos === NodeHelper.MIDDLE) {
                     if (!NodeHelper.isTextNode(range.endContainer)) {
                         let child = range.endContainer.childNodes.item(range.endOffset - 1);
 
@@ -45,7 +45,7 @@
                 } else {
                     let parent = range.endContainer;
                     while (parent != null) {
-                        if (node == parent) {
+                        if (node === parent) {
                             return parent;
                         }
                         if (!NodeHelper.isLastChild(parent)) {
@@ -57,11 +57,11 @@
                 }
             }
 
-            if (range.startContainer == range.endContainer) {
-                if (startPos == NodeHelper.START && endPos == NodeHelper.END) {
+            if (range.startContainer === range.endContainer) {
+                if (startPos === NodeHelper.START && endPos === NodeHelper.END) {
                     if (!NodeHelper.isTextNode(range.startContainer)) {
                         return range.startContainer;
-                    } else if (range.startContainer.parentElement.childNodes.length == 1) {
+                    } else if (range.startContainer.parentElement.childNodes.length === 1) {
                         return range.startContainer.parentElement;
                     } else {
                         return null;
@@ -73,7 +73,7 @@
                 }
             } else {
 
-                if (startPos == NodeHelper.START) {
+                if (startPos === NodeHelper.START) {
                     let startParent = range.startContainer.parentElement;
                     while (startParent != null) {
                         let matching = findMatchingEndAncestor(startParent);
@@ -99,7 +99,7 @@
                 //         return null;
                 //     }
                 //     return null;
-                } else if (startPos == NodeHelper.END) {
+                } else if (startPos === NodeHelper.END) {
                     let startParent = range.startContainer;
                     while (startParent != null) {
                         if (startParent.nextSibling != null) {

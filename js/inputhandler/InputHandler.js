@@ -417,27 +417,29 @@ const observerOptions = {
 };
 
 /**
- * Handles user input in a predictive way
+ * Handles user input in a predictable way
+ * @returns {(InputEvent)=>any}
  */
 export function handleInput(options) {
 
     console.log(options);
     const undoList = [];
     /**
-     * Handles user input in a predictive way
-     * @param {InputEvent} event 
+     * Handles user input in a predictable way
+     * @param {InputEvent} event
      */
-    return (event) => {
+    const handler = (event) => {
         event.preventDefault();
         event.stopPropagation();
 
         let targetRanges = [document.getSelection().getRangeAt(0)];
-    
+        // targetRanges = targetRanges.map((sr) => copyRange(sr, sr.startContainer.ownerDocument.createRange()));
+
         /**
          * @type {HTMLElement}
          */
         const editor = event.target;
-    
+
         console.log(event);
         if (event.inputType === "insertText") {
 
@@ -451,9 +453,16 @@ export function handleInput(options) {
             undoList.push(mr.takeRecords());
             mr.disconnect();
 
+        } else if (event.inputType === "insertLineBreak") {
+
+            const ranges = targetRanges.map((range) => insertLineBreak(range));
+
+            setSelection(document.getSelection(), ranges);
+
         } else if (event.inputType === "insertParagraph") {
 
-            const ranges = insertParagraph(options.paragraph, targetRanges);
+            const ranges = targetRanges.map((range) => insertParagraph(options.paragraph, range));
+
             // ranges.forEach((range) => range.collapse(true));
             setSelection(document.getSelection(), ranges);
 
@@ -490,11 +499,11 @@ export function handleInput(options) {
         } else if (event.inputType === "historyRedo") {
 
 
-        } 
+        }
 
         event.target.dispatchEvent(new InputEvent("input"));
     };
-
+    return handler;
 }
 
 /**
@@ -627,52 +636,99 @@ export function insertText(data, ranges) {
 }
 
 /**
- * 
- * @param {HTMLElement} paragraphElement 
- * @param {AbstractRange[]} ranges 
+ *
+ * @param {Range} range
  */
-function insertParagraph(paragraphElement, ranges) {
+function insertLineBreak(range) {
 
-    const editRanges = ranges.map((sr) => copyRange(sr, sr.startContainer.ownerDocument.createRange()));
+    if (!range.collapsed) {
+        range.deleteContents();
+    }
 
-    editRanges.forEach((range) => {
-        if (!range.collapsed) {
-            range.deleteContents();
-        }
+    let br = document.createElement("br");
 
-        let context = findBlockContext(range.startContainer);
-
-        range.setEnd(context, context.childNodes.length);
-        
-        // this checks if inside this element are other block elements
-        for (const element of iterateBetweenNodes(range.startContainer, range.endContainer)) {
-            if (isBlockElement(element)) {
-                range.setEndBefore(element);
-                break;
-            }
-        }
-        const frag = range.extractContents();
-    
-        const paragraph = (paragraphElement ?? context)?.cloneNode(false) ?? document.createElement("div");
-        paragraph.append(frag);
-    
-        if (context) {
-            range.setStartAfter(context);
-            range.setEndAfter(context);
-            console.log(range);
-            // range.collapse(false);
-        }
-    
-        range.insertNode(paragraph);
-        range.setStart(paragraph, 0);
-        range.collapse(true);
-    });
-
-    return editRanges;
-
-
-    
+    range.insertNode(br);
+    range.collapse(false);
+    return range;
 }
+
+/**
+ * Inserts new block element at the current level
+ * @param {HTMLElement} paragraphElement
+ * @param {Range} range
+ */
+function insertParagraph(paragraphElement, range) {
+
+    if (!range.collapsed) {
+        range.deleteContents();
+    }
+
+    let context = findBlockContext(range.startContainer);
+
+    range.setEnd(context, context.childNodes.length);
+
+    // this checks if inside this element are other block elements
+    for (const element of iterateBetweenNodes(range.startContainer, range.endContainer)) {
+        if (isBlockElement(element)) {
+            range.setEndBefore(element);
+            break;
+        }
+    }
+    const frag = range.extractContents();
+
+    const paragraph = (paragraphElement ?? context)?.cloneNode(false) ?? document.createElement("div");
+    paragraph.append(frag);
+
+    if (context) {
+        range.setStartAfter(context);
+        range.setEndAfter(context);
+        console.log(range);
+        // range.collapse(false);
+    }
+
+    range.insertNode(paragraph);
+    range.setStart(paragraph, 0);
+    range.collapse(true);
+
+    return range;
+}
+
+/**
+ * Perform a function for every deep child of the node
+ * @param element
+ * @param foo
+ */
+function forEverySuccessor(element, foo) {
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_ELEMENT);
+
+    while (walker.nextNode()) {
+        foo(walker.currentNode);
+    }
+}
+
+/**
+ *
+ * @param {Range} range
+ * @param {CSSStyleDeclaration} style
+ */
+// function changeInlineStyle(style, range) {
+//
+//     let container = range.commonAncestorContainer;
+//     if (container.nodeType === Node.TEXT_NODE) {
+//         if (container.parentElement.firstChild === container && container.parentElement.lastChild === container) {
+//             // the only child of an element
+//
+//             container = container.parentElement;
+//         } else {
+//
+//             range.set
+//
+//         }
+//     }
+//
+//
+//
+// }
 
 /**
  * 
