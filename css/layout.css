@@ -43,7 +43,7 @@ main {
 }
 
 /* main padding */
-:is(main, header, footer, section, article, figure, aside)>:is(ul,ol,dl,p,h1,h2,h3,h4,h5,h6,table,blockquote,details,code) {
+:is(main, header, footer, section, article, figure, aside)>:is(ul,ol,dl,p,h1,h2,h3,h4,h5,h6,table,blockquote,details,code,form) {
     margin-left: var(--main-padding);
     margin-right: var(--main-padding);
 }
@@ -52,13 +52,19 @@ main {
     width: calc(100% - var(--main-padding, 0) * 2);
 }
 
+:is(main, header, footer, section, article, figure, aside)>fieldset {
+    margin-left: calc(var(--main-padding) - 1em);
+    margin-right: calc(var(--main-padding) - 1em);
+    padding: 1em;
+}
+
 @media (min-width: 800px) {
 
-    aside.left>:is(ul,ol,dl,p,h1,h2,h3,h4,h5,h6,table,blockquote,details,code) {
+    aside.left>:is(ul,ol,dl,p,h1,h2,h3,h4,h5,h6,table,blockquote,details,code,form) {
         margin-right: 1em;
     }
     
-    aside.right>:is(ul,ol,dl,p,h1,h2,h3,h4,h5,h6,table,blockquote,details,code) {
+    aside.right>:is(ul,ol,dl,p,h1,h2,h3,h4,h5,h6,table,blockquote,details,code,form) {
         margin-left: 1em;
     }
 

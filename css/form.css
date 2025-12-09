@@ -1,0 +1,66 @@
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em 1em;
+}
+
+label {
+    display: flex;
+    flex-direction: column;
+}
+
+
+@media (min-width: 400px) {
+    form {
+        display: grid;
+        grid-template-columns: minmax(auto, 30%) 1fr;
+    }
+
+    :is(form, fieldset) > label:has(input, select, textarea, button) {
+        grid-column-end: -1;
+        display: grid;
+        grid-template-columns: subgrid;
+        justify-content: right;
+        text-align: right;
+    }
+
+    form>fieldset {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: subgrid; 
+    }
+
+}
+
+:is(form, fieldset) > label {
+    grid-column-start: 1;
+    justify-self: right;
+}
+
+
+
+:is(form, fieldset) > label:is(input, select, textarea, button) {
+    text-align: left;
+}
+
+:is(form, form>*, fieldset, fieldset>*)>:is(input, select, textarea, button) {
+    grid-column-start: 2;
+    grid-column-end: -1;
+}
+
+:is(form, form>*, fieldset, fieldset>*)>label:has(>input[type=checkbox], >input[type=radio]) {
+    display: block;
+    justify-self: left;
+    grid-column-start: 2;
+}
+
+
+form>fieldset {
+    gap: inherit;   
+}
+
+
+:is(form, fieldset) > :is(h1, h2, h3, h4, h5, h6, hr) {
+    grid-column: 1 / -1;
+}

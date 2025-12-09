@@ -101,13 +101,17 @@ input:indeterminate {
     accent-color: gray;
 }
 
-input:is([type=text],[type=number],[type=password],[type=date],[type=datetime]), select {
+input:is(:not([type]),[type=text],[type=number],[type=password],[type=date],[type=datetime]), 
+textarea,
+select {
     border: 2px solid var(--border-color, #666);
     border-radius: var(--border-radius);
-    padding: 2px 4px;
+    padding: 0.25em 0.5em;
 }
 
-input:is([type=text],[type=number],[type=password],[type=date],[type=datetime]):focus, select:focus {
+input:is(:not([type]),[type=text],[type=number],[type=password],[type=date],[type=datetime]):focus, 
+textarea:focus, 
+select:focus {
     border-color: var(--accent-color, cornflowerblue);
     box-shadow: 0 0 10px rgba(127,127,127,0.5);
     outline: none;
@@ -115,6 +119,13 @@ input:is([type=text],[type=number],[type=password],[type=date],[type=datetime]):
 
 select {
     appearance:auto;
+}
+
+fieldset {
+    border-radius: var(--border-radius);
+    border: none;;
+    background-color: #f8f8f8;
+    box-shadow: 0 2px 10px rgba(127,127,127,0.4);
 }
 
 /* SEAMLESS */

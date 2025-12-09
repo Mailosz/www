@@ -10,6 +10,52 @@
 <body>
     <main id="the-document">
         <h1>Title of the document</h1>
+        <h2>Form</h2>
+        <form>
+            <h3>Form title of a form</h3>
+            <label>Labeled input: <input></label>
+            <label for="input-2">Label for:</label>
+            <input id="input-2">
+            <input placeholder="Input without label">
+            <input type="range">
+            <label><input type="radio" id="radio-1" name="radio-group-1">Radio 1</label>
+            <label>Radio 2<input type="radio" id="radio-2" name="radio-group-1"></label>
+            <input type="radio" id="radio-3" name="radio-group-1"><label for="radio-3">Radio 3</label>
+            <input type="radio" id="radio-4" name="radio-group-1">
+            <input type="number">
+            <label><input type="checkbox">Some option 1</label>
+            <label><input type="checkbox">Some option 2</label>
+            <label><input type="checkbox">Some option 3</label>
+            <label>Select:
+                <select>
+                    <option>Option 1</option>
+                    <option>Option 2</option>
+                    <option>Option 3</option>
+                    <option>Option 4</option>
+                    <optgroup label="Group">
+                        <option>Option A</option>
+                        <option>Option B</option>
+                        <option>Option C</option>
+                        <option>Option D</option>
+                    </optgroup>
+                </select>
+            </label>
+            <fieldset>
+                <legend>Fieldset ABC</legend>
+                <label><input type=radio name=group-2>Option A</label>
+                <label><input type=radio name=group-2>Option B</label>
+                <label><input type=radio name=group-2>Option C</label>
+            </fieldset>
+            <hr>
+            <fieldset>
+                <label><input type=radio name=group-3>Option X</label>
+                <label><input type=radio name=group-3>Option Y</label>
+                <label><input type=radio name=group-3>Option Z</label>
+            </fieldset>
+            <textarea rows="4"></textarea>
+            <button>A button</button>
+        </form>
+        <h2>Inline</h2>
         <p>Quick introduction to the theme of the document.</p>
         <p><label>Select a value: <select>
             <option>Option 1</option>
@@ -50,6 +96,11 @@
                 <option>Option D</option>
             </optgroup>
         </select></label></p>
+        <fieldset>
+            <legend>Inline fieldset</legend>
+            <p>Some text <input type="text" value="Test"> some other text</p>
+            <p>Some text <input type="number"> some other text</p>
+        </fieldset>
     </main>
 </body>
 </html>
