@@ -14,7 +14,7 @@ label {
 @media (min-width: 400px) {
     form {
         display: grid;
-        grid-template-columns: minmax(auto, 30%) 1fr;
+        grid-template-columns: fit-content(30%) 1fr;
     }
 
     :is(form, fieldset) > label:has(input, select, textarea, button) {
@@ -25,7 +25,7 @@ label {
         text-align: right;
     }
 
-    form>fieldset {
+    form>fieldset, form>div {
         grid-column: 1 / -1;
         display: grid;
         grid-template-columns: subgrid; 
