@@ -17,19 +17,19 @@ table.seamless>tbody>tr{
 }
 
 tbody>tr {
-    background-color: white;
+    background-color: var(--table-background-odd, white);
 }
 
 tbody>tr:nth-child(even) {
-    background-color: #eee;
+    background-color: var(--table-background-even, #eee);
 }
 
 thead>tr, tfoot>tr {
-    background-color: #ddd;
+    background-color: var(--table-background-heading-odd, #ddd);
 }
 
 thead>tr:nth-child(even), tfoot>tr:nth-child(even) {
-    background-color: #eee;
+    background-color: var(--table-background-heading-even, #eee);
 }
 
 td, th {
@@ -45,7 +45,7 @@ thead {
     position: sticky;
     /* display: inline-table; */
     top: 0px;
-    background: #ddd;
+    background: var(--table-background-heading-odd, #ddd);
     box-sizing: border-box;
     z-index: 2;
 }
@@ -53,6 +53,6 @@ thead {
 tfoot {
     position: sticky;
     bottom: 0px;
-    background: #ddd;
+    background: var(--table-background-heading-odd, #ddd);
     z-index: 1;
 }

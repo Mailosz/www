@@ -22,8 +22,15 @@
 
     --border-color: #666;
     --button-background: #eee;
+    --control-background: #f8f8f8;
     --border-width: 2px;
     --border-radius: 4px;
+
+    --table-border: 2px solid #777;
+    --table-background-odd: #fff;
+    --table-background-even: #eee;
+    --table-background-heading-odd: #ddd;
+    --table-background-heading-even: #eee;
 
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }

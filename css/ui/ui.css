@@ -260,6 +260,30 @@ select[multiple] optgroup {
     padding: 0.25em 0;
 }
 
+/* DETAILS */
+
+details {
+    border: var(--border-width, 1px) solid var(--border-color, #666);
+    border-radius: var(--border-radius);
+    padding: 0.5em 1em;
+    background-color: var(--control-background, #eee);
+    box-sizing: border-box;
+    transition: height 100ms ease-in-out;
+}
+
+summary::marker {
+    content: '❯ ';
+}
+
+summary {
+    cursor: pointer;
+    font-weight: 500;
+}
+
+details:open>summary {
+    margin-bottom: 0.5em;
+}
+
 
 /* SEAMLESS */
 
