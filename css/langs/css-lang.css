@@ -7,5 +7,7 @@
 .token.propertiesSeparator { color: darkgoldenrod;}
 .token.property { color: darkblue;}
 .token.value { color: blue;}
+.token.valueQuote, .token.valueQuoteEnd { color: blue;}
+.token.valueQuoteEscape { color: violet;}
 .token.comment { color: green;}
 .token.commentEnd { color: green;}

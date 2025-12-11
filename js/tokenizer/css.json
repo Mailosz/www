@@ -10,25 +10,20 @@
         }],
         "default": true,
         "set": {
-            "previous-state": ""
+            "previous-state": "",
+            "quote-type": null
         }
     },
     "mediaQuery": {
         "begin": {
             "on": ["default", "selector"],
             "by": "@"
-        },
-        "data": {
-            "color": "orange"
         }
     },
     "mediaQueryInner": {
         "begin": {
             "on": ["mediaQuery"],
             "by": "{"
-        },
-        "data": {
-            "color": "maroon"
         }
     },
     "selector": {
@@ -46,10 +41,7 @@
         "begin": {
             "on": "selector",
             "by": "{"
-        },
-		"data": {
-			"color": "maroon"
-		}
+        }
     },
     "declaration": {
 
@@ -58,10 +50,7 @@
         "begin": {
             "on": ["declaration", "mediaQueryInner", "selector", "default"],
             "by": "}"
-        },
-		"data": {
-			"color": "maroon"
-		}
+        }
     },
     "property": {
         "group": "declaration",
@@ -74,13 +63,10 @@
             "when": {
                 "previous-state": "property"
             }
-        }],
-		"data": {
-			"color": "green"
-		}
+        }]
     },"propertiesSeparator":{
         "begin": {
-            "on": "value",
+            "on": ["value", "valueQuoteEnd"],
             "by": ";"
         }
     },
@@ -89,20 +75,56 @@
         "begin": [{
             "on": "property",
             "by": ":"
-        }],
-		"data": {
-			"color": "black"
-		}
+        }]
     },
     "value": {
         "group": "declaration",
         "begin": [{
             "on": "propertyValueSeparator"
-        }],
-		"data": {
-			"color": "blue"
-		}
+        }]
     },
+    "valueQuote": {
+        "begin": [{
+            "on": ["value"],
+            "by": ["\""],
+            "set": {
+                "quote-type": "\""
+            }
+        },{
+            "on": ["value"],
+            "by": ["'"],
+            "set": {
+                "quote-type": "'"
+            }
+        },{
+            "on": ["valueQuoteEscape"]
+        }]
+    },
+    "valueQuoteEnd": {
+        "begin": [{
+            "on": ["valueQuote"],
+            "by": ["\""],
+            "when": {
+                "quote-type": "\""
+            }
+        },{
+            "on": ["valueQuote"],
+            "by": ["'"],
+            "when": {
+                "quote-type": "'"
+            }
+        }],
+        "set": {
+            "quote-type": null
+        }
+    },
+    "valueQuoteEscape": {
+        "begin": {
+            "on": "valueQuote",
+            "by": {"regex": "\\\\."}
+        }
+    },
+    
     "comment": {
         "begin": [{
             "by": "/*",
@@ -122,18 +144,12 @@
             "set": {
                 "previous-state": "property"
             }
-        }],
-        "data": {
-            "color": "lime"
-        }
+        }]
     }, 
     "commentEnd": {
         "begin": [{
             "by": "*/",
             "on": "comment"
-        }],
-        "data": {
-            "color": "lime"
-        }
+        }]
     }
 }

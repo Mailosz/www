@@ -61,6 +61,9 @@
 			"data": {
 				"other": true
 			}
+		},{
+			"on": ["default-state"],
+			"by": {"regex": "\\w"} /* regex can be used to match more complex tokens */
 		}]
 	},
 	"second-state": {
