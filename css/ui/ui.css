@@ -1,17 +1,4 @@
-html {
-    /* --weak-accent-color: #8af;
-    --accent-color: #68f;
-    --strong-accent-color: #349; */
-    --weak-accent-color: #afa;
-    --accent-color: #3f3;
-    --strong-accent-color: green;
-    --text-color: black;
 
-    --border-color: #666;
-    --button-background: #eee;
-    --border-width: 2px;
-    --border-radius: 4px;
-}
 
 :focus-visible {
     outline-offset: 2px;
@@ -24,8 +11,8 @@ html {
 
 .button, button, input[type=button], input[type=submit], input[type=reset], ::file-selector-button {
     display: inline-block;
-    background-color: var(--button-background);
-    border: var(--border-width) solid var(--border-color);
+    background-color: var(--button-background, #eee);
+    border: var(--border-width) solid var(--border-color, #666);
     border-radius: var(--border-radius);
     padding: 0.25em 0.5em;
     cursor: pointer;
@@ -37,7 +24,8 @@ html {
     input[type=button]:hover, 
     input[type=submit]:hover, 
     input[type=reset]:hover, 
-    ::file-selector-button:hover {
+    ::file-selector-button:hover,
+    input[type=radio]:enabled:hover,input[type=checkbox]:enabled:hover {
         filter: brightness(1.1);
     }
 
@@ -46,14 +34,25 @@ html {
     input[type=button]:active, 
     input[type=submit]:active, 
     input[type=reset]:active, 
-    ::file-selector-button:active {
+    ::file-selector-button:active,
+    input[type=radio]:enabled:active,input[type=checkbox]:enabled:active {
         filter: brightness(0.9);
     }
 
-    .button[disabled], button[disabled], input[type=button][disabled], input[type=submit][disabled], input[type=reset][disabled] {
+    .button:disabled, 
+    button:disabled, 
+    input[type=button]:disabled, 
+    input[type=submit]:disabled, 
+    input[type=reset]:disabled, 
+    input:disabled, 
+    textarea:disabled,
+    select:disabled,
+    :disabled::file-selector-button {
         filter: saturate(0.5) brightness(1.5) contrast(0.7);
         cursor: inherit;
     }
+
+    
 
     .button:state(checked) {
         border: var(--border-width, 2px) solid var(--strong-accent-color, green);
@@ -118,7 +117,7 @@ input[type=checkbox], input[type=radio] {
     transform: translateY(0.25em);
 }
 
-input:is(:not([type]),[type=text],[type=number],[type=password],[type=date],[type=datetime],[type=datetime-local],[type=month],[type=week],[type=tel],[type=time],[type=url],[type=email]), 
+input:is(:not([type]),[type=text],[type=number],[type=password],[type=date],[type=datetime],[type=datetime-local],[type=month],[type=week],[type=tel],[type=time],[type=url],[type=email],[type=search]) , 
 textarea,
 select {
     border: 2px solid var(--border-color, #666);
@@ -126,7 +125,7 @@ select {
     padding: 0.25em 0.5em;
 }
 
-input:is(:not([type]),[type=text],[type=number],[type=password],[type=date],[type=datetime],[type=datetime-local],[type=month],[type=week],[type=tel],[type=time],[type=url],[type=email]):focus, 
+input:is(:not([type]),[type=text],[type=number],[type=password],[type=date],[type=datetime],[type=datetime-local],[type=month],[type=week],[type=tel],[type=time],[type=url],[type=email],[type=search]):focus, 
 textarea:focus, 
 select:focus {
     border-color: var(--accent-color, cornflowerblue);
@@ -134,9 +133,78 @@ select:focus {
     outline: none;
 }   
 
-select {
-    appearance:auto;
+input[type=radio], input[type=checkbox] {
+    background-color: white;
 }
+
+input[type=radio] {
+    appearance: none;
+    border-radius: 100%;
+    border: 2px solid var(--border-color, #666);
+    width: 1.5em;
+    height: 1.5em;
+    display: inline-block;
+}
+
+input[type=radio]::before {
+    content: '';
+    display: block;
+    width: calc(100% - 4px);
+    height: calc(100% - 4px);
+    margin: 2px;
+    background-color: var(--accent-color);
+    border-radius: 100%;
+    border: none;
+    transform: scale(0);
+    transition: cubic-bezier(0.5, 2, 0.65, 0.8) transform 200ms;
+}
+
+input[type=checkbox] {
+    appearance: none;
+    border-radius: var(--border-radius);
+    border: 2px solid var(--border-color, #666);
+    width: 1.5em;
+    height: 1.5em;
+    display: inline-block;
+}
+
+input[type=radio]:checked::before {
+    transform: scale(1);
+}
+
+input[type=checkbox]::before {
+    font-size: 0.75em;
+    padding: 0;
+    text-align: center;
+    content: '✓';
+    display: block;
+    width: calc(100% - 4px);
+    height: calc(100% - 4px);
+    margin: 2px;
+    background-color: var(--accent-color);
+    border-radius: 1px;
+    border: none;
+    transform: scale(0);
+    transition: cubic-bezier(0.5, 2, 0.65, 0.8) transform 200ms;
+}
+
+input[type=checkbox]:checked::before {
+    transform: scale(1);
+}
+
+input[type=checkbox]:indeterminate::before {
+    content: '?';
+    transform: scale(1);
+    color: white;
+    background-color: gray;
+}
+
+input[type=radio]:disabled::before, input[type=checkbox]:disabled::before {
+    background-color: #666;
+    color: white;
+}
+
+/* FIELDSET */
 
 fieldset {
     border-radius: var(--border-radius);
@@ -144,6 +212,34 @@ fieldset {
     background-color: #f8f8f8;
     box-shadow: 0 2px 10px rgba(127,127,127,0.4);
 }
+
+/* SELECT */
+
+select {
+    appearance: base-select;
+}
+
+select[multiple] {
+    padding: 0.25em 0;
+}
+
+::picker(select) {
+    appearance: base-select;
+    background-color: #f8f8f8;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    padding: 0;
+    border-radius: var(--border-radius);
+    border: 2px solid var(--border-color, #666);
+}
+select option {
+    padding: 0.25em 0.5em;
+}
+
+select option:checked {
+    background-color: var(--weaker-accent-color, cornflowerblue);
+    color: black;
+}
+
 
 /* SEAMLESS */
 
