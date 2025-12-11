@@ -47,6 +47,7 @@ const style = /*css*/`
         grid-template-rows: 2em 2em;
         flex-wrap: nowrap;
         gap: 0.5em;
+        margin: 0 0.5em;
         justify-content: center;
     }
 
@@ -55,12 +56,6 @@ const style = /*css*/`
         gap: 0.5em;
     }
 
-
-
-    #start:not(:empty)::after,
-    #end:not(:empty)::before {
-        content: "...";
-    }
 
     #first, #last {
         flex: 1;
@@ -79,6 +74,10 @@ const style = /*css*/`
     .active, .page-index {
         cursor: pointer;
     }
+
+    /*div.page-index:not([page-index]) {
+        display: none;
+    }*/
 
 
     div.page-index::before {
@@ -146,39 +145,42 @@ export class OxPaging extends OxControl {
         }
     }
 
+    #pageIndexClicked(element, index) {
+        if (isNaN(index)) {
+
+        } else {
+            this.setAttribute("current-index", index);
+        }
+    }
+
     #build() {
         const firstIndex = +this.opts.firstIndex;
         const lastIndex = +this.opts.lastIndex ?? +this.opts.currentIndex;
-
+        
         const currentIndex = +this.opts.currentIndex;
         const container = this.shadowRoot.firstElementChild.nextElementSibling;
-
+        
         
         let size = container.childElementCount;
 
-        let mid = Math.round(size / 2);
-
         let element = container.firstElementChild;
-
+        
         let setIndex = (element, index) => {
             element.setAttribute("page-index", index);
-            if (index !== null) {
-                if (Number.isNaN(index)) {
-                    element.onclick = null;
-                } else {
-                    if (index == currentIndex) {
-                        element.classList.add("current");
-                        element.onclick = null;
-                    } else {
-                        element.classList.remove("current");
-                        element.onclick = (event) => this.setAttribute("current-index", index);
-                    }
-                }
-            } 
+            if (index == currentIndex) {
+                element.classList.add("current");
+                element.onclick = null;
+            } else {
+                element.classList.remove("current");
+                element.onclick = (event) => this.#pageIndexClicked(element, index);
+            }
         }
         
-        let last = currentIndex + (size - mid);
-        let start = currentIndex - mid;
+    
+        let last = Math.min(currentIndex + Math.round(size / 2) - 1, lastIndex);
+        let start = last - size;
+        
+        let index = start;
         if (index < firstIndex) {
             index = firstIndex;
         } else if (index >= firstIndex) {
@@ -189,7 +191,6 @@ export class OxPaging extends OxControl {
             element = element.nextElementSibling;
             index += 3;
         }
-        let index = start;
 
         while (index < currentIndex) {
             setIndex(element, index);
@@ -203,9 +204,9 @@ export class OxPaging extends OxControl {
         element = element.nextElementSibling;
         index++;
 
-        if (last > lastIndex) {
-            last = lastIndex;
-        } else if (last < lastIndex) {
+        last = Math.min(Math.max(start,0) + size, lastIndex);
+        // debugger;
+        if (last < lastIndex) {
             let lastElement = container.lastElementChild;
             setIndex(lastElement, lastIndex);
             lastElement = lastElement.previousElementSibling;
@@ -219,6 +220,14 @@ export class OxPaging extends OxControl {
             element = element.nextElementSibling;
             index++;
         }
+
+        //clean up last elements
+        // while (element) {
+        //     element.removeAttribute("page-index");
+        //     element.classList.remove("current");
+        //     element = element.nextElementSibling;
+        //     index++;
+        // }
 
         this.#created = true;
 
