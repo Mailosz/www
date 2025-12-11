@@ -62,6 +62,7 @@
         display: flex;
         overflow-x: auto;
         overflow-y: hidden;
+        scrollbar-width: thin;
     }
         .popup-menu .popup-menu-list>.popup-menu-element {
             width: 40px;

@@ -30,8 +30,9 @@
         function initialize() {
             let canvas = document.getElementById('view-canvas');
             let cm = new CanvasManager(canvas);
-            cm.setDrawingManager(new CanvasDrawingManager());
-            cm.setInputManager(new TestInputManager());
+            let state = {};
+            cm.setDrawingManager(new CanvasDrawingManager(state));
+            cm.setInputManager(new TestInputManager(state));
         }
 
         initialize();

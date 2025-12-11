@@ -20,6 +20,9 @@ ox-code[compact] {
     padding: 8px;
 }
 
+ox-outline {
+    display: block;
+}
 
 /* OX-BUTTON */
 ox-button {

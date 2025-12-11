@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editor</title>
+    <script type="module" src="../js/ui/controls/OxCode.js"></script>
     <script type="module">
         import {OxEditor} from "../js/ui/controls/OxEditor.js";
         import {NodeHelper} from "../js/ui/controls/OxEditor.js";
@@ -17,7 +18,7 @@
             
             const findMatchingEndAncestor = (node) => {
 
-                if (endPos == NodeHelper.START) {
+                if (endPos === NodeHelper.START) {
                     let parent = range.endContainer;// potencjalnie może trza zaczynać od parenta
                     while (parent != null) {
                         if (node == parent.previousSibling) {
@@ -29,7 +30,7 @@
                         parent = parent.parentElement;
                     }
                     return null;
-                } else if (endPos == NodeHelper.MIDDLE) {
+                } else if (endPos === NodeHelper.MIDDLE) {
                     if (!NodeHelper.isTextNode(range.endContainer)) {
                         let child = range.endContainer.childNodes.item(range.endOffset - 1);
 
@@ -44,7 +45,7 @@
                 } else {
                     let parent = range.endContainer;
                     while (parent != null) {
-                        if (node == parent) {
+                        if (node === parent) {
                             return parent;
                         }
                         if (!NodeHelper.isLastChild(parent)) {
@@ -56,11 +57,11 @@
                 }
             }
 
-            if (range.startContainer == range.endContainer) {
-                if (startPos == NodeHelper.START && endPos == NodeHelper.END) {
+            if (range.startContainer === range.endContainer) {
+                if (startPos === NodeHelper.START && endPos === NodeHelper.END) {
                     if (!NodeHelper.isTextNode(range.startContainer)) {
                         return range.startContainer;
-                    } else if (range.startContainer.parentElement.childNodes.length == 1) {
+                    } else if (range.startContainer.parentElement.childNodes.length === 1) {
                         return range.startContainer.parentElement;
                     } else {
                         return null;
@@ -72,7 +73,7 @@
                 }
             } else {
 
-                if (startPos == NodeHelper.START) {
+                if (startPos === NodeHelper.START) {
                     let startParent = range.startContainer.parentElement;
                     while (startParent != null) {
                         let matching = findMatchingEndAncestor(startParent);
@@ -98,7 +99,7 @@
                 //         return null;
                 //     }
                 //     return null;
-                } else if (startPos == NodeHelper.END) {
+                } else if (startPos === NodeHelper.END) {
                     let startParent = range.startContainer;
                     while (startParent != null) {
                         if (startParent.nextSibling != null) {
@@ -127,7 +128,7 @@
         }
     </style>
 </head>
-<body>
+<body onload="prepare();">
     <button onclick="h1();">h1</button>
     <button onclick="p();">p</button>
     <button onclick="embolden();"><b>b</b></button>
@@ -135,7 +136,27 @@
     <button onclick="underline()"><u>u</u></button>
     <button onclick="commit((editor) => editor.focus());"><u>Focus</u></button>
     <ox-editor id="main-editor" srcdoc="<div>Lorem ipsum dolor est Dolores.</div><div>Lorem <span style='color: red'>ipsum <span style='color: green'>tres</span> dolor</span> est Dolores.</div><div>Lorem ipsum dolor est Dolores.</div><a href='./controls.html'>Controls html</a>"></ox-editor>
+    <ox-code id="source-code" tokenizer-language="../js/tokenizer/html.json" code-style="../css/langs/html-lang.css"></ox-code>
     <script>
+
+        let wait = null;
+        let sourceCodeBox = document.getElementById("source-code")
+        let editor = document.getElementById("main-editor");
+        function prepare() {
+            updateSource();
+            editor.addEventListener("edit", () => {
+                if (wait) {
+                    clearTimeout(wait);
+                }
+                wait = setTimeout(() => {
+                    updateSource();
+                }, 100);
+            });
+        }
+
+        function updateSource() {
+            sourceCodeBox.setCode(editor.getIframe().contentDocument.documentElement.innerHTML);
+        }
 
         function forEverySuccessor(element, foo) {
             const walker = document.createTreeWalker(element, NodeFilter.SHOW_ELEMENT);

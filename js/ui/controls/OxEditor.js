@@ -30,6 +30,8 @@ export class OxEditor extends OxControl {
 
     static observedAttributes = ["src", "srcdoc"];
 
+    #mutationObserver;
+
     constructor() {
         super();
 
@@ -61,7 +63,14 @@ export class OxEditor extends OxControl {
                     }
                 }
             }
+
+            this.#mutationObserver = new MutationObserver(this.#detectChanges.bind(this));
+            this.#mutationObserver.observe(iframe.contentDocument.body, {childList: true, subtree: true, characterData: true});
         });
+    }
+
+    #detectChanges() {
+        this.dispatchEvent(new Event("edit"));
     }
 
     disconnectedCallback() {
@@ -85,7 +94,7 @@ export class OxEditor extends OxControl {
      * @return {HTMLIFrameElement}
      */
     getIframe() {
-        return this.shadowRoot.firstElementChild;;
+        return this.shadowRoot.firstElementChild;
     }
 
     /**

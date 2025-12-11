@@ -1,12 +1,8 @@
 import { MutationRecorder } from "../utils/MutationRecorder.js";
 import { revertMutationChanges } from "../utils/MutationUndoer.js";
 
-const selection = [];
 let currentSelection = null;
 let pointerPressed = false;
-function clearSelection() {
-    selection.length = 0;
-}
 
 
 
@@ -18,26 +14,31 @@ export function handlePointerDown(event) {
     
     event.currentTarget.focus();
 
-    const element = document.elementFromPoint(event.x, event.y);
 
-    document.querySelectorAll(".selected").forEach((e)=>e.classList.remove("selected"));
-    element.classList.add("selected");
+    const caret = document.caretPositionFromPoint(event.x, event.y);
+    currentSelection = {anchor: caret, point: {x: event.x, y: event.y}};
 
-    const range = document.createRange();
-    range.selectNodeContents(element);
 
-    clearSelection();
-    const clientRects = range.getClientRects();
-    if (pointInsideClientRects(event.x, event.y, clientRects)) {
-        const caret = document.caretPositionFromPoint(event.x, event.y);
-        
-        currentSelection = {anchor: caret};
-    } else {
-        selection.push(element);
-    }
+    //const element = document.elementFromPoint(event.x, event.y);
+
+    document.getSelection().empty();
+    document.getSelection().addRange(selectionToRange(currentSelection));
+
+    // const range = document.createRange();
+    // range.selectNodeContents(element);
+    //
+    // clearSelection();
+    // const clientRects = range.getClientRects();
+    // if (pointInsideClientRects(event.x, event.y, clientRects)) {
+    //
+    //
+    //
+    // } else {
+    //     selection.push(element);
+    // }
     pointerPressed = true;
     
-    showSelection(selection);
+    // showSelection(selection);
     event.preventDefault();
 }
 
@@ -54,7 +55,7 @@ function pointInsideClientRects(x, y, clientRects) {
 function selectionToRange(currentSelection) {
     let range;
     if (currentSelection.caret) {
-        if (currentSelection.anchor.offsetNode == currentSelection.caret.offsetNode) {
+        if (currentSelection.anchor.offsetNode === currentSelection.caret.offsetNode) {
             if (currentSelection.anchor.offset > currentSelection.caret.offset) {
                 range = createRange(currentSelection.caret.offsetNode, currentSelection.caret.offset, currentSelection.anchor.offsetNode, currentSelection.anchor.offset);
             } else {
@@ -62,9 +63,9 @@ function selectionToRange(currentSelection) {
             }
         } else {
             const comp = currentSelection.caret.offsetNode.compareDocumentPosition(currentSelection.anchor.offsetNode);
-            if (comp == Node.DOCUMENT_POSITION_FOLLOWING) {
+            if (comp === Node.DOCUMENT_POSITION_FOLLOWING) {
                 range = createRange(currentSelection.caret.offsetNode, currentSelection.caret.offset, currentSelection.anchor.offsetNode, currentSelection.anchor.offset);
-            } else if (comp == Node.DOCUMENT_POSITION_PRECEDING) {
+            } else if (comp === Node.DOCUMENT_POSITION_PRECEDING) {
                 range = createRange(currentSelection.anchor.offsetNode, currentSelection.anchor.offset, currentSelection.caret.offsetNode, currentSelection.caret.offset);
             } else {
                 console.log("TODO");
@@ -89,9 +90,8 @@ export function handlePointerMove(event) {
 
             currentSelection.caret = caret;
 
-            const range = selectionToRange(currentSelection);
-
-            showSelection([range]);
+            document.getSelection().empty();
+            document.getSelection().addRange(selectionToRange(currentSelection));
         }
     }
     event.preventDefault();
@@ -105,17 +105,42 @@ export function handlePointerUp(event) {
     pointerPressed = false;
     
     if (currentSelection) {
-        clearSelection();
+
+        if (Math.sqrt(Math.pow(currentSelection.point.x - event.x,2) + Math.pow(currentSelection.point.y - event.y,2)) <= 10) {
+
+            const element = document.elementFromPoint(currentSelection.point.x, currentSelection.point.y);
+
+            let range = document.createRange();
+            range.selectNodeContents(element);
+
+            const clientRects = range.getClientRects();
+            if (pointInsideClientRects(event.x, event.y, clientRects)) {
+                document.getSelection().empty();
+                document.getSelection().addRange(selectionToRange(currentSelection));
+
+            } else {
+                range.selectNode(element);
+                document.getSelection().empty();
+                document.getSelection().addRange(range);
+            }
+
+
+
+        } else {
+            document.getSelection().empty();
+            document.getSelection().addRange(selectionToRange(currentSelection));
+        }
+
+
 
         const range = selectionToRange(currentSelection);
 
-        selection.push(range);
-        showSelection(selection);
-
-        currentSelection = null;
-    } else {
+        // selection.push(range);
+        // showSelection(selection);
 
     }
+
+    currentSelection = null;
     event.preventDefault();
 }
 
@@ -129,33 +154,26 @@ export function handleKeyDown(event) {
     console.log(event.key);
     if (event.key === "ArrowLeft") {
         event.preventDefault();
+        let selection = document.getSelection();
+        for (let i = 0; i < selection.rangeCount; i++) {
+            const range = selection.getRangeAt(i);
 
-        for (const item of selection) {
-            const range = item;//selection.getRangeAt(i);
+            extendRangeBackward(range);
 
-            if (item instanceof Range) {
-
-                extendRangeBackward(item);
-    
-                item.collapse(true);
-                console.log(item);
-            }
+            range.collapse(true);
         }
-        showSelection(selection);
+
     } else if (event.key === "ArrowRight") {
         event.preventDefault();
 
-        for (const item of selection) {
-            if (item instanceof Range) {
+        let selection = document.getSelection();
+        for (let i = 0; i < selection.rangeCount; i++) {
+            const range = selection.getRangeAt(i);
+            extendRangeForward(range);
 
-                extendRangeForward(item);
-
-                item.collapse(false);
-                console.log(item);
-
-            }
+            range.collapse(false);
         }
-        showSelection(selection);
+
     } else if (event.key == "z" && event.ctrlKey) {
 
         const inputEvent = new InputEvent("beforeinput", {inputType: "historyUndo"});
@@ -166,10 +184,10 @@ export function handleKeyDown(event) {
 
 /**
  * 
- * @param {*} startContainer 
- * @param {*} startOffset 
- * @param {*} endContainer 
- * @param {*} endOffset 
+ * @param {Node} startContainer
+ * @param {Number} startOffset
+ * @param {Node?} endContainer
+ * @param {Number?} endOffset
  * @returns {Range}
  */
 function createRange(startContainer, startOffset, endContainer, endOffset) {
@@ -189,6 +207,15 @@ function rangeFromStatic(staticRange) {
     range.setStart(staticRange.startContainer, staticRange.startOffset);
     range.setEnd(staticRange.endContainer, staticRange.endOffset);
     return range;
+}
+
+/**
+ *
+ * @param {Range} range
+ * @returns {StaticRange} A new range same as passed StaticRange
+ */
+function staticFromRange(range) {
+    return new StaticRange({startContainer: range.startContainer, startOffset: range.startOffset, endContainer: range.endContainer, endOffset: range.endOffset})
 }
 
 /**
@@ -390,85 +417,100 @@ const observerOptions = {
 };
 
 /**
- * Handles user input in a predictive way
+ * Handles user input in a predictable way
+ * @returns {(InputEvent)=>any}
  */
 export function handleInput(options) {
 
     console.log(options);
     const undoList = [];
     /**
-     * Handles user input in a predictive way
-     * @param {InputEvent} event 
+     * Handles user input in a predictable way
+     * @param {InputEvent} event
      */
-    return (event) => {
+    const handler = (event) => {
         event.preventDefault();
-    
+        event.stopPropagation();
+
+        let targetRanges = [document.getSelection().getRangeAt(0)];
+        // targetRanges = targetRanges.map((sr) => copyRange(sr, sr.startContainer.ownerDocument.createRange()));
+
         /**
          * @type {HTMLElement}
          */
         const editor = event.target;
-    
+
         console.log(event);
-        if (event.inputType == "insertText") {
+        if (event.inputType === "insertText") {
 
             const mr = new MutationObserver(() => {});
             mr.observe(event.target, observerOptions)
 
-            const ranges = insertText(event.data, event.getTargetRanges());
+            const ranges = insertText(event.data, targetRanges);
             ranges.forEach((range) => range.collapse(false));
             setSelection(document.getSelection(), ranges);
 
             undoList.push(mr.takeRecords());
             mr.disconnect();
 
-        } else if (event.inputType == "insertParagraph") {
+        } else if (event.inputType === "insertLineBreak") {
 
-            const ranges = insertParagraph(options.paragraph, event.getTargetRanges());
+            const ranges = targetRanges.map((range) => insertLineBreak(range));
+
+            setSelection(document.getSelection(), ranges);
+
+        } else if (event.inputType === "insertParagraph") {
+
+            const ranges = targetRanges.map((range) => insertParagraph(options.paragraph, range));
+
             // ranges.forEach((range) => range.collapse(true));
             setSelection(document.getSelection(), ranges);
 
-        } else if (event.inputType == "deleteContentForward") {
+        } else if (event.inputType === "deleteContentForward") {
 
-            const ranges = deleteContent("forward", "character", event.getTargetRanges());
+            const ranges = deleteContent("forward", "character", targetRanges);
             setSelection(document.getSelection(), ranges);
 
-        } else if (event.inputType == "deleteContentBackward") {
+        } else if (event.inputType === "deleteContentBackward") {
 
-            const ranges = deleteContent("backward", "character", event.getTargetRanges());
+            // let r2 = targetRanges.pop();
+            // let range = rangeFromStatic(r2);
+
+            const ranges = deleteContent("backward", "character", targetRanges);
             setSelection(document.getSelection(), ranges);
 
-        } else if (event.inputType == "deleteWordForward") {
+        } else if (event.inputType === "deleteWordForward") {
 
-            const ranges = deleteContent("forward", "word", event.getTargetRanges());
+            const ranges = deleteContent("forward", "word", targetRanges);
             setSelection(document.getSelection(), ranges);
 
-        } else if (event.inputType == "deleteWordBackward") {
+        } else if (event.inputType === "deleteWordBackward") {
 
-            const ranges = deleteContent("backward", "word", event.getTargetRanges());
+            const ranges = deleteContent("backward", "word", targetRanges);
             setSelection(document.getSelection(), ranges);
 
-        } else if (event.inputType == "historyUndo") {
+        } else if (event.inputType === "historyUndo") {
             console.log(undoList);
             if (undoList.length > 0) {
                 const changes = undoList.pop();
                 revertMutationChanges(changes);
             }
 
-        } else if (event.inputType == "historyRedo") {
+        } else if (event.inputType === "historyRedo") {
 
 
-        } 
+        }
 
-
+        event.target.dispatchEvent(new InputEvent("input"));
     };
-
+    return handler;
 }
 
 /**
  * Copies from range A to B
- * @param {AbstractRange} a
- * @param {AbstractRange} b 
- * @returns {AbstractRange} Range B
+ * @param {Range} a
+ * @param {Range} b
+ * @returns {Range} Range B
  */
 function copyRange(a, b) {
     b.setStart(a.startContainer, a.startOffset);
@@ -478,7 +520,7 @@ function copyRange(a, b) {
 
 /**
  * Extends range to the left in place
- * @param {*} range 
+ * @param {Range} range
  */
 function extendRangeBackward(range) {
     if (range.startOffset > 0) {
@@ -498,7 +540,7 @@ function extendRangeBackward(range) {
         console.log("B");
         if (range.startContainer.parentElement) {
             const index = Array.prototype.indexOf.call(range.startContainer.parentElement.childNodes, range.startContainer);
-            range.setEnd(range.startContainer.parentElement, index);
+            range.setStart(range.startContainer.parentElement, index);
         } else {
             range.setStart(range.startContainer.previousSibling, getNodeLength(range.startContainer.previousSibling));
         }
@@ -506,6 +548,30 @@ function extendRangeBackward(range) {
         console.log("C");
         range.setStart(range.startContainer.parentElement, 0);
     }
+}
+
+/**
+ * Moves caret backwards to the previous character
+ * @param {Node} container
+ * @param {Number} offset
+ */
+function moveCaretBackwards(container, offset) {
+    if (offset > 0) {
+        if (container.nodeType === Node.TEXT_NODE) {
+            return [container,  offset - 1];
+        } else {
+            let child =container.childNodes.item(offset - 1);
+            return moveCaretBackwards(child, getNodeLength(child));
+        }
+    } else {
+        if (container.previousSibling) {
+            return moveCaretBackwards(container.previousSibling, getNodeLength(container.previousSibling));
+        } else {
+            const index = Array.prototype.indexOf.call(container.parentElement.childNodes, container);
+            return moveCaretBackwards(container.parentElement, index);
+        }
+    }
+
 }
 
 /**
@@ -570,58 +636,105 @@ export function insertText(data, ranges) {
 }
 
 /**
- * 
- * @param {HTMLElement} paragraphElement 
- * @param {AbstractRange[]} ranges 
+ *
+ * @param {Range} range
  */
-function insertParagraph(paragraphElement, ranges) {
+function insertLineBreak(range) {
 
-    const editRanges = ranges.map((sr) => copyRange(sr, sr.startContainer.ownerDocument.createRange()));
+    if (!range.collapsed) {
+        range.deleteContents();
+    }
 
-    editRanges.forEach((range) => {
-        if (!range.collapsed) {
-            range.deleteContents();
-        }
+    let br = document.createElement("br");
 
-        let context = findBlockContext(range.startContainer);
-
-        range.setEnd(context, context.childNodes.length);
-        
-        // this checks if inside this element are other block elements
-        for (const element of iterateBetweenNodes(range.startContainer, range.endContainer)) {
-            if (isBlockElement(element)) {
-                range.setEndBefore(element);
-                break;
-            }
-        }
-        const frag = range.extractContents();
-    
-        const paragraph = (paragraphElement ?? context)?.cloneNode(false) ?? document.createElement("div");
-        paragraph.append(frag);
-    
-        if (context) {
-            range.setStartAfter(context);
-            range.setEndAfter(context);
-            console.log(range);
-            // range.collapse(false);
-        }
-    
-        range.insertNode(paragraph);
-        range.setStart(paragraph, 0);
-        range.collapse(true);
-    });
-
-    return editRanges;
-
-
-    
+    range.insertNode(br);
+    range.collapse(false);
+    return range;
 }
+
+/**
+ * Inserts new block element at the current level
+ * @param {HTMLElement} paragraphElement
+ * @param {Range} range
+ */
+function insertParagraph(paragraphElement, range) {
+
+    if (!range.collapsed) {
+        range.deleteContents();
+    }
+
+    let context = findBlockContext(range.startContainer);
+
+    range.setEnd(context, context.childNodes.length);
+
+    // this checks if inside this element are other block elements
+    for (const element of iterateBetweenNodes(range.startContainer, range.endContainer)) {
+        if (isBlockElement(element)) {
+            range.setEndBefore(element);
+            break;
+        }
+    }
+    const frag = range.extractContents();
+
+    const paragraph = (paragraphElement ?? context)?.cloneNode(false) ?? document.createElement("div");
+    paragraph.append(frag);
+
+    if (context) {
+        range.setStartAfter(context);
+        range.setEndAfter(context);
+        console.log(range);
+        // range.collapse(false);
+    }
+
+    range.insertNode(paragraph);
+    range.setStart(paragraph, 0);
+    range.collapse(true);
+
+    return range;
+}
+
+/**
+ * Perform a function for every deep child of the node
+ * @param element
+ * @param foo
+ */
+function forEverySuccessor(element, foo) {
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_ELEMENT);
+
+    while (walker.nextNode()) {
+        foo(walker.currentNode);
+    }
+}
+
+/**
+ *
+ * @param {Range} range
+ * @param {CSSStyleDeclaration} style
+ */
+// function changeInlineStyle(style, range) {
+//
+//     let container = range.commonAncestorContainer;
+//     if (container.nodeType === Node.TEXT_NODE) {
+//         if (container.parentElement.firstChild === container && container.parentElement.lastChild === container) {
+//             // the only child of an element
+//
+//             container = container.parentElement;
+//         } else {
+//
+//             range.set
+//
+//         }
+//     }
+//
+//
+//
+// }
 
 /**
  * 
  * @param {*} direction 
  * @param {*} granularity 
- * @param {AbstractRange[]} ranges 
+ * @param {Range[]} ranges
  * @returns 
  */
 function deleteContent(direction, granularity, ranges) {
@@ -639,16 +752,98 @@ function deleteContent(direction, granularity, ranges) {
         // option B
         // browser automagically selects a text to delete
         // console.log(range)
-        // if (direction == "forward") {
-        //     range.collapse(true);
-        //     extendRangeForward(range);
-        // } else if (direction == "backward") {
-        //     range.collapse(false);
-        //     extendRangeBackward(range);
-        // }
-        
-        range.deleteContents();
+
+        if (range.collapsed) {
+            if (direction === "forward") {
+                // range.collapse(true);
+                extendRangeForward(range);
+                range.deleteContents();
+            } else if (direction === "backward") {
+                let r = deleteBackward(range.startContainer, range.startOffset);
+                range.setStart(r.startContainer, r.startOffset);
+                // // range.collapse(false);
+                // if (range.startOffset === 0) {
+                //     // delete whole container
+                //     if (range.startContainer.previousSibling) {
+                //         range.selectNodeContents(range.startContainer);
+                //         let contents = range.cloneContents();
+                //         range.startContainer.previousSibling.insertBefore(contents, null);
+                //     } else {
+                //         range.startContainer.parentNode.insertBefore(contents, range.startContainer);
+                //     }
+                //     range.startContainer.parentNode.removeChild(range.startContainer);
+                //
+                // } else {
+                //     extendRangeBackward(range);
+                // }
+                // extendRangeBackward(range);
+            }
+        }
+
+
+
+        if (range.startContainer.nodeType === Node.ELEMENT_NODE && range.startOffset === 0 ) {
+            //delete node, add move its contents after selection to the parent
+
+        }
+        if (range.endContainer.nodeType === Node.ELEMENT_NODE && range.endOffset === range.endContainer.childNodes.length) {
+            //delete node, add move its contents before selection to the parent
+
+        }
+
+
+
     });
 
     return editRanges;
+}
+
+/**
+ * Deletes backwards
+ * @param {Node} container
+ * @param {Number} offset
+ */
+function deleteBackward(container, offset) {
+    if (offset > 0) {
+        console.log("A");
+        if (isElementNode(container)) {
+            const node = container.childNodes.item(offset - 1);
+            return deleteBackward(node, getNodeLength(node));
+        } else {
+            container.textContent = container.textContent.substring(0, offset - 1) + container.textContent.substring(offset);
+            return createRange(container, offset - 1);
+        }
+    } else if (isElementNode(container)) {
+
+        const range = document.createRange();
+        range.selectNodeContents(container);
+        const contents = range.cloneContents();
+        if (container.previousSibling) {
+            range.setStart(container.previousSibling, getNodeLength(container.previousSibling));
+        } else {
+            range.setStart(container.parentNode, 0);
+        }
+        range.collapse(true);
+
+        container.parentNode.insertBefore(contents, container);
+        const parent = container.parentNode;
+        container.parentNode.removeChild(container);
+        parent.normalize();
+
+
+
+        return range;
+
+    } else {
+        offset = Array.prototype.indexOf.call(container.parentElement.childNodes, container);
+        return deleteBackward(container.parentElement, offset);
+    }
+}
+
+/**
+ * Returns true if node is empty
+ * @param {Node} node
+ */
+function isEmpty(node) {
+    return !node.firstChild && !node.textContent;
 }

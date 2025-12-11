@@ -99,8 +99,9 @@ export class MutationUndoer {
             this.#observer.disconnect();
         } else {
             const changes = from.pop();
+            this.#observer.takeRecords();
             revertMutationChanges(changes);
-            to.push(this.#observer.takeRecords());
+            to.push(this.#observer.takeRecords().reverse());
         }
 
         return true;

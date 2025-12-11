@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="../css/main.css">
-    <link rel="stylesheet" href="../css/style.green.css">
+    <link id="theme-link" rel="stylesheet" href="../css/themes/green.light.css">
     <link rel="stylesheet" href="../css/document.css">
     <script type="module" src="../js/ui/controls/OxCode.js"></script>
     <script type="module" src="../js/ui/controls/OxExample.js"></script>
@@ -16,10 +16,23 @@
 
         LoremIpsum.registerCustomElement();
     </script>
+    <script>
+        function lightdark() {
+            let theme = document.getElementById("theme-link");
+
+            let neu = theme.href.replace("light", "dark");
+            if (neu != theme.href) {
+                theme.href = neu;
+            } else {
+                theme.href = theme.href.replace("dark", "light");
+            }
+        }
+    </script>
 </head>
 <body>
 
     <main id="the-document">
+        <button onclick="lightdark();">Light/dark</button>
         <ox-outline for="section"></ox-outline>
         <section>
         <h1>Title of the document</h1>
@@ -129,6 +142,7 @@
             <dt>definition</dt>
             <dd>An explanation of a definition containing any information deemed needed to have about it.</dd>
         </dl>
+        <div class="success">This is a success message</div>
         <div class="info">Hello, im an important info</div>
         <div class="alert">This is an alert. It has to draw attention.</div>
         <div class="warning">This is a waring against something very fishy</div>

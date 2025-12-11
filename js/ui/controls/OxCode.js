@@ -173,6 +173,56 @@ export class OxCode extends OxControl {
         return this.shadowRoot.querySelector("#code-box").innerText;
     }
 
+    #insertLine(ranges) {
+        for (let range of ranges) {
+            let realRange = this.shadowRoot.ownerDocument.createRange();
+            realRange.setStart(range.startContainer, range.startOffset);
+            realRange.setEnd(range.endContainer, range.endOffset);
+            if (!realRange.collapsed) {
+                realRange.deleteContents();
+            }
+
+            let oldLine = realRange.endContainer;
+            if (oldLine == this.#codeBox) {
+                oldLine = this.#codeBox.childNodes.item(realRange.endOffset-1);
+            } else {
+                while (oldLine.nodeName != "DIV") {
+                    oldLine = oldLine.parentElement;
+                    if (oldLine == null) {
+
+                    }
+                }
+            }
+            if (!oldLine) {
+                oldLine = this.#codeBox.firstElementChild;
+            }
+
+            let newline = this.shadowRoot.ownerDocument.createElement("DIV");
+            let lineEnd = this.shadowRoot.ownerDocument.createRange();
+            lineEnd.setStart(realRange.endContainer, realRange.endOffset);
+            lineEnd.setEndAfter(oldLine);
+            this.#codeBox.insertBefore(newline, oldLine.nextSibling);
+            let fragment = lineEnd.extractContents();
+            if (oldLine.firstChild == null) {
+                oldLine.appendChild(this.shadowRoot.ownerDocument.createTextNode(""));
+            }
+            newline.textContent = fragment.textContent.trim();
+
+
+            //determine indentation
+            let indentation = oldLine.textContent.substring(0, oldLine.textContent.length - oldLine.textContent.trimStart().length);
+            newline.textContent = indentation + newline.textContent;
+            if (newline.firstChild == null) {
+                newline.appendChild(this.shadowRoot.ownerDocument.createTextNode(""));
+            }
+            let afterRange = this.shadowRoot.ownerDocument.createRange();
+            afterRange.setEnd(newline.firstChild, indentation.length);
+            afterRange.collapse();
+            this.shadowRoot.ownerDocument.getSelection().empty();
+            this.shadowRoot.ownerDocument.getSelection().addRange(afterRange);
+        }
+    }
+
     /**
      * 
      * @param {InputEvent} event 
@@ -183,6 +233,12 @@ export class OxCode extends OxControl {
             event.preventDefault();
         } else if (event.inputType == "historyRedo") {
             event.preventDefault();
+        } else if (event.inputType == "insertParagraph" || event.inputType == "insertLineBreak") {
+            let ranges = event.getTargetRanges();
+            if (ranges.length > 0) {
+                event.preventDefault();
+                this.#insertLine(ranges);
+            }
         } else {
             const ranges = event.getTargetRanges();
 
@@ -376,7 +432,7 @@ export class OxCode extends OxControl {
         }
         let getRange;
         if (selection.getComposedRanges) { // right way but only works in safari
-            const composedRanges = selection.getComposedRanges(this.shadowRoot);
+            const composedRanges = selection.getComposedRanges({shadowRoots: [this.shadowRoot]});
             getRange = (i) => composedRanges[i];
         } else {
             getRange = (i) => selection.getRangeAt(i);

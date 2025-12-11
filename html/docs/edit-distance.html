@@ -6,7 +6,11 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="../../css/main.css">
 	<title>Edit distance</title>
-
+	<style>
+		::highlight(found) {
+			background-color: yellow;
+		}
+	</style>
 	<script>
 
 		function editDistance(strA, strB) {
@@ -61,9 +65,78 @@
 		showEditDistance("batuta", "a");
 		showEditDistance("telegrafistów", "Telegrafistów");
 		showEditDistance("Thelongestwordthaticouldhavethoughtof", "Najdłuższesłowojakiebyłemwstaniewymyśleć");
+
+		function wordChanged() {
+			let wordA = document.getElementById("word-a");
+			let wordB = document.getElementById("word-b");
+			let result = document.getElementById("edit-distance-result");
+
+			let ed = editDistance(wordA.value, wordB.value);
+
+			result.innerText = ed;
+		}
+
+		function searchButton() {
+			let distance = document.getElementById("search-distance").value;
+			search(distance);
+		}
+
+		function search(maxDistance = 3) {
+			let search = document.getElementById("search-input").value;
+
+			CSS.highlights.clear();
+
+			if (search) {
+				let ranges = [];
+				const walker = document.createTreeWalker(
+					document.body,
+					NodeFilter.SHOW_TEXT,
+					{
+						acceptNode(node) {
+							// Ignore empty or purely-whitespace nodes
+							if (!node.textContent.trim()) return NodeFilter.FILTER_REJECT;
+							// Reject nodes inside <script> or <style>
+							if (node.parentElement.closest('script, style')) {
+								return NodeFilter.FILTER_REJECT;
+							}
+							return NodeFilter.FILTER_ACCEPT;
+						}
+					},
+					false
+				);
+
+				const WORD_REGEX = /\p{L}[\p{L}\p{N}_']*/gu;
+				while ((current = walker.nextNode())) {
+
+					const text = current.textContent;
+
+					WORD_REGEX.lastIndex = 0;
+					while ((match = WORD_REGEX.exec(text)) !== null) {
+						const word = match[0];
+						const start = match.index;
+						const end = start + word.length;
+
+						let difference = editDistance(word, search);
+
+						let maxdis = Math.min(word.length/2, maxDistance)
+						if (difference <= maxdis) {
+							let range = new Range();
+							range.setStart(current, start);
+							range.setEnd(current, end);
+							ranges.push(range);
+						}
+					}
+
+					CSS.highlights.set("found", new Highlight(...ranges));
+
+				}
+
+			}
+		}
+
 	</script>
 </head>
-<body>
+<body onload="wordChanged()">
 	<main>
 		<h1>Edit distance</h1>
 		<p>It is a way of measuring how different are two strings.</p>
@@ -89,7 +162,21 @@
 		<h2>Levenshtein distance</h2>
 		<p>In this approach we define the edit distance as "the number of operations required to transpose (change) one string into the other".</p>
 		<p>The operations are single letter edits such as: deletion, insertion and substitution.</p>
-		<
+		<figure>
+			<p>
+				<input id="word-a" oninput="wordChanged();" value="started"><input id="word-b" oninput="wordChanged();" value="ended">
+				<span>Edit distance: <span id="edit-distance-result"></span></span>
+			</p>
+		</figure>
+
+		<figure>
+			<p>
+				Search for words differing by at most:<input id="search-distance" type="number" value="3">
+			</p>
+			<p>
+				<label>Search<input id="search-input"></label><button onclick="searchButton();">Search</button>
+			</p>
+		</figure>
 	</main>
 </body>
 </html>

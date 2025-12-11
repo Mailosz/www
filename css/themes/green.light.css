@@ -1,7 +1,5 @@
-html {
-    /* --weak-accent-color: #8af;
-    --accent-color: #68f;
-    --strong-accent-color: #349; */
+:root {
+    color-scheme: light;
 
     --weaker-accent-color: #bfa;
     --weak-accent-color: #8e7;
@@ -16,6 +14,11 @@ html {
     --stronger-secondary-color: #a51;
 
     --text-color: black;
+    --page-color: white;
+
+    --background-color: #f8f8f8;
+    --shadow-color: rgba(0,0,0,0.5);
+    --emphasized-background: #ddd;
 
     --border-color: #666;
     --button-background: #eee;
@@ -23,4 +26,24 @@ html {
     --border-radius: 4px;
 
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.warning {
+    background-color: #ffaf92;
+}
+
+.alert {
+    background-color: #ffff65;
+}
+
+.success {
+    background-color: #aaffaa;
+}
+
+.info {
+    background-color: #dff6fe;
+}
+
+.mark {
+    background-color: var(--emphasized-background, #ddd);
 }

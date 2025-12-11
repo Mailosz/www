@@ -1,4 +1,4 @@
-import {CanvasDrawingManager} from "../../../js/canvas/CanvasDrawingManager.js";
+import {CanvasDrawingManager} from "../../../js/canvas/test/CanvasDrawingManager.js";
 
 export class TdDrawingManager extends CanvasDrawingManager {
 
