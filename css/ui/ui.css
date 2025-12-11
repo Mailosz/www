@@ -114,14 +114,6 @@ input:indeterminate {
     accent-color: gray;
 }
 
-input[type=checkbox], input[type=radio] {
-    width: 1.5em;
-    height: 1.5em;
-    margin: 0.2em;
-    vertical-align: text-bottom;
-    transform: translateY(0.25em);
-}
-
 input:is(:not([type]),[type=text],[type=number],[type=password],[type=date],[type=datetime],[type=datetime-local],[type=month],[type=week],[type=tel],[type=time],[type=url],[type=email],[type=search]) , 
 textarea,
 select {
@@ -140,11 +132,16 @@ select:focus {
     outline: none;
 }
 
-input[type=radio], input[type=checkbox] {
+:where(input[type=radio], input[type=checkbox]) {
+    width: 1.5em;
+    height: 1.5em;
+    margin: 0.2em;
+    vertical-align: text-bottom;
+    transform: translateY(0.25em);
     background-color: white;
 }
 
-input[type=radio] {
+:where(input[type=radio]) {
     appearance: none;
     border-radius: 100%;
     border: 2px solid var(--border-color, #666);
@@ -153,7 +150,7 @@ input[type=radio] {
     display: inline-block;
 }
 
-input[type=radio]::before {
+:where(input[type=radio])::before {
     content: '';
     display: block;
     width: calc(100% - 4px);
@@ -166,7 +163,7 @@ input[type=radio]::before {
     transition: cubic-bezier(0.5, 2, 0.65, 0.8) transform 200ms;
 }
 
-input[type=checkbox] {
+:where(input[type=checkbox]) {
     appearance: none;
     border-radius: var(--border-radius);
     border: 2px solid var(--border-color, #666);
@@ -175,11 +172,8 @@ input[type=checkbox] {
     display: inline-block;
 }
 
-input[type=radio]:checked::before {
-    transform: scale(1);
-}
 
-input[type=checkbox]::before {
+:where(input[type=checkbox])::before {
     font-size: 0.75em;
     padding: 0;
     text-align: center;
@@ -195,18 +189,18 @@ input[type=checkbox]::before {
     transition: cubic-bezier(0.5, 2, 0.65, 0.8) transform 200ms;
 }
 
-input[type=checkbox]:checked::before {
+:where(input[type=checkbox]:checked,input[type=radio]:checked)::before {
     transform: scale(1);
 }
 
-input[type=checkbox]:indeterminate::before {
+:where(input[type=checkbox]:indeterminate)::before {
     content: '?';
     transform: scale(1);
     color: white;
     background-color: gray;
 }
 
-input[type=radio]:disabled::before, input[type=checkbox]:disabled::before {
+:where(input[type=radio]:disabled::before, input[type=checkbox]:disabled::before) {
     background-color: #666;
     color: white;
 }

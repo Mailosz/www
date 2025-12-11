@@ -19,6 +19,7 @@ input[type=radio].switch {
 .switch {
     width: 1.75em;
     height: 1em;
+    min-height: 1em;
     border: var(--switch-border-width) var(--switch-border-color) solid;
     border-radius: 0.5em;
     position: relative;
@@ -37,11 +38,14 @@ input[type=radio].switch {
     width: 0.5em;
     height: 0.5em;
     border-radius: 0.25em;
+    margin: 0;
+    font-size: inherit;
     position: absolute;
     right: calc(0.25em - var(--border-width));
     top: calc(0.25em - var(--border-width));
     background-color: white;
     border: var(--border-width) solid var(--switch-border-color);
+    transform: scale(1);
     pointer-events: none;
     user-select: all;
     box-sizing: border-box;
