@@ -9,6 +9,7 @@
     <script type="module" src="../js/ui/controls/Notification.js"></script>
     <script type="module" src="../js/ui/controls/OxButton.js"></script>
     <script type="module" src="../js/ui/controls/OxUpload.js"></script>
+    <script type="module" src="../js/ui/controls/OxMenu.js"></script>
     <script type="module" src="../js/ui/controls/OxGrid.js"></script>
     <script type="module" src="../js/ui/controls/OxPaging.js"></script>
     <script type="module" src="../js/ui/controls/AutoSizeIframe.js"></script>
@@ -23,6 +24,53 @@
         ox-paging {
             font-size: 20px;
         }
+
+
+        .menu {
+            display: flex;
+            flex-direction: column;
+            max-width: 400px;
+        }
+
+        .menu button {
+            border: none;
+            border-radius: 0;
+            background-color: #eee;
+            padding: 0.5em 1em;
+            text-align: left;
+            outline: none;
+            anchor-name: --button;
+        }
+
+        .menu button:focus {
+            background-color: var(--weak-accent-color, cornflowerblue);
+        }
+
+        .menu[popover] {
+            display: none;
+            border: 1px solid #555;
+            padding: 0;
+            box-shadow: 0 2px 10px rgba(127,127,127,0.4);
+            background-color: white;
+            margin: 0;
+            position-anchor: --button;
+            position: absolute;
+            left: anchor(right);
+            top: anchor(top);
+            opacity: 0;
+            transition: opacity 1500ms ease-in-out, display 1500ms allow-discrete;
+        }
+
+        .menu:popover-open {
+            display: flex;
+            flex-direction: column;
+            opacity: 1;
+
+            @starting-style {
+                opacity: 0;
+            }
+        }
+
 
     </style>
 </head>
@@ -53,6 +101,20 @@
                 </ox-button>
                 <ox-button>
                     <img src="../res/img/a.png" style="object-fit:contain">
+                    <div slot="menu" class="menu">
+                        <ox-button>
+                            Item 1
+                            <ox-button slot="menu">Subitem 1</ox-button>
+                            <ox-button slot="menu">Subitem 2</ox-button>
+                            <ox-button slot="menu">Subitem 2</ox-button>
+                        </ox-button>
+                        <ox-button>
+                            Item 2
+                            <ox-button slot="menu">Subitem A</ox-button>
+                            <ox-button slot="menu">Subitem B</ox-button>
+                            <ox-button slot="menu">Subitem C</ox-button>
+                        </ox-button>
+                    </div>
                 </ox-button>
             </div>
         </div>
@@ -60,11 +122,11 @@
 
         <p>Test</p>
         <p>Test</p>
+        <p>Test</p>
         
         <p>Test</p>
         <p>Test</p>
-        <p>Test</p>
-        <ox-upload id="abc" onupload="console.log('test')" multiple></ox-upload>
+        <ox-upload id="abc" onupload="console.log('test')" multiple>Upload a new file</ox-upload>
         <script>
             const abc = document.getElementById("abc");
             abc.addEventListener("upload", (event) => {
@@ -77,7 +139,7 @@
         <p>Test</p>
         <p>Test</p>
         <p>
-            <ox-paging first-index="1" current-index="3" last-index="99">
+            <ox-paging first-index="1" current-index="3" last-index="7">
 
             </ox-paging>
         </p>

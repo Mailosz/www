@@ -26,7 +26,9 @@
     input[type=submit]:hover, 
     input[type=reset]:hover, 
     ::file-selector-button:hover,
-    input[type=radio]:enabled:hover,input[type=checkbox]:enabled:hover {
+    input[type=radio]:enabled:hover,input[type=checkbox]:enabled:hover,
+    input[type=range]:hover,
+    input[type=range]:active {
         filter: brightness(1.1);
     }
 
@@ -126,7 +128,10 @@ select {
 
 input:is(:not([type]),[type=text],[type=number],[type=password],[type=date],[type=datetime],[type=datetime-local],[type=month],[type=week],[type=tel],[type=time],[type=url],[type=email],[type=search]):focus, 
 textarea:focus, 
-select:focus {
+select:focus,
+input[type=range]:focus::-webkit-slider-runnable-track,
+input[type=range]:focus::-moz-range-track,
+input[type=range]:focus::-moz-range-progress {
     border-color: var(--accent-color, cornflowerblue);
     box-shadow: 0 0 10px rgba(127,127,127,0.5);
     outline: none;
@@ -139,6 +144,7 @@ select:focus {
     vertical-align: text-bottom;
     transform: translateY(0.25em);
     background-color: white;
+    cursor: pointer;
 }
 
 :where(input[type=radio]) {
@@ -204,6 +210,61 @@ select:focus {
     background-color: #666;
     color: white;
 }
+
+/* RANGE */
+
+input[type=range]::-webkit-slider-thumb {
+    background: var(--control-background, #eee);
+    border-radius: var(--border-radius, 0);
+    color: pink;
+    border: var(--border-width, 1px) solid var(--border-color, black);
+    height: 2em;
+    width: 1em;
+    -webkit-appearance: none;
+    margin-top: calc(var(--border-width, 1px) * -2);
+    margin-bottom: calc(var(--border-width, 1px) * -2);
+}
+
+
+::-moz-range-thumb {
+    background: var(--control-background, #eee);
+    border-radius: var(--border-radius, 0);
+    color: pink;
+    border: var(--border-width, 1px) solid var(--border-color, black);
+    height: 2em;
+    width: 1em;
+    margin-top: calc(var(--border-width, 1px) * -2);
+    margin-bottom: calc(var(--border-width, 1px) * -2);
+}
+
+input[type=range] {
+    cursor: pointer;
+    margin: 0;
+    -webkit-appearance: none;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+    border: var(--border-width, 1px) solid var(--border-color, black);
+    border-radius: var(--border-radius, 0);
+    background: lightgray;
+}
+
+input[type=range]::-moz-range-track {
+    background: lightgray;
+    border: var(--border-width, 1px) solid var(--border-color, black);
+    border-radius: var(--border-radius, 0);
+    height: calc(2em - var(--border-width, 1px) * 4);
+}
+
+input[type=range]::-moz-range-progress {
+    height: calc(2em - var(--border-width, 1px) * 4);
+    background: var(--weak-accent-color, cornflowerblue);
+    border-left: var(--border-width, 1px) solid var(--border-color, black);
+    border-top-left-radius: var(--border-radius, 0);
+    border-bottom-left-radius: var(--border-radius, 0);
+}
+
+
 
 /* FIELDSET */
 

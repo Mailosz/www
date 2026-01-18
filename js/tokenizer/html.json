@@ -57,9 +57,6 @@
 		"begin": {
 			"on": "tagStart"
 		},
-		"data": {
-			"color": "blue"
-		},
 		"after": [{
 			"by": "style",
 			"set": {
@@ -84,9 +81,6 @@
 		"tagAttrName": {
 			"begin": {
 				"on": "tagAttrSpace" 
-			},
-			"data": {
-				"color": "darkblue"
 			},
 			"after": {
 				"set": {
@@ -205,9 +199,6 @@
 		"set": {
 			"css": false,
 			"js": false
-		},
-		"data": {
-			"color": "maroon"
 		}
 	},
 		"closingTagName": {
@@ -244,45 +235,30 @@
 			"begin": {
 				"on": "htmlCommentStart",
 				"by": ""
-			},
-			"data": {
-				"color": "green"
 			}
 		},
 		"htmlCommentEnd": {
 			"begin": {
 				"on": "htmlCommentContent",
 				"by": "-->"
-			},
-			"data": {
-				"color": "green"
 			}
 		},
 	"specialCharStart": {
 			"begin": {
 				"on": "default",
 				"by": "&"
-			},
-			"data": {
-				"color": "violet"
 			}
 		},
 		"specialCharContent": {
 			"begin": {
 				"on": "specialCharStart",
 				"by": ""
-			},
-			"data": {
-				"color": "violet"
 			}
 		},
 		"specialCharEnd": {
 			"begin": [{
 				"on": "specialCharContent",
 				"by": ";"
-			}],
-			"data": {
-				"color": "violet"
-			}
+			}]
 		}
 }

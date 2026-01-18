@@ -147,7 +147,7 @@ export class OxPopup extends OxControl {
         if (this.opts.modal == "true") {
             wrapper.showModal();
         } else {
-            wrapper.showPopover();
+            wrapper.togglePopover(true);
         }
 
         if (this.opts.placement != false) {

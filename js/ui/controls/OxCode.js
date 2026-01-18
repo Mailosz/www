@@ -1,4 +1,3 @@
-import { DocBuilder } from "../../utils/DocBuilder.js";
 import {OxControl} from "./OxControl.js";
 import {StringTokenizer, StringTokenizerLanguageService} from "../../tokenizer/StringTokenizer.js";
 
@@ -69,6 +68,7 @@ const style = /*css*/`
         padding: 0.75em 0;
         white-space: pre;
         min-height: 1em;
+        text-align: left;
     }
 
     #code-box:focus {
@@ -148,6 +148,9 @@ export class OxCode extends OxControl {
             }
         }).observe(container);
 
+        this.addEventListener("input", (event) => {
+            this.innerText = this.getCode();
+        });
 
     }
 
@@ -170,7 +173,13 @@ export class OxCode extends OxControl {
 
 
     getCode() {
-        return this.shadowRoot.querySelector("#code-box").innerText;
+        let lines = [];
+        let element = this.#codeBox.firstElementChild;
+        while (element != null) {
+            lines.push(element.textContent);
+            element = element.nextElementSibling;
+        }
+        return lines.join("\n");
     }
 
     #insertLine(ranges) {
@@ -238,6 +247,7 @@ export class OxCode extends OxControl {
             if (ranges.length > 0) {
                 event.preventDefault();
                 this.#insertLine(ranges);
+                this.dispatchEvent(new Event("input"));
             }
         } else {
             const ranges = event.getTargetRanges();

@@ -81,4 +81,19 @@ export class UsefulUtils {
             || c === '\u3000'
             || c === '\ufeff';
     }
+
+
+    /**
+     * 
+     * @param {HTMLElement} anchorElement 
+     * @param {HTMLElement} element 
+     */
+    static anchorElement(anchorElement, element) {
+
+        let anchorName = "--" + crypto.randomUUID();
+
+        anchorElement.style.anchorName = anchorName;
+        element.style.positionAnchor = anchorName;
+
+    }
 }

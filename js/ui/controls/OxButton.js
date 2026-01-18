@@ -9,7 +9,7 @@ const template = /*html*/`
         <slot></slot>
         <div id="label" part="label"></div>
     </div>
-    <slot id="submenu-slot" name="submenu"></slot>
+    <slot id="menu-slot" name="menu" part="menu" popover></slot>
 `;
 
 const style = /*css*/`
@@ -19,6 +19,7 @@ const style = /*css*/`
 
     :host {
         display: inline-flex;
+        anchor-name: --button-anchor;
     }
 
     :host(:hover) {
@@ -32,6 +33,7 @@ const style = /*css*/`
         
     #button {
         display: contents;
+
     }
 
     ::slotted(img) {
@@ -59,6 +61,31 @@ const style = /*css*/`
         pointer-events: none;
     }
 
+    #menu-slot {
+        display: none;
+        margin: 0;
+        position-anchor: --button-anchor;
+        position: absolute;
+        left: anchor(left);
+        top: anchor(bottom);
+        border: 1px solid gray;
+        padding: 0;
+        background-color: white;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+        opacity: 0;
+        transition: opacity 150ms ease-in-out, display 150ms allow-discrete;
+    }
+
+    #menu-slot:popover-open {
+        display: flex;
+        flex-direction: column;
+        opacity: 1;
+
+        @starting-style {
+            opacity: 0;
+        }
+    }
+
 `;
 
 export class OxButton extends OxControl {
@@ -84,9 +111,18 @@ export class OxButton extends OxControl {
         super.connectedCallback();
         this.tabIndex = 0;
         const button = this.shadowRoot.getElementById("button");
+        const menuslot = this.shadowRoot.getElementById("menu-slot");
 
-        this.addEventListener("click", this.#submenuClick);
+        this.addEventListener("click", this.#click.bind(this));
         this.addEventListener("keydown", this.#keydown);
+
+        menuslot.addEventListener("click", (event) => { event.stopPropagation(); }, {capture: true});
+        menuslot.addEventListener("pointerdown", (event) => { event.stopPropagation(); }, {capture: true});
+        menuslot.addEventListener("pointerup", (event) => { event.stopPropagation(); }, {capture: true});
+        menuslot.addEventListener("pointerenter", (event) => { event.stopPropagation(); }, {capture: true});
+        menuslot.addEventListener("pointerleave", (event) => { event.stopPropagation(); }, {capture: true});
+        menuslot.addEventListener("pointermove", (event) => { event.stopPropagation(); }, {capture: true});
+        menuslot.addEventListener("pointerout", (event) => { event.stopPropagation(); }, {capture: true});
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -235,29 +271,26 @@ export class OxButton extends OxControl {
      * 
      * @param {Event} event 
      */
-    #submenuClick(event) {
+    #click(event) {
+        console.log("button click");
         if (event.defaultPrevented || this.isDisabled) {
             return;
         }
 
-        if (this.openSubmenu()) {
+        if (this.openMenu()) {
             event.preventDefault();
         }
     }
 
-    openSubmenu() {
+    openMenu() {
         /**
          * @type {HTMLSlotElement}
          */
-        const submenuSlot = this.shadowRoot.getElementById("submenu-slot");
-        const submenus = submenuSlot.assignedElements();
-        if (submenus.length > 0) {
-            for (const submenu of submenus) {
-                if (submenu.showFor) {
-                    submenu.showFor(this);
-                }
-            }            
-            return true;
+        const menuSlot = this.shadowRoot.getElementById("menu-slot");
+
+        const menuElements = menuSlot.assignedElements();
+        if (menuElements.length > 0) {
+            return menuSlot.togglePopover(true);
         }
         return false;
     }

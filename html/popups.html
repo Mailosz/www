@@ -75,6 +75,10 @@
         <p>Click anywhere to open the popup.</p>
         <p>Click anywhere to open the popup.</p>
         <p>Click anywhere to open the popup.</p>
+        <button id="popup-button">Anchor Popup</button>
+        <div id="popup-div" style="background-color: white; border: 1px solid black; padding: 10px; position: absolute; top: 200px; left: 200px;">
+            This is a div popup
+        </div>
         <p>Click anywhere to open the popup.</p>
         <p>Click anywhere to open the popup.</p>
         <p>Click anywhere to open the popup.</p>
@@ -119,6 +123,7 @@
     <script type="module">
         import {OxPopup} from "../js/ui/controls/OxPopup.js";
         import {DocBuilder} from "../js/utils/DocBuilder.js";
+        import {UsefulUtils} from "../js/utils/UsefulUtils.js";
 
     
         function showContextPopup(event) {
@@ -128,6 +133,10 @@
             contextPopup.open({anchor: {x: event.clientX, y: event.clientY}});
 
             event.preventDefault();
+        }
+
+        document.getElementById('popup-button').onclick = function anchorPopup() {
+            UsefulUtils.anchorElement(document.getElementById('popup-button'), document.getElementById('popup-div'));
         }
 
         window.showContextPopup = showContextPopup;

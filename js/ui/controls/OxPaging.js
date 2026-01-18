@@ -14,6 +14,13 @@ const template = /*html*/`
         <div class="page-index"></div>
         <div class="page-index"></div>
         <div class="page-index"></div>
+        <div class="page-index"></div>
+        <div class="page-index"></div>
+        <div class="page-index"></div>
+        <div class="page-index"></div>
+        <div class="page-index"></div>
+        <div class="page-index"></div>
+        <div class="page-index"></div>
     </div>
     <div id="next" class="active"></div>
 `;
@@ -75,9 +82,9 @@ const style = /*css*/`
         cursor: pointer;
     }
 
-    /*div.page-index:not([page-index]) {
+    div.page-index:not([page-index]) {
         display: none;
-    }*/
+    }
 
 
     div.page-index::before {

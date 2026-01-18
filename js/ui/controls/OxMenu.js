@@ -3,8 +3,8 @@ import {OxButton} from "./OxButton.js";
 
 
 const template = /*html*/`
-    <div id="popup" part="popup">
-        <slot id="slot-id"></slot>
+    <div id="menu" part="menu">
+        <slot></slot>
     </div>
 `;
 
@@ -37,12 +37,11 @@ export class OxMenu extends OxControl {
 
     connectedCallback() {
         super.connectedCallback();
-        this.setAttribute("popover", "auto");
 
         this.addEventListener("click", (event)=> {
             event.stopPropagation();
-            if (!event.defaultPrevented)
-                this.close();
+            // if (!event.defaultPrevented)
+                // this.close();
         });
 
         this.addEventListener("keydown", this.#keydown);
@@ -51,17 +50,17 @@ export class OxMenu extends OxControl {
                 this.shadowRoot.getElementById("slot-id").assignedElements().at(0).focus();
             }
         });
-        this.addEventListener("focusout", (event) => {
-            if (!event.relatedTarget) {
-                this.close();
-            } else if (event.relatedTarget instanceof Node) {
-                if (!this.contains(event.relatedTarget)) {
-                    this.close();
-                }
-            } else {
-                this.close();
-            }
-        });
+        // this.addEventListener("focusout", (event) => {
+        //     if (!event.relatedTarget) {
+        //         this.close();
+        //     } else if (event.relatedTarget instanceof Node) {
+        //         if (!this.contains(event.relatedTarget)) {
+        //             this.close();
+        //         }
+        //     } else {
+        //         this.close();
+        //     }
+        // });
     }
     /**
      * 
@@ -110,7 +109,7 @@ export class OxMenu extends OxControl {
     }
 
     close() {
-        this.hidePopover();
+        this.togglePopover(false);
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
