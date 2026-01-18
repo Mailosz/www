@@ -44,7 +44,7 @@ label {
     text-align: left;
 }
 
-:is(form, form>*, fieldset, fieldset>*)>:is(input, select, textarea, button) {
+:is(form, form>*, fieldset, fieldset>*)>:is(input, select, textarea, button, progress) {
     grid-column-start: 2;
     grid-column-end: -1;
 }

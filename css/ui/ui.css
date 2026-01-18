@@ -128,10 +128,7 @@ select {
 
 input:is(:not([type]),[type=text],[type=number],[type=password],[type=date],[type=datetime],[type=datetime-local],[type=month],[type=week],[type=tel],[type=time],[type=url],[type=email],[type=search]):focus, 
 textarea:focus, 
-select:focus,
-input[type=range]:focus::-webkit-slider-runnable-track,
-input[type=range]:focus::-moz-range-track,
-input[type=range]:focus::-moz-range-progress {
+select:focus {
     border-color: var(--accent-color, cornflowerblue);
     box-shadow: 0 0 10px rgba(127,127,127,0.5);
     outline: none;
@@ -246,11 +243,11 @@ input[type=range] {
 input[type=range]::-webkit-slider-runnable-track {
     border: var(--border-width, 1px) solid var(--border-color, black);
     border-radius: var(--border-radius, 0);
-    background: lightgray;
+    background: var(--button-background, #eee);
 }
 
 input[type=range]::-moz-range-track {
-    background: lightgray;
+    background: var(--button-background, #eee);
     border: var(--border-width, 1px) solid var(--border-color, black);
     border-radius: var(--border-radius, 0);
     height: calc(2em - var(--border-width, 1px) * 4);
@@ -264,7 +261,46 @@ input[type=range]::-moz-range-progress {
     border-bottom-left-radius: var(--border-radius, 0);
 }
 
+input[type=range]:focus {
+    outline: none;
+}
 
+input[type=range]:focus::-webkit-slider-runnable-track {
+    border-color: var(--accent-color, cornflowerblue);
+    box-shadow: 0 0 10px rgba(127,127,127,0.5);
+    outline: none;
+}
+
+input[type=range]:focus::-moz-range-track,
+input[type=range]:focus::-moz-range-progress {
+    border-color: var(--accent-color, cornflowerblue);
+    box-shadow: 0 0 10px rgba(127,127,127,0.5);
+    outline: none;
+}
+
+
+/* PROGRESS */
+progress {
+    width: 100%;
+    height: 1.5em;
+    appearance: none;
+    border: var(--border-width, 1px) solid var(--border-color, black);
+    border-radius: var(--border-radius, 0);
+    background: var(--button-background, #eee);
+}
+
+progress::-webkit-progress-bar {
+    background: var(--button-background, #eee);
+    border-radius: var(--border-radius, 0);
+}
+
+progress::-webkit-progress-value {
+    background: var(--accent-color, #eee);
+}
+
+progress::-moz-progress-bar {
+    background: var(--accent-color, #eee);
+}
 
 /* FIELDSET */
 
