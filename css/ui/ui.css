@@ -134,6 +134,8 @@ select:focus {
     outline: none;
 }
 
+/* CHECKBOX & RADIOS */
+
 :where(input[type=radio], input[type=checkbox]) {
     width: 1.5em;
     height: 1.5em;
@@ -156,14 +158,14 @@ select:focus {
 :where(input[type=radio])::before {
     content: '';
     display: block;
-    width: calc(100% - 4px);
-    height: calc(100% - 4px);
+    width: calc(100% - 7.25px);
+    height: calc(100% - 7.25px);
     margin: 2px;
     background-color: var(--accent-color);
     border-radius: 100%;
-    border: none;
+    border: 2px solid var(--strong-accent-color);
     transform: scale(0);
-    transition: cubic-bezier(0.5, 2, 0.65, 0.8) transform 200ms;
+    transition: ease-out transform 200ms;
 }
 
 :where(input[type=checkbox]) {
@@ -177,23 +179,24 @@ select:focus {
 
 
 :where(input[type=checkbox])::before {
-    font-size: 0.75em;
+    font-size: 0.5em;
     padding: 0;
     text-align: center;
     content: '✓';
     display: block;
-    width: calc(100% - 4px);
-    height: calc(100% - 4px);
+    width: calc(100% - 7.25px);
+    height: calc(100% - 7.25px);
     margin: 2px;
     background-color: var(--accent-color);
     border-radius: 1px;
-    border: none;
+    border: 2px solid var(--strong-accent-color);
     transform: scale(0);
-    transition: cubic-bezier(0.5, 2, 0.65, 0.8) transform 200ms;
+    transition: ease-out transform 200ms;
 }
 
 :where(input[type=checkbox]:checked,input[type=radio]:checked)::before {
     transform: scale(1);
+    transition-timing-function: cubic-bezier(0.5, 2, 0.65, 0.8);
 }
 
 :where(input[type=checkbox]:indeterminate)::before {
