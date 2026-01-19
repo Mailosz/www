@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../css/ui/ui.css">
     <link rel="stylesheet" href="../css/ui/switch.css">
     <link rel="stylesheet" href="../css/wait.css">
+    <link rel="stylesheet" href="../css/form.css">
     <link rel="stylesheet" href="../css/controls.css">
     <link rel="stylesheet" href="../css/themes/green.light.css">
 
@@ -197,23 +198,29 @@
         <!-- <ox-login></ox-login> -->
     </div>
         <p><input type></p>
+
     <p>Test test test test test test test test test. Test test test test test test test test test. </p>
     <p>Test test test test test test test test test. Test test test test test test test test test. </p>
     <h2>Tab</h2>
-    <div style="display: flex;">
-        <ox-button label="Item 1" toggle checked group="tab-group" onclick="document.getElementById('view-id').show('')">
-            <img slot="icon" src="../res/img/a.png"/>
+    <div class="toolbar" style="display: flex;">
+        <ox-button label="Tab 1" toggle checked group="tab-group" onclick="document.getElementById('view-id').show('')">
         </ox-button>
-        <ox-button label="Item 2" toggle group="tab-group" icon="../res/img/b.png" onclick="document.getElementById('view-id').show('second')">
+        <ox-button label="Tab 2" toggle group="tab-group" onclick="document.getElementById('view-id').show('second')">
         </ox-button>
-        <ox-button label="Item 3" toggle group="tab-group" icon="../res/img/c.png" onclick="document.getElementById('view-id').show('third')">
+        <ox-button label="Tab 3" toggle group="tab-group" onclick="document.getElementById('view-id').show('third')">
     
         </ox-button>
     </div>
 
     <ox-tab id="view-id">
         <div>This is first view</div>
-        <div slot="second">This is second view</div>
+        <div slot="second">
+            <form style="padding: 10px">
+                <label>Username: <input></label>
+                <label>Password: <input type="password"></label>
+            </form>
+            <button>Login</button>
+        </div>
         <div slot="third">This is third view</div>
     </ox-tab>
     <p>Test test test test test test test test test. Test test test test test test test test test. </p>

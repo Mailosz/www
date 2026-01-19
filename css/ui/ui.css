@@ -202,8 +202,12 @@ select:focus {
 :where(input[type=checkbox]:indeterminate)::before {
     content: '?';
     transform: scale(1);
+    font-size: 0.75em;
     color: white;
     background-color: gray;
+    border: none;
+    width: calc(100% - 4px);
+    height: calc(100% - 4px);
 }
 
 :where(input[type=radio]:disabled::before, input[type=checkbox]:disabled::before) {
