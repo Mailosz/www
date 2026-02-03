@@ -182,54 +182,64 @@ export class OxCode extends OxControl {
         return lines.join("\n");
     }
 
-    #insertLine(ranges) {
-        for (let range of ranges) {
+    #getEditRange(range) {
             let realRange = this.shadowRoot.ownerDocument.createRange();
             realRange.setStart(range.startContainer, range.startOffset);
             realRange.setEnd(range.endContainer, range.endOffset);
             if (!realRange.collapsed) {
                 realRange.deleteContents();
             }
+            return realRange;
+    }
 
-            let oldLine = realRange.endContainer;
-            if (oldLine == this.#codeBox) {
-                oldLine = this.#codeBox.childNodes.item(realRange.endOffset-1);
-            } else {
-                while (oldLine.nodeName != "DIV") {
-                    oldLine = oldLine.parentElement;
-                    if (oldLine == null) {
+    #insertLine(range) {
+        let realRange = this.shadowRoot.ownerDocument.createRange();
+        realRange.setStart(range.startContainer, range.startOffset);
+        realRange.setEnd(range.endContainer, range.endOffset);
+        if (!realRange.collapsed) {
+            realRange.deleteContents();
+        }
 
-                    }
+        let oldLine = realRange.endContainer;
+        if (oldLine == this.#codeBox) {
+            oldLine = this.#codeBox.childNodes.item(realRange.endOffset-1);
+        } else {
+            while (oldLine.nodeName != "DIV") {
+                oldLine = oldLine.parentElement;
+                if (oldLine == null) {
+
                 }
             }
-            if (!oldLine) {
-                oldLine = this.#codeBox.firstElementChild;
-            }
-
-            let newline = this.shadowRoot.ownerDocument.createElement("DIV");
-            let lineEnd = this.shadowRoot.ownerDocument.createRange();
-            lineEnd.setStart(realRange.endContainer, realRange.endOffset);
-            lineEnd.setEndAfter(oldLine);
-            this.#codeBox.insertBefore(newline, oldLine.nextSibling);
-            let fragment = lineEnd.extractContents();
-            if (oldLine.firstChild == null) {
-                oldLine.appendChild(this.shadowRoot.ownerDocument.createTextNode(""));
-            }
-            newline.textContent = fragment.textContent.trim();
-
-
-            //determine indentation
-            let indentation = oldLine.textContent.substring(0, oldLine.textContent.length - oldLine.textContent.trimStart().length);
-            newline.textContent = indentation + newline.textContent;
-            if (newline.firstChild == null) {
-                newline.appendChild(this.shadowRoot.ownerDocument.createTextNode(""));
-            }
-            let afterRange = this.shadowRoot.ownerDocument.createRange();
-            afterRange.setEnd(newline.firstChild, indentation.length);
-            afterRange.collapse();
-            this.shadowRoot.ownerDocument.getSelection().empty();
-            this.shadowRoot.ownerDocument.getSelection().addRange(afterRange);
         }
+        if (!oldLine) {
+            oldLine = this.#codeBox.firstElementChild;
+        }
+
+        let newline = this.shadowRoot.ownerDocument.createElement("DIV");
+        let lineEnd = this.shadowRoot.ownerDocument.createRange();
+        lineEnd.setStart(realRange.endContainer, realRange.endOffset);
+        lineEnd.setEndAfter(oldLine);
+        this.#codeBox.insertBefore(newline, oldLine.nextSibling);
+        let fragment = lineEnd.extractContents();
+        if (oldLine.firstChild == null) {
+            oldLine.appendChild(this.shadowRoot.ownerDocument.createTextNode(""));
+        }
+        newline.textContent = fragment.textContent.trim();
+
+
+        //determine indentation
+        let indentation = oldLine.textContent.substring(0, oldLine.textContent.length - oldLine.textContent.trimStart().length);
+        newline.textContent = indentation + newline.textContent;
+        if (newline.firstChild == null) {
+            newline.appendChild(this.shadowRoot.ownerDocument.createTextNode(""));
+        }
+        let afterRange = this.shadowRoot.ownerDocument.createRange();
+        afterRange.setEnd(newline.firstChild, indentation.length);
+        afterRange.collapse();
+        this.shadowRoot.ownerDocument.getSelection().empty();
+        this.shadowRoot.ownerDocument.getSelection().addRange(afterRange);
+
+        return afterRange;
     }
 
     /**
@@ -246,8 +256,30 @@ export class OxCode extends OxControl {
             let ranges = event.getTargetRanges();
             if (ranges.length > 0) {
                 event.preventDefault();
-                this.#insertLine(ranges);
+                for (let range of ranges) {
+                    this.#insertLine(range);
+                }
                 this.dispatchEvent(new Event("input"));
+            }
+        } else if (event.inputType == "insertFromPaste") {
+            event.preventDefault();
+            let ranges = event.getTargetRanges();
+            const data = event.dataTransfer.getData("text/plain");
+            const lines = data.split(/\r\n|\r|\n/);
+            for (let range of ranges) {
+                let editRange = this.#getEditRange(range);
+
+                let textNode = this.ownerDocument.createTextNode(lines[0]);
+                editRange.insertNode(textNode);
+                editRange.setStartAfter(textNode);
+                editRange.setEndAfter(textNode);
+                for (let line = 1; line < lines.length; line++) {
+                    editRange = this.#insertLine(editRange);
+                    let textNode = this.ownerDocument.createTextNode(lines[line]);
+                    editRange.insertNode(textNode);
+                    editRange.setStartAfter(textNode);
+                    editRange.setEndAfter(textNode);
+                }
             }
         } else {
             const ranges = event.getTargetRanges();
@@ -328,7 +360,7 @@ export class OxCode extends OxControl {
 
         if (typeof(code) === "undefined") {code = "";}
 
-        const lines = code.split('\n');
+        const lines = code.split(/\r\n|\r|\n/);
 
         //remove first empty line
         if (lines.length > 1 && lines[0].trimStart().length == 0) {
