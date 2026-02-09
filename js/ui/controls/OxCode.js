@@ -136,6 +136,7 @@ export class OxCode extends OxControl {
          */
         this.#codeBox.addEventListener("beforeinput", (event) => {this.#handleBeforeInput(event);});
         this.#codeBox.addEventListener("input", (event) => this.#handleAfterInput(event));
+        this.#codeBox.addEventListener("keydown", (event) => this.#handleKeyDown(event));
 
         const code = this.textContent;
         this.#createCodeBox(code);
@@ -182,13 +183,15 @@ export class OxCode extends OxControl {
         return lines.join("\n");
     }
 
+    /**
+     * Creates live Range from any AbstractRange
+     * @param {AbstractRange} range 
+     * @returns {Range}
+     */
     #getEditRange(range) {
             let realRange = this.shadowRoot.ownerDocument.createRange();
             realRange.setStart(range.startContainer, range.startOffset);
             realRange.setEnd(range.endContainer, range.endOffset);
-            if (!realRange.collapsed) {
-                realRange.deleteContents();
-            }
             return realRange;
     }
 
@@ -269,6 +272,10 @@ export class OxCode extends OxControl {
             for (let range of ranges) {
                 let editRange = this.#getEditRange(range);
 
+                if (!editRange.collapsed) {
+                    editRange.deleteContents();
+                }
+
                 let textNode = this.ownerDocument.createTextNode(lines[0]);
                 editRange.insertNode(textNode);
                 editRange.setStartAfter(textNode);
@@ -324,10 +331,31 @@ export class OxCode extends OxControl {
      */
     #handleAfterInput(event) { 
 
-        if (this.#codeBox.firstElementChild == null) {
+        if (this.#codeBox.firstElementChild == null || this.#codeBox.firstElementChild.nodeName == "BR") {
             const div = this.ownerDocument.createElement("div");
             div.textContent = this.#codeBox.textContent;
             this.#codeBox.replaceChildren(div);
+        }
+
+        this.dispatchEvent(new Event("input"));
+    }
+
+    /**
+     * 
+     * @param {KeyboardEvent} event 
+     */
+    #handleKeyDown(event) { 
+
+        if (event.key === "Tab") {
+            event.preventDefault();
+            this.#forEverySelectionRange((range) => {
+                const textNode = this.ownerDocument.createTextNode("    ");
+                range.insertNode(textNode);
+                range.setStartAfter(textNode);
+                range.setEndAfter(textNode);
+                return range;
+            });
+
         }
 
         this.dispatchEvent(new Event("input"));
@@ -466,19 +494,8 @@ export class OxCode extends OxControl {
         /**
          * @type {Selection}
          */
-        let selection;
-        if (this.shadowRoot.getSelection) { // selection handling incosistency between chrome and firefox - check safari
-            selection = this.shadowRoot.getSelection();
-        } else {
-            selection = this.ownerDocument.getSelection();
-        }
-        let getRange;
-        if (selection.getComposedRanges) { // right way but only works in safari
-            const composedRanges = selection.getComposedRanges({shadowRoots: [this.shadowRoot]});
-            getRange = (i) => composedRanges[i];
-        } else {
-            getRange = (i) => selection.getRangeAt(i);
-        }
+        const selection = this.#getSelection();
+        const getRange = this.#getSelectionRangeFunction(selection);
         const oldRanges = [];
         if (this.getRootNode().activeElement == this) {
             for (let i = 0; i < selection.rangeCount; i++) {
@@ -568,6 +585,64 @@ export class OxCode extends OxControl {
             selection.addRange(range);
         }
         //
+    }
+
+    /**
+     * Handles inconsistencies between browsers in selection handling in shadow DOM
+     * @returns {Selection}
+     */
+    #getSelection() {
+        let selection;
+        if (this.shadowRoot.getSelection) { // selection handling incosistency between chrome and firefox - check safari
+            selection = this.shadowRoot.getSelection();
+        } else {
+            selection = this.ownerDocument.getSelection();
+        }
+        return selection;
+    }
+
+    /**
+     * Handles inconsistencies between browsers in selection handling in shadow DOM
+     * @param {Selection} selection 
+     * @returns {function(number): Range}
+     */
+    #getSelectionRangeFunction(selection) { 
+
+        let getRange;
+        if (selection.getComposedRanges) { // right way but only works in safari
+            const composedRanges = selection.getComposedRanges({shadowRoots: [this.shadowRoot]});
+            getRange = (i) => composedRanges[i];
+        } else {
+            getRange = (i) => selection.getRangeAt(i);
+        }
+        return getRange;
+    }
+
+    /**
+     * 
+     * @param {function(Range)} callback 
+     */
+    #forEverySelectionRange(callback) {
+        const selection = this.#getSelection();
+        const getRange = this.#getSelectionRangeFunction(selection);
+        const rangeCount = selection.rangeCount;
+
+        let ranges = [];
+        for (let i = 0; i < rangeCount; i++) {
+            const range = getRange(i);
+            const realRange = this.#getEditRange(range);
+
+            let retRange = callback(realRange);
+            if (retRange) {
+                ranges.push(retRange);
+            }
+        }
+        if (ranges.length > 0) {
+            selection.empty();
+            for (let i = 0; i < ranges.length; i++) {
+                selection.addRange(ranges[i]);
+            }
+        }
     }
 
 }
