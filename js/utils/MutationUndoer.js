@@ -28,7 +28,7 @@ export class MutationUndoer {
         this.options = {
             subtree: true, 
             childList: true, 
-            attibutes: true, 
+            attributes: true, 
             attributeOldValue: true, 
             characterData: true, 
             characterDataOldValue: true,
@@ -54,7 +54,6 @@ export class MutationUndoer {
      * Start recording changes. If there were pending changes they are saved for undo
      */
     startRecording() {
-        console.log("x");
         if (!this.#watch) {
             this.#observer.observe(this.#rootElement, this.options);
             this.#watch = true;
