@@ -9,7 +9,7 @@
     <link id="theme-link" rel="stylesheet" href="../css/themes/green.light.css">
     <link rel="stylesheet" href="../css/document.css">
     <script type="module" src="../js/ui/controls/OxCode.js"></script>
-    <script type="module" src="../js/ui/controls/OxExample.js"></script>
+    <script type="module" src="../js/ui/components/CodeExample.js"></script>
     <script type="module" src="../js/ui/controls/OxOutline.js"></script>
     <script type="module">
         import {LoremIpsum} from "../js/ui/LoremIpsum.js";
@@ -39,7 +39,7 @@
         <p>Quick introduction to the theme of the document. Some more introduction. And finally the final of an introduction.</p>
         <ox-code contenteditable="true" compact>Test code</ox-code>
         <h2>Code</h2>
-        <ox-example editable="true" autorun>
+        <code-example editable="true" autorun>
             &lt;!DOCTYPE html&gt;
 
             &lt;html lang="en"&gt;
@@ -69,7 +69,7 @@
                 &lt;p&gt;Paragraph&lt;/p&gt;
                 &lt;/body&gt;
             &lt;/html&gt;
-        </ox-example>
+        </code-example>
         <h2>Some text</h2>
         <p>This is a <mark>text about something</mark> very important. <mark class="green">This is also a text.</mark> This is a text about something very important. <mark class="red">Oh no, it's repeating!</mark> This is also a text. <mark class="orange">This</mark> is a text about <mark class="gray">something very important. Oh well.</mark> This is a text about something very important. This text is still very important. This too. This not. <mark class="blue">This is a text about something very important.</mark> <mark class="yellow">This is a text about something very important.</mark></p>
         <p>This is <i>some italic text</i>, and <b>some bold one</b>, and now <u>an underline</u>.</p>
@@ -171,9 +171,9 @@
             <code class="sample">Just code</code>
             <p><lorem-ipsum></p>
             <h4>Even tinier subpoint</h4>
-            <ox-example class="sample" data-code="true">
+            <code-example class="sample" data-code="true">
                 &lt;input type="text"&gt;
-            </ox-example>
+            </code-example>
             <h4>Even tinier subpoint 2</h4>
             <h4>Even tinier subpoint 3</h4>
             <p>Thats all</p>

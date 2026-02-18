@@ -1,22 +1,21 @@
-import {OxControl} from "./OxControl.js";
+import {OxControl} from "../controls/OxControl.js";
+import {OxCode} from "../controls/OxCode.js";
 import {DocBuilder} from "../../utils/DocBuilder.js";
-import {AutoSizeIframe} from "./AutoSizeIframe.js";
+import {AutoSizeIframe} from "../controls/AutoSizeIframe.js";
 
 
 const template = /*html*/`
-    <div id="example">
-        <ox-code id="code-box"></ox-code>
-        <div id="controls">
-            <button id="run-button" part="run-button" title="Run"></button>
-            <div class="spacer"></div>
-            <button id="orientation-button" part="orientation-button" title="Orientation"></button>
-            <button id="fullscreen-button" part="fullscreen-button" title="Fullscreen"></button>
-        </div>
-        <div id="preview-container">
-            <iframe id="preview"></iframe>
-            <div id="refresh-panel">
-                <slot name="refresh-label">Click to refresh</slot>
-            </div>
+    <ox-code id="code-box"></ox-code>
+    <div id="controls">
+        <button id="run-button" part="run-button" title="Run"></button>
+        <div class="spacer"></div>
+        <button id="orientation-button" part="orientation-button" title="Orientation"></button>
+        <button id="fullscreen-button" part="fullscreen-button" title="Fullscreen"></button>
+    </div>
+    <div id="preview-container">
+        <iframe id="preview"></iframe>
+        <div id="refresh-panel">
+            <slot name="refresh-label">Click to refresh</slot>
         </div>
     </div>
 `;
@@ -27,7 +26,9 @@ const style = /*css*/`
     }
 
     :host {
-        background-color: aliceblue;
+        display: flex;
+        justify-content: stretch;
+        flex-direction: column;
     }
 
     #example {
@@ -160,7 +161,7 @@ const style = /*css*/`
     }
 `;
 
-export class OxExample extends OxControl {
+export class CodeExample extends OxControl {
 
     static observedAttributes = ["editable", "autorun"];
 
@@ -181,7 +182,7 @@ export class OxExample extends OxControl {
         this.shadowRoot.getElementById("fullscreen-button").onclick = (event) => this.changeFullscreen();
 
         const preview = this.shadowRoot.getElementById("preview");
-        preview.onload = () => preview.height = preview.contentDocument.body.scrollHeight;
+        preview.onload = () => preview.style.minHeight = preview.contentDocument.body.scrollHeight + "px";
 
         const codeBox = this.shadowRoot.getElementById("code-box");
         codeBox.setCode(this.textContent);
@@ -234,4 +235,4 @@ export class OxExample extends OxControl {
 
 }
 
-window.customElements.define("ox-example", OxExample);
+window.customElements.define("code-example", CodeExample);

@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Samples</title>
-    <link rel="stylesheet" href="../css/samples.css">
-    <link rel="stylesheet" href="../css/langs/html-lang.css">
-    <script type="module" src="../js/ui/controls/OxCode.js"></script>
+    <link id="theme-link" rel="stylesheet" href="../css/basic.css">
+    <link id="theme-link" rel="stylesheet" href="../css/themes/green.light.css">
+    <script type="module" src="../js/ui/components/CodeExample.js"></script>
     <style>
     
     </style>
 </head>
-<body>
-    <ox-code contenteditable="true" tokenizer-language="../js/tokenizer/html.json" code-style="../css/langs/html-lang.css" style="height: 200px; resize: both;">
+<body style="display: flex;">
+    <code-example editable="true" autorun>
         &lt;!DOCTYPE html&gt;
         &lt;html&gt;
         &lt;!-- To jest komentarz --&gt;
@@ -33,62 +33,6 @@
                 &lt;input&gt;&lt;input&gt;&lt;input&gt;&lt;input&gt;
             &lt;/body&gt;
         &lt;/html&gt;
-    </ox-code>
-    <button id="recolorize">Recolorize</button>
-    <p></p>
-    <p></p>
-    <p></p>
-    <ox-code contenteditable="true" tokenizer-language="../js/tokenizer/css.json" code-style="../css/langs/css-lang.css">
-        html {
-            width: 100%;
-            height: 100%;
-            padding: 0;
-            margin: 0;
-        
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            padding: 0;
-            margin: 0;
-            min-height: 100vh;
-        }
-        
-        @media (min-width: 1200px) {
-            html {
-                background-color: #f8f8f8;
-            }
-            main {
-                box-shadow: 0px 0px 20px rgba(0,0,0,0.2);
-                max-width: 1024px;
-                --main-padding: 40px;
-            }
-        } 
-        
-        @media not (min-width: 1200px) {
-            main{
-                --main-padding: max(calc(10vw - 20px), 10px);
-            }
-        }
-        
-        main {
-            
-            /* --main-padding: min(5vw, 24px); */
-        
-            background-color: #ffffff;
-            margin: auto;
-            box-sizing: border-box;
-            padding: 40px var(--main-padding);
-            
-        }
-        </ox-code>
-
-
-    <script type="module">
-        document.querySelector("#recolorize").onclick = () => {
-            let code = document.querySelector("ox-code").getCode();
-            console.log(code);
-        }
-    </script>
+    </code-example>
 </body>
 </html>
