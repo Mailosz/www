@@ -6,15 +6,17 @@ export class AutoSizeIframe extends HTMLIFrameElement {
         this.addEventListener("load", (event) => { 
             new ResizeObserver((entries) => {
                 this.setSize();
-            }).observe(this.contentDocument.body);
+            }).observe(this.contentDocument.documentElement);
         });
     }
 
     setSize() {
         let bounds = this.contentDocument.documentElement.getBoundingClientRect();
 
-        this.height = Math.ceil(bounds.height - bounds.y);
-        this.width = Math.ceil(bounds.width - bounds.x);
+        const scrollbarWidth = this.contentWindow.innerWidth - this.contentWindow.document.documentElement.clientWidth;
+        const scrollbarHeight = this.contentWindow.innerHeight - this.contentWindow.document.documentElement.clientHeight;
+        this.height = Math.ceil(bounds.height + scrollbarHeight);
+        this.width = Math.ceil(bounds.width + scrollbarWidth);
     }
 }
 
