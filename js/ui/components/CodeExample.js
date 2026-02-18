@@ -5,17 +5,19 @@ import {AutoSizeIframe} from "../controls/AutoSizeIframe.js";
 
 
 const template = /*html*/`
-    <ox-code id="code-box"></ox-code>
-    <div id="controls">
-        <button id="run-button" part="run-button" title="Run"></button>
-        <div class="spacer"></div>
-        <button id="orientation-button" part="orientation-button" title="Orientation"></button>
-        <button id="fullscreen-button" part="fullscreen-button" title="Fullscreen"></button>
-    </div>
-    <div id="preview-container">
-        <iframe id="preview"></iframe>
-        <div id="refresh-panel">
-            <slot name="refresh-label">Click to refresh</slot>
+    <div id="example">
+        <ox-code id="code-box"></ox-code>
+        <div id="controls">
+            <button id="run-button" part="run-button" title="Run"></button>
+            <div class="spacer"></div>
+            <button id="orientation-button" part="orientation-button" title="Orientation"></button>
+            <button id="fullscreen-button" part="fullscreen-button" title="Fullscreen"></button>
+        </div>
+        <div id="preview-container">
+            <iframe id="preview" is="auto-size"></iframe>
+            <div id="refresh-panel">
+                <slot name="refresh-label">Click to refresh</slot>
+            </div>
         </div>
     </div>
 `;
@@ -115,10 +117,12 @@ const style = /*css*/`
         flex: 1;
         width: 100%;
         min-height: 100px;
+        
     }
 
     #example.fullscreen #preview, #example.fullscreen #code-box {
         height: 100%;
+        max-height: unset;
     }
 
 
@@ -132,15 +136,26 @@ const style = /*css*/`
         z-index: 1000;
     }
 
-    :host(:not([horizontal])) #example.fullscreen>#code-box {
-        height: auto;
-        flex: 1;
+    :host(:not([horizontal])) {
+
+        #example.fullscreen>#code-box {
+            height: auto;
+            flex: 1;
+        }
+        
+        #preview {
+            max-height: 60vh;
+        }
     } 
 
     #preview-container {
         position: relative;
         border: var(--border-width) solid var(--border-color);
-        flex: 1 1;
+        flex-shrink: 1;
+    }
+
+    #example.fullscreen #preview-container {
+        flex: 1;
     }
 
     #refresh-panel {
@@ -182,7 +197,11 @@ export class CodeExample extends OxControl {
         this.shadowRoot.getElementById("fullscreen-button").onclick = (event) => this.changeFullscreen();
 
         const preview = this.shadowRoot.getElementById("preview");
-        preview.onload = () => preview.style.minHeight = preview.contentDocument.body.scrollHeight + "px";
+        // preview.onload = () => {
+            
+        //     preview.style.height = preview.contentDocument.body.scrollHeight + "px";
+
+        // }
 
         const codeBox = this.shadowRoot.getElementById("code-box");
         codeBox.setCode(this.textContent);
