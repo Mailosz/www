@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input handler</title>
+    <style>
+        .input-box {
+            background: rgba(127, 127, 127, 0.1);
+            border: 1px solid black;
+            padding: 4px;
+            min-height: 200px;
+        }
+
+
+        p {
+            padding: 10px;
+            margin: 10px;
+            background-color: darkseagreen;
+        }
+        .input-box div {
+            padding: 10px;
+            background-color: aquamarine;;
+            margin: 10px;
+        }
+
+        .input-box span {
+            padding: 4px;
+            background-color: lightpink;;
+            margin: 4px;
+        }
+
+        .selected-element {
+            outline-offset: 2px;
+            outline: 2px dashed red;
+        }
+
+        #node-tree {
+            border: 1px solid black;
+            padding: 10px;
+        }
+
+        #node-tree div.node-element {
+            padding: 0.25em 0 0.25em 1em;
+            min-height: 1.5em;
+        }
+
+        #node-tree div.node-element:hover:not(:has(.node-element:hover)) {
+            background-color: #eee;
+        }
+
+        #node-tree .selection-start {
+            background-color: #dff6fe;
+        }
+
+        #node-tree .selection-start::before {
+            content: attr(offset-start);
+            margin-right: 1em;
+        }
+
+        #node-tree .selection-end {
+            background-color: #ffaa77;
+        }
+
+        #node-tree .selection-end::after {
+            content: attr(offset-end);
+            margin-left: 1em;
+        }
+
+        #node-tree .selection-start.selection-end {
+            background-color: #88ee77;
+        }
+
+        .input-box {
+            caret-color: transparent;
+        }
+
+        .selection-caret {
+            width: 1px;
+            backdrop-filter: invert(100%) contrast(1.5);
+            user-select: none;
+            pointer-events: none;
+            animation: caret-blink 1000ms infinite;
+        }
+
+        @keyframes caret-blink {
+            0% {opacity: 1;}
+            50% {opacity: 1;}
+            75% {opacity: 0;}
+            100% {opacity: 1;}
+        }
+    </style>
+    <script type="module" src="../js/ui/controls/OxCode.js"></script>
+</head>
+<body>
+    <div>
+        <div id="test-elem" style="display: inline flex;"></div>
+    </div>
+<button id="test-button">Test</button>
+<button id="undo-button">Undo</button>
+<button id="redo-button">Redo</button>
+    &emsp;
+<button id="bold-button"><b>B</b></button>
+<button id="italic-button"><i>I</i></button>
+<button id="underline-button"><u>U</u></button>
+    &emsp;
+<div id="input-1" class="input-box input-handler" contenteditable="true">
+    abcd abcd abcd abcd abcd abcd abcd abcd
+</div>
+<br>
+    <div id="node-tree"></div>
+
+<!--<div id="input-2" class="input-box" contenteditable="true">-->
+<!--    <div class="test"><div>test</div>cbf</div>-->
+<!--    <div class="text">Text 2 tst</div>-->
+<!--    <p>111111</p>-->
+<!--    <p>222222</p>-->
+<!--    <p>333333</p>-->
+<!--    <p>444444</p>-->
+<!--</div>-->
+
+<script type="module">
+    import {MutationUndoer} from "../js/utils/MutationUndoer.js";
+
+
+
+    document.getElementById("bold-button").onclick = () => {
+        
+        let selection = document.getSelection();
+
+        /**
+         *
+         * @param {Selection} selection
+         * @param {function(Range)} fn
+         */
+        forEveryRange(selection, (range) => {
+            if (!range.collapsed) {
+
+                let ancestorValue = getAncestorElement(range.commonAncestorContainer).computedStyleMap().get("font-weight");
+                let contents = extractSelection(range);
+                
+                
+                if (!ancestorValue || ancestorValue == "inherit" || ancestorValue == "normal" || ancestorValue == "400") {
+                        
+                    forEveryNodeInDocumentFragment(contents, (element) => {
+                        let value = element.computedStyleMap().get("font-weight");
+                        if (!value || value == "inherit" || value == "normal" || value == "400") {
+                            element.style.fontWeight = "bold";
+                        }
+                    });
+
+                } else {
+
+                    forEveryNodeInDocumentFragment(contents, (element) => {
+                        let value = element.computedStyleMap().get("font-weight");
+                        if (value != "inherit" && value != "normal" && value != "400") {
+                            element.style.fontWeight = "400";
+                        }
+                    });
+                }
+            
+                
+                
+                
+                range.insertNode(contents);
+                
+            }
+        });
+
+        print();
+    };
+
+
+    /**
+     * @param {Node} node
+     * @returns {HTMLElement}
+     */
+    function getAncestorElement(node) {
+        while (node != null) {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                return node;
+            }
+            node = node.parentNode;
+        }
+        throw new Error("No common element found");
+    }
+
+    /**
+     * @param {Range} range
+     * @returns {DocumentFragment}
+     */
+    function extractSelection(range) {
+        let contents = range.extractContents();
+
+        let child = contents.firstChild;
+        while (child != null) {
+            
+            if (child.nodeType === Node.TEXT_NODE) {
+                let span = document.createElement("span");
+                span.textContent = child.textContent;
+                contents.replaceChild(span, child);
+            }
+
+            child = child.nextSibling;
+        }
+
+        return contents;
+    }
+
+    /**
+     * @param {Selection} selection
+     * @param {function(Range)} fn
+     */
+    function forEveryRange(selection, fn) {
+        for (let i = 0; i < selection.rangeCount; i++) {
+            let range = selection.getRangeAt(i);
+            fn(range);
+        }
+    }
+
+    /**
+     * @param {DocumentFragment} fragment
+     * @param {function(HTMLElement)} fn
+     */
+    function forEveryNodeInDocumentFragment(fragment, fn) {
+        let walker = fragment.ownerDocument.createTreeWalker(fragment.getRootNode(), NodeFilter.SHOW_ELEMENT);
+
+        while (walker.nextNode()) {
+            let element = walker.currentNode;
+            fn(element);
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /* selection */
+    document.onselectionchange = (event) => {
+        console.log("update SEL");
+        updateSelection(document.getSelection());
+    }
+
+    let p = document.createElement("p");
+    let options = {
+        paragraph: p
+    };
+
+    let input = document.getElementById("input-1");
+    let target = document.getElementById("node-tree");
+
+    document.body.onload = () => {
+        print();
+    }
+
+    function print() {
+        if (target != null) {
+            target.innerHTML = "";
+            printNodeTree(input, target);
+        }
+    }
+
+
+        document.querySelectorAll("#input-1").forEach((element) => {
+        element.oninput = (event) => {
+            print();
+        }
+    });
+    
+
+    let button = document.querySelector("#test-button");
+
+    button.onclick = (event) => {
+        
+    }
+
+    // let element = document.querySelector("#test-elem")
+    // // let element = button;
+
+    // let style = getComputedStyle(element);//Array.from(element.computedStyleMap().entries());
+
+    // console.log(style.display);
+    // console.log(style);
+
+    // document.onselectionchange = (event) => {
+    //     console.log(event);
+    // }
+    const ce = document.getElementById("input-1");
+    const mutationUndoer = new MutationUndoer(ce, {});
+    mutationUndoer.startRecording();
+
+    let sourceCodeBox = document.getElementById("source-code");
+    ce.addEventListener("input", (event) => {
+        console.log("y");
+       mutationUndoer.startRecording();
+       //  sourceCodeBox.setCode(ce.innerHTML);
+    });
+
+    document.getElementById("undo-button").onclick = () => {
+        mutationUndoer.undo();
+    };
+
+    document.getElementById("redo-button").onclick = () => {
+        mutationUndoer.redo();
+    };
+
+
+
+    /**
+     *
+     * @param {HTMLElement} root
+     * @param {HTMLElement} target
+     */
+    function printNodeTree(root, target) {
+        if (root != null) {
+            let node = printNode(root);
+            target.appendChild(node);
+
+            let child = root.firstChild;
+            while (child != null) {
+                printNodeTree(child, node)
+                child = child.nextSibling;
+            }
+        }
+    }
+
+    /**
+     *
+     * @param {Node} node
+     */
+    function printNode(node) {
+        let div = document.createElement("div");
+        if (node.nodeType === Node.TEXT_NODE) {
+            div.innerText = node.textContent;
+        } else {
+            div.innerText = "<" + node.nodeName.toLowerCase() + ">";
+        }
+        div.nodeRef = node;
+        div.classList.add("node-element");
+        node.nodeRef = div;
+
+        return div;
+    }
+
+    /**
+     *
+     * @param {Selection} selection
+     */
+    function updateSelection(selection) {
+
+
+
+        document.querySelectorAll(".selection-start").forEach((element) => {element.classList.remove("selection-start");});
+        document.querySelectorAll(".selection-end").forEach((element) => {element.classList.remove("selection-end");});
+        document.querySelectorAll(".selected-element").forEach((e)=>e.classList.remove("selected-element"));
+
+        document.querySelectorAll(".selection-range").forEach((e)=>e.remove());
+        document.querySelectorAll(".selection-caret").forEach((e)=>e.remove());
+
+        for (let i = 0; i < selection.rangeCount; i++) {
+
+            let range = selection.getRangeAt(i)
+
+            updateSelectionRange(range);
+        }
+
+    }
+
+    /**
+     *
+     * @param {Range} range
+     */
+    function updateSelectionRange(range) {
+
+        if (range.collapsed) {
+            let rects = range.getClientRects();
+            for (let rect of rects) {
+                let el = document.createElement("div");
+                el.classList.add("selection-caret");
+                el.style.left = rect.left + window.scrollX + "px";
+                el.style.top = rect.top + window.scrollY + "px";
+                el.style.width = 1 + "px";
+                el.style.height = rect.height + "px";
+                el.style.position = "absolute";
+                document.body.appendChild(el);
+            }
+        }
+
+        let element = range.commonAncestorContainer;
+        if (element.nodeType === Node.ELEMENT_NODE) {
+            // let node = element.childNodes.item(range.st)
+            element.classList.add("selected-element");
+        }
+
+        let start = range.startContainer.nodeRef;
+        if (start) {
+            start.classList.add("selection-start");
+            start.setAttribute("offset-start", range.startOffset);
+        }
+
+        let end = range.endContainer.nodeRef;
+        if (end) {
+            end.classList.add("selection-end");
+            end.setAttribute("offset-end", range.endOffset);
+        }
+    }
+
+</script>
+</body>
+</html>
