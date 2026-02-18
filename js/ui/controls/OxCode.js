@@ -42,6 +42,7 @@ const style = /*css*/`
     }
 
     #container {
+        display: flex;
         height: 100%;
         width: 100%;
         position: relative;

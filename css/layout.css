@@ -44,15 +44,27 @@ main {
     margin-right: var(--main-padding);
 }
 
-:is(main, header, footer, section, article, figure, aside)>:is(table) {
-    width: calc(100% - var(--main-padding, 0) * 2);
+
+:is(main, header, footer, section, article, figure, aside) {
+
+    &>:is(details, code-example, ox-code) {
+        margin-left: max(calc(var(--main-padding, 0) - 1em), 10px);
+        margin-right: max(calc(var(--main-padding, 0) - 1em), 10px);
+    }
+    
+    &>:is(table) {
+        width: calc(100% - var(--main-padding, 0) * 2);
+    }
+
+    &>fieldset {
+        margin-left: calc(var(--main-padding) - 0.5em + var(--border-width, 0));
+        margin-right: calc(var(--main-padding) - 0.5em + var(--border-width, 0));
+        padding: 1em;
+    }
+
 }
 
-:is(main, header, footer, section, article, figure, aside)>fieldset {
-    margin-left: calc(var(--main-padding) - 1em);
-    margin-right: calc(var(--main-padding) - 1em);
-    padding: 1em;
-}
+
 
 @media (min-width: 800px) {
 
