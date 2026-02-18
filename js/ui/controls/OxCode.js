@@ -264,34 +264,47 @@ export class OxCode extends OxControl {
                 }
                 this.dispatchEvent(new Event("input"));
             }
-        } else if (event.inputType == "insertFromPaste") {
+        } else if (event.inputType == "insertText") {
             event.preventDefault();
             let ranges = event.getTargetRanges();
-            const data = event.dataTransfer.getData("text/plain");
-            const lines = data.split(/\r\n|\r|\n/);
-            for (let range of ranges) {
+
+            this.#updateSelection(ranges.map((range) => {
                 let editRange = this.#getEditRange(range);
 
                 if (!editRange.collapsed) {
                     editRange.deleteContents();
                 }
 
-                let textNode = this.ownerDocument.createTextNode(lines[0]);
-                editRange.insertNode(textNode);
-                editRange.setStartAfter(textNode);
-                editRange.setEndAfter(textNode);
-                for (let line = 1; line < lines.length; line++) {
-                    editRange = this.#insertLine(editRange);
-                    let textNode = this.ownerDocument.createTextNode(lines[line]);
-                    editRange.insertNode(textNode);
-                    editRange.setStartAfter(textNode);
-                    editRange.setEndAfter(textNode);
+                this.#insertTextAtRange(event.data, editRange);
+                return editRange;
+            }));
+
+        } else if (event.inputType == "insertFromPaste") {
+            event.preventDefault();
+            let ranges = event.getTargetRanges();
+            const data = event.dataTransfer.getData("text/plain");
+            const lines = data.split(/\r\n|\r|\n/);
+            this.#updateSelection(ranges.map((range) => {
+                let editRange = this.#getEditRange(range);
+
+                if (!editRange.collapsed) {
+                    editRange.deleteContents();
                 }
-            }
+
+                this.#insertTextAtRange(lines[0], editRange);
+                for (let line = 1; line < lines.length; line++) {console.log("@@@@@@@@@@@")
+                    editRange = this.#insertLine(editRange);
+                    this.#insertTextAtRange(lines[line], editRange);
+                }
+
+                return editRange;
+            }));
         } else {
             const ranges = event.getTargetRanges();
 
             const data = event.data;
+
+            console.log("Not intercepted inputType", event.inputType, data, ranges);
         }
         // recolorizing after a time
         const ranges = event.getTargetRanges();
@@ -348,14 +361,9 @@ export class OxCode extends OxControl {
 
         if (event.key === "Tab") {
             event.preventDefault();
-            this.#forEverySelectionRange((range) => {
-                const textNode = this.ownerDocument.createTextNode("    ");
-                range.insertNode(textNode);
-                range.setStartAfter(textNode);
-                range.setEndAfter(textNode);
-                return range;
-            });
-
+            const ranges = this.#getRanges(this.#getSelection());
+            let tabEvent = new InputEvent("beforeinput", {inputType: "insertText", targetRanges: ranges, data: "    "});
+            this.#codeBox.dispatchEvent(tabEvent);
         }
 
         this.dispatchEvent(new Event("input"));
@@ -457,22 +465,24 @@ export class OxCode extends OxControl {
 
 
         // save selection positions
+        //TODO: this can be optimized (don't check parentElement every time, only when changing parent) and written with less code duplication
         const countDivOffset = (container, containerOffset) => {
             let current = container;
             let offset = containerOffset;
 
-            // this causes problems
-            // if (container.nodeType == Node.ELEMENT_NODE)  {
-            //     //TODO: doesn't work on safari (only safari goes into this branch)
-            //     offset = 0;
-            //     let child = container.firstChild;
-            //     while (child != null && containerOffset > 0) {
-            //         offset += child.textContent.length;
-            //         containerOffset--;
-            //         child = child.nextSibling;
-            //     }
-            //     return {container: container, offset: offset};
-            // }
+            if (container.nodeType === Node.ELEMENT_NODE)  {
+                offset = 0;
+                let child = container.firstChild;
+                while (child != null && containerOffset > 0) {
+                    offset += child.textContent.length;
+                    containerOffset--;
+                    child = child.nextSibling;
+                }
+                current = current.previousSibling;
+                if (current != null) {
+                    offset += current.textContent.length;
+                }
+            }
 
             while (current != null) {
                 if (current.parentElement == null) {
@@ -501,6 +511,7 @@ export class OxCode extends OxControl {
             for (let i = 0; i < selection.rangeCount; i++) {
                 let range = getRange(i);
                 let start = countDivOffset(range.startContainer, range.startOffset);
+                console.log("start offset", start);
                 if (start) {
                     if (range.collapsed) {
                         oldRanges.push({ start: start, end: null});
@@ -620,31 +631,29 @@ export class OxCode extends OxControl {
 
     /**
      * 
-     * @param {function(Range)} callback 
      */
-    #forEverySelectionRange(callback) {
-        const selection = this.#getSelection();
-        const getRange = this.#getSelectionRangeFunction(selection);
-        const rangeCount = selection.rangeCount;
-
+    #getRanges(selection) {
+        this.#getSelectionRangeFunction(selection);
         let ranges = [];
-        for (let i = 0; i < rangeCount; i++) {
-            const range = getRange(i);
-            const realRange = this.#getEditRange(range);
-
-            let retRange = callback(realRange);
-            if (retRange) {
-                ranges.push(retRange);
-            }
+        for (let i = 0; i < selection.rangeCount; i++) {
+            ranges.push(this.#getSelectionRangeFunction(selection)(i));
         }
-        if (ranges.length > 0) {
-            selection.empty();
-            for (let i = 0; i < ranges.length; i++) {
-                selection.addRange(ranges[i]);
-            }
-        }
+        return ranges;
     }
 
+    #updateSelection(ranges) {
+        let sel = this.#getSelection();
+        sel.empty();
+        ranges.forEach((range) => sel.addRange(range));
+    }
+
+    #insertTextAtRange(text, range) {
+        let textNode = this.ownerDocument.createTextNode(text);
+        range.insertNode(textNode);
+        range.setStartAfter(textNode);
+        range.setEndAfter(textNode);
+        range.commonAncestorContainer.normalize();
+    }
 }
 
 window.customElements.define("ox-code", OxCode);
