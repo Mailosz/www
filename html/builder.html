@@ -1,17 +1,23 @@
 <!DOCTYPE html>
 <body>
     <script type="module">
-    import {DocBuilder} from "../js/utils/DocBuilder.js";
+    import {Builder} from "../js/utils/DocBuilder.js";
 
-        let builder = new DocBuilder(document);
+    new Builder(document)
+        .with(builder => {
+            builder.children(
+                builder.tag("h1").innerText("Hello world!"),
+                builder.tag("p").innerText("This is a paragraph."),
+                builder.tag("div")
+                    .attr("class", "container")
+                    .children(
+                        builder.tag("span").innerText("This is a span inside a div.")
+                    )
+                
+            );
+        });
 
-        
 
-        document.body.appendChild(
-            builder.tag("div").attr("style", "color: red").innerText("Test").children(
-                builder.tag("button").innerText("content")
-            ).get()
-        );
 
     </script>
 </body>
