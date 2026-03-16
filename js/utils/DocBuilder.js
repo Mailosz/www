@@ -31,7 +31,7 @@ export class Builder {
      * @param {Document?} document 
      */
     static new(document) {
-        return new DocBuilder(document);
+        return new Builder(document);
     }
 
     /**
@@ -280,6 +280,17 @@ export class TagBuilder {
      * @param {Function} children 
      * @returns {TagBuilder} itself
      */
+    on(name, listener, options) {
+        this.#tag.addEventListener(name, listener, options);
+        return this;
+    }
+
+
+    /**
+     * Adds event listener to the tag
+     * @param {Function} children 
+     * @returns {TagBuilder} itself
+     */
     event(name, listener, options) {
         this.#tag.addEventListener(name, listener, options);
         return this;
@@ -336,6 +347,19 @@ export class TagBuilder {
             child = child.nextSibling;
         }
 
+        return this;
+    }
+
+    /**
+     * Binds a signal to the property of the tag. Whenever the signal changes, the property will be updated with the signal's value
+     * @param {string} property the name of the property to bind
+     * @param {Function} signal the signal to bind
+     * @return {TagBuilder} itself
+     */
+    bind(property, signal) {
+        signal.listen(value => {
+            this.#tag[property] = value;
+        });
         return this;
     }
 

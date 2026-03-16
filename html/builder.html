@@ -2,6 +2,45 @@
 <body>
     <script type="module">
     import {Builder} from "../js/utils/DocBuilder.js";
+    import {signal, computed} from "../js/utils/Reactive.js";
+
+    let signalR = computed(() => Math.random());
+
+    const signalA = signal("Initial value");
+    signalA.listen(value => {
+        console.log("Signal A", value);
+    });
+    
+    const signalB = signal("Initial value");
+    signalB.listen(value => {
+        console.log("Signal B", value);
+    });
+
+    const both = computed((get) => {
+        return get(signalA) + " " + get(signalB) + " " + get(signalR);
+    });
+
+
+    signalA.set("AAAAAA");
+    signalB.set("BBBBBB");
+
+    let signalC = signal("");
+
+    let signalD = computed((of) => {
+        return "Signal C: " + of(signalC);
+    });
+
+
+
+    let signalM = computed((of) => of(both) + " " + of(signalC));
+
+    let signalT = computed((of) => of(signalM) + " " + of(signalD));
+
+    let signalT2 = computed((of) => of(signalM) + " " + of(signalD) + " " + of(signalA));
+
+    
+
+
 
     new Builder(document)
         .with(builder => {
@@ -11,7 +50,16 @@
                 builder.tag("div")
                     .attr("class", "container")
                     .children(
-                        builder.tag("span").innerText("This is a span inside a div.")
+                        builder.tag("span").innerText("This is a span inside a div."),
+                        builder.tag("button").innerText("Click me").on("click", () => signalA.set("Clicked!")),
+                        builder.tag("div").innerText(both()).forThis((el) => both.listen(value => el.innerText = value)),
+                        builder.tag("input").attr("type", "text").on("input", (e) => signalC.set(e.target.value)),
+                        builder.tag("div").innerText(signalD()).forThis((el) => signalD.listen(value => el.innerText = value)),
+                        builder.tag("div").bind("innerText", signalD),
+                        builder.tag("hr"),
+                        builder.tag("div").bind("innerText", signalM),
+                        builder.tag("div").bind("innerText", signalT),
+                        builder.tag("div").bind("innerText", signalT2),
                     )
                 
             );
