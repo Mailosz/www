@@ -12,8 +12,11 @@ export function signal(value) {
         listeners.push(listener);
     }
     signal.set = function set(value) {
+        let oldValue = signal.value;
         signal.value = value;
-        listeners.forEach(listener => listener(value));
+        queueMicrotask(() => {
+            listeners.forEach(listener => listener(value, oldValue));
+        });
     }
 
     return signal;

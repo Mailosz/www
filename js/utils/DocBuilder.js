@@ -107,8 +107,8 @@ export class Builder {
      */
     children(...children) {
         forEveryTag(children, (child) => {
-            if (child.getBuiltElement) {
-                this.#doc.body.appendChild(child.getBuiltElement());
+            if (child.getElement) {
+                this.#doc.body.appendChild(child.getElement());
             } else {
                 this.#doc.body.appendChild(child);
             }
@@ -265,8 +265,8 @@ export class TagBuilder {
      */
     children(...children) {
         forEveryTag(children, (child) => {
-            if (child.getBuiltElement) {
-                this.#tag.append(child.getBuiltElement());
+            if (child.getElement) {
+                this.#tag.append(child.getElement());
             } else {
                 this.#tag.append(child);
             }
@@ -375,7 +375,7 @@ export class TagBuilder {
      * Get the built HTML element
      * @type {Element}
      */
-    getBuiltElement() {
+    getElement() {
         return this.#tag;
     }
 
@@ -396,8 +396,8 @@ export class TagBuilder {
 function forEveryTag(tags, func) {
     for (const tag of tags) {
         let elem = null;
-        if (tag.getBuiltElement) {
-            elem = tag.getBuiltElement();
+        if (tag.getElement) {
+            elem = tag.getElement();
         } else {
             elem = tag;
         }
