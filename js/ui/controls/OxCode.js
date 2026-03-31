@@ -196,7 +196,7 @@ export class OxCode extends OxControl {
             return realRange;
     }
 
-    #insertLine(range) {
+    #insertLine(range, keepIndentation = true) {
         let realRange = this.shadowRoot.ownerDocument.createRange();
         realRange.setStart(range.startContainer, range.startOffset);
         realRange.setEnd(range.endContainer, range.endOffset);
@@ -219,6 +219,8 @@ export class OxCode extends OxControl {
             oldLine = this.#codeBox.firstElementChild;
         }
 
+
+
         let newline = this.shadowRoot.ownerDocument.createElement("DIV");
         let lineEnd = this.shadowRoot.ownerDocument.createRange();
         lineEnd.setStart(realRange.endContainer, realRange.endOffset);
@@ -232,8 +234,11 @@ export class OxCode extends OxControl {
 
 
         //determine indentation
-        let indentation = oldLine.textContent.substring(0, oldLine.textContent.length - oldLine.textContent.trimStart().length);
-        newline.textContent = indentation + newline.textContent;
+        let indentation = "";
+        if (keepIndentation) {
+            indentation = oldLine.textContent.substring(0, oldLine.textContent.length - oldLine.textContent.trimStart().length);
+            newline.textContent = indentation + newline.textContent;
+        }
         if (newline.firstChild == null) {
             newline.appendChild(this.shadowRoot.ownerDocument.createTextNode(""));
         }
@@ -292,10 +297,11 @@ export class OxCode extends OxControl {
                     editRange.deleteContents();
                 }
 
+                let indentation = this.#getLineIndentationFromRange(editRange);
                 this.#insertTextAtRange(lines[0], editRange);
-                for (let line = 1; line < lines.length; line++) {console.log("@@@@@@@@@@@")
-                    editRange = this.#insertLine(editRange);
-                    this.#insertTextAtRange(lines[line], editRange);
+                for (let line = 1; line < lines.length; line++) {
+                    editRange = this.#insertLine(editRange, false);
+                    this.#insertTextAtRange(indentation + lines[line], editRange);
                 }
 
                 return editRange;
@@ -337,6 +343,16 @@ export class OxCode extends OxControl {
                 this.#earliestChange = null;
             }, this.tokenizationDelay);
         }
+    }
+
+    #getLineIndentationFromRange(range) {
+        let node = range.startContainer;
+        while (node && node.nodeName !== "DIV") {
+            node = node.parentElement;
+        }
+        if (!node) return "";
+        const text = node.textContent;
+        return text.substring(0, text.length - text.trimStart().length);
     }
 
     /**
