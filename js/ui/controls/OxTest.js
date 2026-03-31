@@ -29,17 +29,13 @@ export class OxTest extends OxCustomElementBase {
 
         this.shadowRoot.appendChild(
             builder.tag("div").children(
-                builder.tag("input").bind("value", this.customAttributes.test).on("input", (event) => {
-                    this.setAttribute("other", event.target.value);
-                }),
-                builder.tag("input").bind("value", this.customAttributes.other).on("input", (event) => {
-                    this.setAttribute("memo", event.target.value);
-                }),
-                builder.tag("input").bind("value", this.customAttributes.memo).on("input", (event) => {
-                    this.setAttribute("test", event.target.value);
-                })
+                builder.tag("input").bindAttribute("value", this.customAttributes.test).on("input", (event) => { this.setAttribute("other", event.target.value);}),
+                builder.tag("input").bindAttribute("value", this.customAttributes.other),
+                builder.tag("input").bindAttribute("value", this.customAttributes.memo)
             ).getElement());
+
     }
+
 }
 
 window.customElements.define("ox-test", OxTest);

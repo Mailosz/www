@@ -1,3 +1,5 @@
+import { signal } from "./Reactive.js";
+
 export class Builder {
 
     /**
@@ -351,14 +353,102 @@ export class TagBuilder {
     }
 
     /**
-     * Binds a signal to the property of the tag. Whenever the signal changes, the property will be updated with the signal's value
+     * Sets a property of the tag
+     * @param {string} name 
+     * @param {any} value 
+     * @returns {TagBuilder} itself
+     */
+    property(name, value) {
+        this.#tag[name] = value;
+        return this;
+    }
+
+    /**
+     * Binds a signal to the property of the tag one way. Whenever the signal changes, the property will be updated with the signal's value
      * @param {string} property the name of the property to bind
      * @param {Function} signal the signal to bind
      * @return {TagBuilder} itself
      */
-    bind(property, signal) {
+    bindProperty(property, signal, options = { toProperty: true, toSignal: true }) {
+        let desc = this.#tag;
+        while (desc && !Object.getOwnPropertyDescriptor(desc, property)) {
+            desc = Object.getPrototypeOf(desc);
+        }
+        desc = desc && Object.getOwnPropertyDescriptor(desc, property);
+
+        if (!desc) {
+            throw new Error(`Property "${property}" not found`);
+        }
+
+        if (options.toSignal) {
+            let internalValue = desc.value;
+            Object.defineProperty(this.#tag, property, {
+                get: desc.get ? desc.get : function () {
+                    return internalValue;
+                },
+                set: desc.set ? function (value) {
+                    desc.set.call(this, value);
+                    signal.set(value);
+                } : function (value) {
+                    internalValue = value;
+                    signal.set(value);
+                }
+            });
+        }
+
+
         signal.listen(value => {
-            this.#tag[property] = value;
+            if (options.toProperty) {
+                if (desc.set) {
+                    desc.set.call(this.#tag, value);
+                } else {
+                    internalValue = value;
+                }
+            }
+        });
+
+        return this;
+    }
+
+    observer = undefined;
+    observedAttributes = {};
+
+    /**
+     * Binds a signal to the attributeof the tag two way. Whenever the signal changes, the attribute will be updated with the signal's value
+     * @param {string} attribute the name of the attribute to bind
+     * @param {Function} signal the signal to bind
+     * @return {TagBuilder} itself
+     */
+    bindAttribute(attribute, signal, options = { toProperty: true, toSignal: true }) {
+
+        if (!this.observer) {
+            this.observer = new MutationObserver(mutations => {
+                for (const mutation of mutations) {
+                    if (mutation.type === "attributes") {
+                        const attrFunc = this.observedAttributes[mutation.attributeName];
+                        if (attrFunc) {
+                            let value = mutation.target.getAttribute(mutation.attributeName);
+                            attrFunc(value);
+                        }
+                    }
+                }            
+            });
+            this.observer.observe(this.#tag, { attributes: true });
+        }
+
+        let attrFunc = function(value) {
+            signal.set(value);
+        }
+
+        this.observedAttributes[attribute] = attrFunc;
+
+        
+        signal.listen(value => {
+            this.observedAttributes[attribute] = null;
+            this.observer.disconnect();
+            this.#tag.setAttribute(attribute, value);
+            this.observer.observe(this.#tag, { attributes: true });
+            this.observedAttributes[attribute] = attrFunc;
         });
         return this;
     }

@@ -19,32 +19,16 @@ export class OxCustomElementBase extends HTMLElement {
 
         self = Object.getPrototypeOf(self);
       }
-
-
     }
 
-    /**
-     * 
-     * @param {String} html 
-     * @param {String} css 
-     * @param {ShadowRootInit} options 
-     */
-    createShadowRoot(html, css, options) {
-        options = {...{ mode: "open"}, ...options};
-
-        const shadowRoot = this.attachShadow(options);
-        if (html) {
-            shadowRoot.innerHTML = html;
-        }
-    
-    
+    attachShadowCss(css) {
         if (css) {
             const styleSheet = new CSSStyleSheet();
             styleSheet.replaceSync(css);
-        
-            shadowRoot.adoptedStyleSheets.push(styleSheet);
+
+            this.shadowRoot.adoptedStyleSheets.push(styleSheet);
         }
-        return shadowRoot;
+        return this.shadowRoot;
     }
 
     connectedCallback() {
