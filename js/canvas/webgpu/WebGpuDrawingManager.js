@@ -58,11 +58,6 @@ export class WebGpuDrawingManager extends DrawingManager {
         this.#initialized.then(() => {
             this.engine.addPrimitive({
                 coords: [[
-                    0, 0,
-                    100, 0,
-                    100, 100,
-                    0, 100,
-                ],[
                     50, 50,
                     150, 50,
                     150, 150,
@@ -90,6 +85,25 @@ export class WebGpuDrawingManager extends DrawingManager {
                 ]],
                 fill: "solid-color",
                 fillColor: new Float32Array([0, 0, 1, 1]),
+            });
+            this.engine.addPrimitive({
+                coords: [[
+                    0, 0,
+                    200, 0,
+                    0, 200,
+                    200, 200,
+                ]],
+                fill: "linear-gradient",
+                gradientTransform: [
+                    0.01, 0, 0, 0,
+                    0, 0.01, 0, 0,
+                    -0.5, 0, 1, 0,
+                ],
+                gradientStops: [
+                    {offset: 0, color: [1, 0, 0, 1]},
+                    {offset: 0.5, color: [0, 1, 0, 1]},
+                    {offset: 1, color: [0, 0, 1, 1]},
+                ],
             });
         });
     }
