@@ -4,15 +4,21 @@ const shader = /* wgsl */ `
     };
 
     struct PerObjectUniforms {
-        fillTyle: u32
+        fillStyle: u32,
+        fillTransform: mat3x3<f32>,
+        fillColor: vec4f,
+    }
+
+    struct SolidColorFillUniforms {
+        color: vec4f,
     }
 
     struct Vertex {
         @location(0) position: vec2f,
     };
 
-    @group(0) @binding(0)
-    var<uniform> vp: ViewportMatrix;
+    @group(0) @binding(0) var<uniform> vp: ViewportMatrix;
+    @group(1) @binding(0) var<uniform> solidColor: SolidColorFillUniforms;
 
 
     @vertex fn vs(
@@ -23,13 +29,15 @@ const shader = /* wgsl */ `
         return vec4f(pos, 1.0);
     }
 
-    @fragment fn fs() -> @location(0) vec4f {
-        return vec4f(1.0, 0.0, 0.0, 1.0);
+    @fragment fn fillSolidColor() -> @location(0) vec4f {
+        return solidColor.color;
     }
     `;
 
 
 export class WebGpuEngine {
+
+    #primitives = [];
 
     constructor(context) {
         this.context = context;
@@ -87,7 +95,7 @@ export class WebGpuEngine {
                 ],
             },
             fragment: {
-                entryPoint: 'fs',
+                entryPoint: 'fillSolidColor',
                 module: this.module,
                 targets: [{ format: presentationFormat }],
             },
@@ -116,8 +124,8 @@ export class WebGpuEngine {
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         });
 
-        this.bindGroup = this.device.createBindGroup({
-            label: 'viewport bind group',
+        this.globalBindGroup = this.device.createBindGroup({
+            label: 'solid color bind group',
             layout: this.pipeline.getBindGroupLayout(0),
             entries: [
                 {
@@ -125,30 +133,55 @@ export class WebGpuEngine {
                     resource: {
                         buffer: this.viewportMatrixBuffer,
                     },
-            },
+                },
             ],
         });
-
-        //vertices
-        this.createVertexBuffer(new Float32Array([
-            0, 0,
-            100, 0,
-            100, 100,
-            200, 0,
-            300, 0,
-            300, 200,
-        ]));
     }
 
     createVertexBuffer(vertexCoords) {
-        this.vertexBuffer = this.device.createBuffer({
+        const vertexBuffer = this.device.createBuffer({
             label: 'vertex buffer vertices',
-            size: vertexCoords.byteLength,
+            size: vertexCoords.length * 4,
             usage: GPUBufferUsage.VERTEX,
             mappedAtCreation: true,
         });
-        new Float32Array(this.vertexBuffer.getMappedRange()).set(vertexCoords);
-        this.vertexBuffer.unmap();
+        new Float32Array(vertexBuffer.getMappedRange()).set(vertexCoords);
+        vertexBuffer.unmap();
+        return vertexBuffer;
+    }
+
+    addPrimitive(primitiveData) {
+
+        const vertexBuffer = this.createVertexBuffer(primitiveData.coords.flat());
+
+        //solid color uniform
+        const solidColorBuffer = this.device.createBuffer({
+            label: 'solid color buffer',
+            size: 48,
+            usage: GPUBufferUsage.UNIFORM,
+            mappedAtCreation: true,
+        });
+        new Float32Array(solidColorBuffer.getMappedRange()).set(primitiveData.fillColor);
+        solidColorBuffer.unmap();
+
+
+        //bind group for this primitive
+        const bindGroup = this.device.createBindGroup({
+            label: 'primitivebind group',
+            layout: this.pipeline.getBindGroupLayout(1),
+            entries: [
+                { binding: 0, resource: { buffer: solidColorBuffer } },
+            ],
+        });
+        
+        this.#primitives.push({
+            vertexBuffer: vertexBuffer,
+            stripCounts: primitiveData.coords.map(strip => strip.length / 2), 
+            fill: primitiveData.fill,
+            fillBuffer: solidColorBuffer,
+            bindGroup: bindGroup,
+        });
+
     }
 
     render() {
@@ -166,9 +199,18 @@ export class WebGpuEngine {
         // make a render pass encoder to encode render specific commands
         const pass = encoder.beginRenderPass(this.renderPassDescriptor);
         pass.setPipeline(this.pipeline);
-        pass.setBindGroup(0, this.bindGroup);
-        pass.setVertexBuffer(0, this.vertexBuffer);
-        pass.draw(6);  
+        pass.setBindGroup(0, this.globalBindGroup);
+        
+        for (let primitive of this.#primitives) {
+            pass.setVertexBuffer(0, primitive.vertexBuffer);
+            pass.setBindGroup(1, primitive.bindGroup);
+
+            let stripOffset = 0;
+            for (let stripCount of primitive.stripCounts) {
+                pass.draw(stripCount, 1, stripOffset, 0);
+                stripOffset += stripCount;  
+            }
+        }
         pass.end();
 
         const commandBuffer = encoder.finish();

@@ -54,6 +54,44 @@ export class WebGpuDrawingManager extends DrawingManager {
         ///
         ///
         ///
+
+        this.#initialized.then(() => {
+            this.engine.addPrimitive({
+                coords: [[
+                    0, 0,
+                    100, 0,
+                    100, 100,
+                    0, 100,
+                ],[
+                    50, 50,
+                    150, 50,
+                    150, 150,
+                    50, 150,
+                ]],
+                fill: "solid-color",
+                fillColor: new Float32Array([1, 0, 0, 1]),
+            });
+            this.engine.addPrimitive({
+                coords: [[
+                    200, 0,
+                    300, 0,
+                    300, 100,
+                    200, 100,
+                ]],
+                fill: "solid-color",
+                fillColor: new Float32Array([0, 1, 0, 1]),
+            });
+            this.engine.addPrimitive({
+                coords: [[
+                    300, 100,
+                    400, 100,
+                    400, 200,
+                    300, 200,
+                ]],
+                fill: "solid-color",
+                fillColor: new Float32Array([0, 0, 1, 1]),
+            });
+        });
     }
 
     /**
