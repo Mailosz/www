@@ -1,7 +1,7 @@
 //draw
 
-import { DrawingManager } from "./DrawingManager.js";
-import { WebglEngine } from "./webgl/WebglEngine.js";
+import { DrawingManager } from "../DrawingManager.js";
+import { WebglEngine } from "./WebglEngine.js";
 
 export class WebglDrawingManager extends DrawingManager {
 
@@ -56,7 +56,7 @@ export class WebglDrawingManager extends DrawingManager {
         ///
     }
 
-    zoomBy(factor, origin) {
+            zoomBy(factor, origin) {
         this.zoom = Math.max(0.0001,Math.min(this.zoom * factor, 10000));
         console.log("zoom: " + this.zoom * 100 + "%");
     }

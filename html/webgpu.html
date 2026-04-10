@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>WebGPU</title>
 </head>
 <body>
     <div style="border: 2px black solid; display: block; position: absolute; left: 20px; top: 20px; bottom: 20px; right: 20px;">
@@ -13,13 +13,12 @@
         </canvas>
     </div>
       <script type="module">
-        import { CanvasManager} from "../js/canvas/main.js";
-        import { WebglDrawingManager } from "../js/canvas/webgl/WebglDrawingManager.js";
+        import {CanvasManager, WebGpuDrawingManager} from "../js/canvas/main.js";
 
         function initialize() {
             let canvas = document.getElementById('view-canvas');
             let cm = new CanvasManager(canvas);
-            cm.setDrawingManager(new WebglDrawingManager());
+            cm.setDrawingManager(new WebGpuDrawingManager());
             //cm.setInputManager(new TestInputManager());
         }
 
