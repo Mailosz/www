@@ -15,6 +15,10 @@ const shader = /* wgsl */ `
 
     struct GradientFillUniforms {
         transform : mat3x3<f32>,
+        repeat: u32,
+        _pad0: u32,
+        _pad1: u32,
+        _pad2: u32,
     }
 
     struct GradientStop {
@@ -58,75 +62,189 @@ const shader = /* wgsl */ `
         return solidColor.color;
     }
 
-    fn invertAffine(m: mat3x3<f32>) -> mat3x3<f32> {
-    let a = m[0][0];
-    let b = m[1][0];
-    let c = m[0][1];
-    let d = m[1][1];
-    let tx = m[0][2];
-    let ty = m[1][2];
+    fn gradientClamp(t: f32) -> f32 {
+        return clamp(t, 0.0, 1.0);
+    }
 
-    let det = a * d - b * c;
+    fn gradientRepeat(t: f32) -> f32 {
+        return fract(t);
+    }
 
-    // assume det != 0
-    let invDet = 1.0 / det;
+    fn gradientMirror(t: f32) -> f32 {
+        // Which cycle are we in?
+        let cycle = floor(t);
 
-    let ia =  d * invDet;
-    let ib = -b * invDet;
-    let ic = -c * invDet;
-    let id =  a * invDet;
+        // Position inside the cycle
+        let local = fract(t);
 
-    let itx = (c * ty - d * tx) * invDet;
-    let ity = (b * tx - a * ty) * invDet;
+        // Even cycle → forward, odd cycle → reversed
+        if (i32(cycle) % 2 == 0) {
+            return local;        // forward
+        } else {
+            return 1.0 - local;  // reversed
+        }
+    }
 
-    return mat3x3<f32>(
-        vec3f(ia, ib, 0.0),
-        vec3f(ic, id, 0.0),
-        vec3f(itx, ity, 1.0)
-    );
-}
+
 
     @fragment
-fn fillLinearGradient(
-    in: VertexOut
-) -> @location(0) vec4f {
+    fn fillLinearGradient(
+        in: VertexOut
+    ) -> @location(0) vec4f {
 
-    // Use the interpolated local position
-    let p = gradient.transform * vec3f(in.localPos, 1.0);
+        // Use the interpolated local position
+        let p = gradient.transform * vec3f(in.localPos, 1.0);
 
-    var t = clamp(p.x, 0.0, 1.0);
+        var t = p.x;
 
-    let stopCount = arrayLength(&gradientStops);
-
-    if (stopCount == 0u) {
-        return vec4f(0.0, 0.0, 0.0, 1.0);
-    }
-
-    if (stopCount == 1u) {
-        return gradientStops[0].color;
-    }
-
-    var i: u32 = 0u;
-    loop {
-        if (i + 1u >= stopCount) {
-            break;
+        if (gradient.repeat == 1u) {
+            t = gradientRepeat(t);
+        } else if (gradient.repeat == 2u) {
+            t = gradientMirror(t);
+        } else {
+            t = gradientClamp(t);
         }
 
-        let p0 = gradientStops[i].position;
-        let p1 = gradientStops[i + 1u].position;
+        let stopCount = arrayLength(&gradientStops);
 
-        if (t >= p0 && t <= p1) {
-            let f = (t - p0) / (p1 - p0);
-            return mix(gradientStops[i].color,
-                       gradientStops[i + 1u].color,
-                       f);
+        if (stopCount == 0u) {
+            return vec4f(0.0, 0.0, 0.0, 1.0);
         }
 
-        i = i + 1u;
+        if (stopCount == 1u) {
+            return gradientStops[0].color;
+        }
+
+        var i: u32 = 0u;
+        loop {
+            if (i + 1u >= stopCount) {
+                break;
+            }
+
+            let p0 = gradientStops[i].position;
+            let p1 = gradientStops[i + 1u].position;
+
+            if (t >= p0 && t <= p1) {
+                let f = (t - p0) / (p1 - p0);
+                return mix(gradientStops[i].color,
+                        gradientStops[i + 1u].color,
+                        f);
+            }
+
+            i = i + 1u;
+        }
+
+        return gradientStops[stopCount - 1u].color;
     }
 
-    return gradientStops[stopCount - 1u].color;
-}
+    @fragment
+    fn fillRadialGradient(in: VertexOut) -> @location(0) vec4f {
+
+        // Apply post-transform like a texture matrix
+        let p = gradient.transform * vec3f(in.localPos, 1.0);
+
+        // Now compute radial coordinate in transformed space
+        var t = length(p.xy);
+
+
+        if (gradient.repeat == 1u) {
+            t = gradientRepeat(t);
+        } else if (gradient.repeat == 2u) {
+            t = gradientMirror(t);
+        } else {
+            t = gradientClamp(t);
+        }
+
+        // Stop interpolation (unchanged)
+        let stopCount = arrayLength(&gradientStops);
+
+        if (stopCount == 0u) {
+            return vec4f(0.0, 0.0, 0.0, 1.0);
+        }
+
+        if (stopCount == 1u) {
+            return gradientStops[0].color;
+        }
+
+        var i: u32 = 0u;
+        loop {
+            if (i + 1u >= stopCount) {
+                break;
+            }
+
+            let p0 = gradientStops[i].position;
+            let p1 = gradientStops[i + 1u].position;
+
+            if (t >= p0 && t <= p1) {
+                let f = (t - p0) / (p1 - p0);
+                return mix(gradientStops[i].color,
+                        gradientStops[i + 1u].color,
+                        f);
+            }
+
+            i = i + 1u;
+        }
+
+        return gradientStops[stopCount - 1u].color;
+    }
+
+    fn gradientReverseRepeat(t: f32) -> f32 {
+        let cycle = floor(t);
+        let local = fract(t);
+        if (i32(cycle) % 2 == 0) {
+            return local;
+        } else {
+            return 1.0 - local;
+        }
+    }
+
+    @fragment
+    fn fillConicGradient(in: VertexOut) -> @location(0) vec4f {
+
+        // Transform local position into gradient space
+        let p = gradient.transform * vec3f(in.localPos, 1.0);
+
+        // Compute angle-based coordinate
+        let a = atan2(p.y, p.x);
+        var t = (a + 3.141592653589793) / (2.0 * 3.141592653589793);
+
+        // Apply clamp
+        t = clamp(t, 0.0, 1.0);
+
+        let stopCount = arrayLength(&gradientStops);
+
+        if (stopCount == 0u) {
+            return vec4f(0.0, 0.0, 0.0, 1.0);
+        }
+
+        if (stopCount == 1u) {
+            return gradientStops[0].color;
+        }
+
+        // Find interval
+        var i: u32 = 0u;
+        loop {
+            if (i + 1u >= stopCount) {
+                break;
+            }
+
+            let p0 = gradientStops[i].position;
+            let p1 = gradientStops[i + 1u].position;
+
+            if (t >= p0 && t <= p1) {
+                let f = (t - p0) / (p1 - p0);
+                return mix(gradientStops[i].color,
+                        gradientStops[i + 1u].color,
+                        f);
+            }
+
+            i = i + 1u;
+        }
+
+        return gradientStops[stopCount - 1u].color;
+    }
+
+
 
 
     `;
@@ -282,6 +400,31 @@ export class WebGpuEngine {
             primitive: primitiveState,
         });
 
+        this.radialGradientPipeline = this.device.createRenderPipeline({
+            label: 'radial gradient pipeline',
+            layout: pipelineLayout,
+            vertex: vertexState,
+            fragment: {
+                entryPoint: 'fillRadialGradient',
+                module: this.module,
+                targets: [{ format: presentationFormat }],
+            },
+            primitive: primitiveState,
+        });
+
+
+        this.conicGradientPipeline = this.device.createRenderPipeline({
+            label: 'conic gradient pipeline',
+            layout: pipelineLayout,
+            vertex: vertexState,
+            fragment: {
+                entryPoint: 'fillConicGradient',
+                module: this.module,
+                targets: [{ format: presentationFormat }],
+            },
+            primitive: primitiveState,
+        });
+
         this.renderPassDescriptor = {
             label: 'basic renderPass',
             colorAttachments: [
@@ -327,9 +470,15 @@ export class WebGpuEngine {
             bindGroup = this.createSolidColorBindGroup(primitiveData.fillColor);
             pipeline = this.solidColorPipeline;
         } else if (primitiveData.fill === "linear-gradient") {
-            bindGroup = this.createGradientBindGroup(primitiveData.gradientTransform, primitiveData.gradientStops);
+            bindGroup = this.createGradientBindGroup(primitiveData);
             pipeline = this.linearGradientPipeline;
-        }
+        } else if (primitiveData.fill === "radial-gradient") {
+            bindGroup = this.createGradientBindGroup(primitiveData);
+            pipeline = this.radialGradientPipeline;
+        } else if (primitiveData.fill === "conic-gradient") {
+            bindGroup = this.createGradientBindGroup(primitiveData);
+            pipeline = this.conicGradientPipeline;
+        } 
         
         this.#primitives.push({
             vertexBuffer: vertexBuffer,
@@ -365,22 +514,24 @@ export class WebGpuEngine {
         return bindGroup;
     }
 
-    createGradientBindGroup(transform, stops) {
+    createGradientBindGroup(data) {
         const gradientParamsBuffer = this.device.createBuffer({
-            size: 48, // mat3x3 padded
+            size: 64, 
             usage: GPUBufferUsage.UNIFORM,
             mappedAtCreation: true,
         });
-        new Float32Array(gradientParamsBuffer.getMappedRange()).set(transform);
+        const mapped = gradientParamsBuffer.getMappedRange();
+        new Float32Array(mapped).set(data.gradientTransform);
+        new Uint32Array(mapped, 48, 4).set([data.gradientRepeat, 0, 0, 0]);
         gradientParamsBuffer.unmap();
         
 
         const gradientStopsBuffer = this.device.createBuffer({
-            size: stops.length * 32,
+            size: data.gradientStops.length * 32,
             usage: GPUBufferUsage.STORAGE,
             mappedAtCreation: true,
         });
-        new Float32Array(gradientStopsBuffer.getMappedRange()).set(stops.map(s => [s.offset, 0, 0, 0, ...s.color]).flat());
+        new Float32Array(gradientStopsBuffer.getMappedRange()).set(data.gradientStops.map(s => [s.offset, 0, 0, 0, ...s.color]).flat());
         gradientStopsBuffer.unmap();
 
         const bindGroup = this.device.createBindGroup({

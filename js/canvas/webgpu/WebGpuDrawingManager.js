@@ -93,12 +93,13 @@ export class WebGpuDrawingManager extends DrawingManager {
                     0, 200,
                     200, 200,
                 ]],
-                fill: "linear-gradient",
+                fill: "conic-gradient",
                 gradientTransform: [
-                    0.01, 0, 0, 0,
-                    0, 0.01, 0, 0,
-                    -0.5, 0, 1, 0,
+                    1 / 50, 0, 0, 0,
+                    0, 1 / 50, 0, 0,
+                    -100 / 100, -100 / 100, 1, 0,
                 ],
+                gradientRepeat: 2,
                 gradientStops: [
                     {offset: 0, color: [1, 0, 0, 1]},
                     {offset: 0.5, color: [0, 1, 0, 1]},
