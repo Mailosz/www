@@ -399,7 +399,7 @@ export class WebGpuEngine {
             mappedAtCreation: true,
         });
         const mapped = textureParamsBuffer.getMappedRange();
-        new Float32Array(mapped).set([...data.textureTransform, 0, 1, 1, 0.5]);
+        new Float32Array(mapped).set([...data.textureTransform, 0, 0, 0, 0]);
         new Uint32Array(mapped, 64, 4).set([data.textureRepeat, 0, 0, 0]);
         textureParamsBuffer.unmap();
 
