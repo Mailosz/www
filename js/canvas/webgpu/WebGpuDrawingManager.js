@@ -107,6 +107,40 @@ export class WebGpuDrawingManager extends DrawingManager {
                 ],
             });
 
+            const _ = [255, 0, 0, 255];  // red
+            const y = [255, 255, 0, 255];  // yellow
+            const b = [0, 0, 255, 255];  // blue
+            const a = [0, 0, 0, 0];  // transparent
+            const textureData = new Uint8Array([
+                b, _, _, _, _,
+                _, y, y, y, _,
+                _, y, _, _, _,
+                _, y, y, _, b,
+                _, y, _, _, _,
+                _, y, _, a, a,
+                _, _, _, a, a,
+            ].flat());
+
+            this.engine.addPrimitive({
+                coords: [[
+                    0, 0,
+                    200, 0,
+                    0, 200,
+                    200, 200,
+                ]],
+                fill: "texture",
+                textureWidth: 5,
+                textureHeight: 7,
+                textureFormat: "rgba8unorm",
+                textureRepeat: 0,
+                textureTransform: [
+                    1 / 25, 0, 0, 0,
+                    0, 1 / 25, 0, 0,
+                    -100 / 100, -100 / 100, 1, 0,
+                ],
+                textureData: textureData
+            });
+
             this.engine.setPoints([{
                 x: 0,
                 y: 0,

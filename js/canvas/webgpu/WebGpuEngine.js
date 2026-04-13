@@ -61,33 +61,72 @@ export class WebGpuEngine {
             ],
         });
 
-        this.primitiveBindGroupLayout = this.device.createBindGroupLayout({
+        this.solidColorBindGroupLayout = this.device.createBindGroupLayout({
             entries: [
                 {
                     binding: 0, // solidColor
                     visibility: GPUShaderStage.FRAGMENT,
                     buffer: { type: 'uniform' },
                 },
+            ],
+        });
+
+        this.gradientBindGroupLayout = this.device.createBindGroupLayout({
+            entries: [
                 {
-                    binding: 1, // gradient params
+                    binding: 0, // gradient params
                     visibility: GPUShaderStage.FRAGMENT,
                     buffer: { type: 'uniform' },
                 },
                 {
-                    binding: 2, // gradientStops storage buffer
+                    binding: 1, // gradientStops storage buffer
                     visibility: GPUShaderStage.FRAGMENT,
                     buffer: { type: 'read-only-storage' },
                 },
             ],
         });
 
-        const pipelineLayout = this.device.createPipelineLayout({
-            bindGroupLayouts: [
-                this.globalBindGroupLayout,     // → @group(0)
-                this.primitiveBindGroupLayout,  // → @group(1)
+        this.textureBindGroupLayout = this.device.createBindGroupLayout({
+            entries: [
+                {
+                    binding: 0, // texUniforms (mat3x3<f32>)
+                    visibility: GPUShaderStage.FRAGMENT,
+                    buffer: { type: "uniform" },
+                },
+                {
+                    binding: 1, // sampler
+                    visibility: GPUShaderStage.FRAGMENT,
+                    sampler: { type: "filtering" },
+                },
+                {
+                    binding: 2, // texture_2d<f32>
+                    visibility: GPUShaderStage.FRAGMENT,
+                    texture: { sampleType: "float" },
+                },
             ],
         });
 
+
+        const solidColorLayout = this.device.createPipelineLayout({
+            bindGroupLayouts: [
+                this.globalBindGroupLayout,     // → @group(0)
+                this.solidColorBindGroupLayout,  // → @group(1)
+            ],
+        });
+
+        const gradientPipelineLayout = this.device.createPipelineLayout({
+            bindGroupLayouts: [
+                this.globalBindGroupLayout,     // → @group(0)
+                this.gradientBindGroupLayout,  // → @group(1)
+            ],
+        });
+
+        const texturePipelineLayout = this.device.createPipelineLayout({
+            bindGroupLayouts: [
+                this.globalBindGroupLayout,     // → @group(0)
+                this.textureBindGroupLayout,  // → @group(1)
+            ],
+        });
 
         //viewport matrix
         this.viewportMatrixBuffer = this.device.createBuffer({
@@ -128,51 +167,91 @@ export class WebGpuEngine {
             cullMode: 'none',
         };
 
+        const target = {
+            format: presentationFormat,
+            blend: {
+                color: {
+                    srcFactor: "src-alpha",
+                    dstFactor: "one-minus-src-alpha",
+                },
+                alpha: {
+                    srcFactor: "one",
+                    dstFactor: "one-minus-src-alpha",
+                }
+            }
+        };
+
         this.solidColorPipeline = this.device.createRenderPipeline({
             label: 'solid color pipeline',
-            layout: pipelineLayout,
+            layout: solidColorLayout,
             vertex: vertexState,
             fragment: {
                 entryPoint: 'fillSolidColor',
                 module: this.module,
-                targets: [{ format: presentationFormat }],
+                targets: [target],
             },
             primitive: triangleStripPrimitive,
         });
 
         this.linearGradientPipeline = this.device.createRenderPipeline({
             label: 'linear gradient pipeline',
-            layout: pipelineLayout,
+            layout: gradientPipelineLayout,
             vertex: vertexState,
             fragment: {
                 entryPoint: 'fillLinearGradient',
                 module: this.module,
-                targets: [{ format: presentationFormat }],
+                targets: [target],
             },
             primitive: triangleStripPrimitive,
         });
 
         this.radialGradientPipeline = this.device.createRenderPipeline({
             label: 'radial gradient pipeline',
-            layout: pipelineLayout,
+            layout: gradientPipelineLayout,
             vertex: vertexState,
             fragment: {
                 entryPoint: 'fillRadialGradient',
                 module: this.module,
-                targets: [{ format: presentationFormat }],
+                targets: [target],
             },
             primitive: triangleStripPrimitive,
         });
 
+        this.conicGradientPipeline = this.device.createRenderPipeline({
+            label: 'conic gradient pipeline',
+            layout: gradientPipelineLayout,
+            vertex: vertexState,
+            fragment: {
+                entryPoint: 'fillConicGradient',
+                module: this.module,
+                targets: [target],
+            },
+            primitive: triangleStripPrimitive,
+        });
+
+
+        this.texturePipeline = this.device.createRenderPipeline({
+            label: 'texture pipeline',
+            layout: texturePipelineLayout,
+            vertex: vertexState,
+            fragment: {
+                entryPoint: 'fillTexture',
+                module: this.module,
+                targets: [target],
+            },
+            primitive: triangleStripPrimitive,
+        });
+
+
         this.pointPipeline = this.device.createRenderPipeline({
             label: 'points pipeline',
-            layout: pipelineLayout,
+            layout: solidColorLayout,
             vertex: {
                 module: this.module,
                 entryPoint: 'pointsVertexShader',
                 buffers: [
                     {
-                        arrayStride: 12, 
+                        arrayStride: 12,
                         stepMode: 'instance',
                         attributes: [
                             { shaderLocation: 0, offset: 0, format: 'float32x2' },  // position
@@ -184,25 +263,13 @@ export class WebGpuEngine {
             fragment: {
                 module: this.module,
                 entryPoint: 'fillSolidColor',
-                targets: [{ format: presentationFormat }],
+                targets: [target],
             },
             primitive: {
                 topology: 'triangle-list',
             },
         });
 
-
-        this.conicGradientPipeline = this.device.createRenderPipeline({
-            label: 'conic gradient pipeline',
-            layout: pipelineLayout,
-            vertex: vertexState,
-            fragment: {
-                entryPoint: 'fillConicGradient',
-                module: this.module,
-                targets: [{ format: presentationFormat }],
-            },
-            primitive: triangleStripPrimitive,
-        });
 
         this.renderPassDescriptor = {
             label: 'basic renderPass',
@@ -257,7 +324,10 @@ export class WebGpuEngine {
         } else if (primitiveData.fill === "conic-gradient") {
             bindGroup = this.createGradientBindGroup(primitiveData);
             pipeline = this.conicGradientPipeline;
-        } 
+        } else if (primitiveData.fill === "texture") {
+            bindGroup = this.createTextureBindGroup(primitiveData);
+            pipeline = this.texturePipeline;
+        }
         
         this.#primitives.push({
             vertexBuffer: vertexBuffer,
@@ -283,11 +353,9 @@ export class WebGpuEngine {
         //bind group for this primitive
         const bindGroup = this.device.createBindGroup({
             label: 'primitive bind group',
-            layout: this.primitiveBindGroupLayout,
+            layout: this.solidColorBindGroupLayout,
             entries: [
                 { binding: 0, resource: { buffer: solidColorBuffer } },
-                { binding: 1, resource: { buffer: this.dummyUniformBuffer } },
-                { binding: 2, resource: { buffer: this.dummyStorageBuffer } },
             ],
         });
         return bindGroup;
@@ -295,13 +363,13 @@ export class WebGpuEngine {
 
     createGradientBindGroup(data) {
         const gradientParamsBuffer = this.device.createBuffer({
-            size: 64, 
+            size: 80, 
             usage: GPUBufferUsage.UNIFORM,
             mappedAtCreation: true,
         });
         const mapped = gradientParamsBuffer.getMappedRange();
-        new Float32Array(mapped).set(data.gradientTransform);
-        new Uint32Array(mapped, 48, 4).set([data.gradientRepeat, 0, 0, 0]);
+        new Float32Array(mapped).set([...data.gradientTransform, 0, 0, 0, 0]);
+        new Uint32Array(mapped, 64, 4).set([data.gradientRepeat, 0, 0, 0]);
         gradientParamsBuffer.unmap();
         
 
@@ -314,17 +382,64 @@ export class WebGpuEngine {
         gradientStopsBuffer.unmap();
 
         const bindGroup = this.device.createBindGroup({
-            layout: this.primitiveBindGroupLayout,
+            layout: this.gradientBindGroupLayout,
             entries: [
-                { binding: 0, resource: { buffer: this.dummyUniformBuffer } },
-                { binding: 1, resource: { buffer: gradientParamsBuffer } },
-                { binding: 2, resource: { buffer: gradientStopsBuffer } },
+                { binding: 0, resource: { buffer: gradientParamsBuffer } },
+                { binding: 1, resource: { buffer: gradientStopsBuffer } },
             ],
         });
         return bindGroup;
 
     }
 
+    createTextureBindGroup(data) {
+        const textureParamsBuffer = this.device.createBuffer({
+            size: 80,
+            usage: GPUBufferUsage.UNIFORM,
+            mappedAtCreation: true,
+        });
+        const mapped = textureParamsBuffer.getMappedRange();
+        new Float32Array(mapped).set([...data.textureTransform, 0, 1, 1, 0.5]);
+        new Uint32Array(mapped, 64, 4).set([data.textureRepeat, 0, 0, 0]);
+        textureParamsBuffer.unmap();
+
+        const texture = this.device.createTexture({
+            size: [data.textureWidth, data.textureHeight],
+            format: data.textureFormat,
+            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+        });
+        this.device.queue.writeTexture(
+            { texture },
+            data.textureData,
+            { bytesPerRow: data.textureWidth * 4 },
+            { width: data.textureWidth, height: data.textureHeight },
+        );
+
+
+        let addressMode;
+
+        if (data.textureRepeat === 2) addressMode = "repeat";
+        else if (data.textureRepeat === 3) addressMode = "mirror-repeat";
+        else addressMode = "clamp-to-edge"; // repeat == 0 handled in shader
+
+        const sampler = this.device.createSampler({
+            addressModeU: addressMode,
+            addressModeV: addressMode,
+            magFilter: "nearest",
+            minFilter: "nearest",
+        });
+
+
+        const bindGroup = this.device.createBindGroup({
+            layout: this.textureBindGroupLayout,
+            entries: [
+                { binding: 0, resource: { buffer: textureParamsBuffer } },
+                { binding: 1, resource: sampler },
+                { binding: 2, resource: texture.createView() },
+            ],
+        });
+        return bindGroup;
+    }
 
     setPoints(pointsData) {
         this.#pointsCount = pointsData.length;
