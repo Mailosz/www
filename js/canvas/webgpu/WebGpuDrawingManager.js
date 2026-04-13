@@ -106,6 +106,21 @@ export class WebGpuDrawingManager extends DrawingManager {
                     {offset: 1, color: [0, 0, 1, 1]},
                 ],
             });
+
+            this.engine.setPoints([{
+                x: 0,
+                y: 0,
+                size: 1,
+            }, {
+                x: 250,
+                y: 250,
+                size: 20,
+            }, {
+                x: 300,
+                y: 300,
+                size: 20,
+            }]);
+
         });
     }
 
