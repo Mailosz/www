@@ -26,7 +26,7 @@ export const shader = /* wgsl */ `
         transform : mat3x3<f32>,
         baseColor: vec4f,
         repeat: u32,
-        _pad0: u32,
+        filterMode: u32,
         _pad1: u32,
         _pad2: u32,
     }
@@ -309,7 +309,6 @@ export const shader = /* wgsl */ `
         return vec2f(u, v);
     }
 
-
 @fragment
 fn fillTexture(in: VertexOut) -> @location(0) vec4f {
 
@@ -318,22 +317,42 @@ fn fillTexture(in: VertexOut) -> @location(0) vec4f {
     let t = texUniforms.transform * uv3;
     let uv = t.xy;
 
-    // Sample once (uniform control flow)
+    // Always sample once
     let texColor = textureSample(texData, texSampler, uv);
 
-    // Only repeat == 0 needs special handling
+    // Only special case: repeat == 0
     if (texUniforms.repeat == 0u) {
-        let inside =
-            (uv.x >= 0.0 && uv.x <= 1.0 &&
-             uv.y >= 0.0 && uv.y <= 1.0);
 
-        // select() is uniform control flow
-        return select(texUniforms.baseColor, texColor, inside);
+        // If nearest filtering → no fade at all
+        if (texUniforms.filterMode == 0u) {
+            // Hard edge
+            let inside =
+                (uv.x >= 0.0 && uv.x <= 1.0 &&
+                uv.y >= 0.0 && uv.y <= 1.0);
+
+            return select(texUniforms.baseColor, texColor, inside);
+        }
+
+        // Compute how far UV is outside [0,1]
+        let dx = max(-uv.x, uv.x - 1.0);
+        let dy = max(-uv.y, uv.y - 1.0);
+        let outside = max(dx, dy);
+
+        // Compute UV scale from transform matrix
+        let sx = length(vec2(texUniforms.transform[0].x, texUniforms.transform[1].x));
+        let sy = length(vec2(texUniforms.transform[0].y, texUniforms.transform[1].y));
+        let scale = max(sx, sy);
+
+        // Fade scaled by transform
+        let fade = clamp(outside * scale * 100.0, 0.0, 1.0);
+
+        return mix(texColor, texUniforms.baseColor, fade);
     }
 
-    // All other repeat modes handled by sampler
     return texColor;
 }
+
+
 
 
     `;

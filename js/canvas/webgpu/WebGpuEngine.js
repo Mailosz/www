@@ -171,7 +171,7 @@ export class WebGpuEngine {
             format: presentationFormat,
             blend: {
                 color: {
-                    srcFactor: "src-alpha",
+                    srcFactor: "one",
                     dstFactor: "one-minus-src-alpha",
                 },
                 alpha: {
@@ -400,7 +400,7 @@ export class WebGpuEngine {
         });
         const mapped = textureParamsBuffer.getMappedRange();
         new Float32Array(mapped).set([...data.textureTransform, 0, 0, 0, 0]);
-        new Uint32Array(mapped, 64, 4).set([data.textureRepeat, 0, 0, 0]);
+        new Uint32Array(mapped, 64, 4).set([data.textureRepeat ?? 0, data.textureFiltering ?? 0, 0, 0]);
         textureParamsBuffer.unmap();
 
         const texture = this.device.createTexture({
@@ -416,17 +416,18 @@ export class WebGpuEngine {
         );
 
 
+
         let addressMode;
 
         if (data.textureRepeat === 2) addressMode = "repeat";
         else if (data.textureRepeat === 3) addressMode = "mirror-repeat";
-        else addressMode = "clamp-to-edge"; // repeat == 0 handled in shader
+        else addressMode = "clamp-to-edge"; 
 
         const sampler = this.device.createSampler({
             addressModeU: addressMode,
             addressModeV: addressMode,
-            magFilter: "nearest",
-            minFilter: "nearest",
+            magFilter: data.textureFiltering === 1 ? "linear" : "nearest",
+            minFilter: data.textureFiltering === 1 ? "linear" : "nearest",
         });
 
 

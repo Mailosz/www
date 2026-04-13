@@ -133,6 +133,7 @@ export class WebGpuDrawingManager extends DrawingManager {
                 textureHeight: 7,
                 textureFormat: "rgba8unorm",
                 textureRepeat: 0,
+                textureFiltering: 0,
                 textureTransform: [
                     1 / 25, 0, 0, 0,
                     0, 1 / 25, 0, 0,
