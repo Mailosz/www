@@ -63,8 +63,8 @@ export class WebGpuDrawingManager extends DrawingManager {
                     150, 150,
                     50, 150,
                 ]],
-                fill: "solid-color",
-                fillColor: new Float32Array([1, 0, 0, 1]),
+                brush: "solid-color",
+                color: new Float32Array([1, 0, 0, 1]),
             });
             this.engine.addPrimitive({
                 coords: [[
@@ -73,8 +73,8 @@ export class WebGpuDrawingManager extends DrawingManager {
                     300, 100,
                     200, 100,
                 ]],
-                fill: "solid-color",
-                fillColor: new Float32Array([0, 1, 0, 1]),
+                brush: "solid-color",
+                color: new Float32Array([0, 1, 0, 1]),
             });
             this.engine.addPrimitive({
                 coords: [[
@@ -83,8 +83,8 @@ export class WebGpuDrawingManager extends DrawingManager {
                     400, 200,
                     300, 200,
                 ]],
-                fill: "solid-color",
-                fillColor: new Float32Array([0, 0, 1, 1]),
+                brush: "solid-color",
+                color: new Float32Array([0, 0, 1, 1]),
             });
             this.engine.addPrimitive({
                 coords: [[
@@ -93,7 +93,7 @@ export class WebGpuDrawingManager extends DrawingManager {
                     0, 200,
                     200, 200,
                 ]],
-                fill: "conic-gradient",
+                brush: "conic-gradient",
                 gradientTransform: [
                     1 / 50, 0, 0, 0,
                     0, 1 / 50, 0, 0,
@@ -128,18 +128,18 @@ export class WebGpuDrawingManager extends DrawingManager {
                     0, 200,
                     200, 200,
                 ]],
-                fill: "texture",
+                brush: "texture",
                 textureWidth: 5,
                 textureHeight: 7,
                 textureFormat: "rgba8unorm",
-                textureRepeat: 0,
+                textureRepeat: 1,
                 textureFiltering: 0,
                 textureTransform: [
                     1 / 25, 0, 0, 0,
                     0, 1 / 25, 0, 0,
                     -100 / 100, -100 / 100, 1, 0,
                 ],
-                textureData: textureData
+                textureData: textureData,
             });
 
             this.engine.setPoints([{
@@ -153,6 +153,14 @@ export class WebGpuDrawingManager extends DrawingManager {
             }, {
                 x: 300,
                 y: 300,
+                size: 20,
+            }, {
+                x: 50,
+                y: 50,
+                size: 20,
+            }, {
+                x: 100,
+                y: 200,
                 size: 20,
             }]);
 

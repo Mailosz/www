@@ -149,7 +149,7 @@ export class WebGpuEngine {
         });
 
         // pipelines
-        const vertexState = {
+        const vertexShaderDef = {
             entryPoint: 'trianglesVertexShader',
             module: this.module,
             buffers: [
@@ -184,7 +184,7 @@ export class WebGpuEngine {
         this.solidColorPipeline = this.device.createRenderPipeline({
             label: 'solid color pipeline',
             layout: solidColorLayout,
-            vertex: vertexState,
+            vertex: vertexShaderDef,
             fragment: {
                 entryPoint: 'fillSolidColor',
                 module: this.module,
@@ -196,7 +196,7 @@ export class WebGpuEngine {
         this.linearGradientPipeline = this.device.createRenderPipeline({
             label: 'linear gradient pipeline',
             layout: gradientPipelineLayout,
-            vertex: vertexState,
+            vertex: vertexShaderDef,
             fragment: {
                 entryPoint: 'fillLinearGradient',
                 module: this.module,
@@ -208,7 +208,7 @@ export class WebGpuEngine {
         this.radialGradientPipeline = this.device.createRenderPipeline({
             label: 'radial gradient pipeline',
             layout: gradientPipelineLayout,
-            vertex: vertexState,
+            vertex: vertexShaderDef,
             fragment: {
                 entryPoint: 'fillRadialGradient',
                 module: this.module,
@@ -220,7 +220,7 @@ export class WebGpuEngine {
         this.conicGradientPipeline = this.device.createRenderPipeline({
             label: 'conic gradient pipeline',
             layout: gradientPipelineLayout,
-            vertex: vertexState,
+            vertex: vertexShaderDef,
             fragment: {
                 entryPoint: 'fillConicGradient',
                 module: this.module,
@@ -233,7 +233,7 @@ export class WebGpuEngine {
         this.texturePipeline = this.device.createRenderPipeline({
             label: 'texture pipeline',
             layout: texturePipelineLayout,
-            vertex: vertexState,
+            vertex: vertexShaderDef,
             fragment: {
                 entryPoint: 'fillTexture',
                 module: this.module,
@@ -312,19 +312,19 @@ export class WebGpuEngine {
         const vertexBuffer = this.createVertexBuffer(primitiveData.coords.flat());
 
         let bindGroup, pipeline;
-        if (primitiveData.fill === "solid-color") {
-            bindGroup = this.createSolidColorBindGroup(primitiveData.fillColor);
+        if (primitiveData.brush === "solid-color") {
+            bindGroup = this.createSolidColorBindGroup(primitiveData.color);
             pipeline = this.solidColorPipeline;
-        } else if (primitiveData.fill === "linear-gradient") {
+        } else if (primitiveData.brush === "linear-gradient") {
             bindGroup = this.createGradientBindGroup(primitiveData);
             pipeline = this.linearGradientPipeline;
-        } else if (primitiveData.fill === "radial-gradient") {
+        } else if (primitiveData.brush === "radial-gradient") {
             bindGroup = this.createGradientBindGroup(primitiveData);
             pipeline = this.radialGradientPipeline;
-        } else if (primitiveData.fill === "conic-gradient") {
+        } else if (primitiveData.brush === "conic-gradient") {
             bindGroup = this.createGradientBindGroup(primitiveData);
             pipeline = this.conicGradientPipeline;
-        } else if (primitiveData.fill === "texture") {
+        } else if (primitiveData.brush === "texture") {
             bindGroup = this.createTextureBindGroup(primitiveData);
             pipeline = this.texturePipeline;
         }
@@ -338,7 +338,7 @@ export class WebGpuEngine {
 
     }
 
-    createSolidColorBindGroup(fillColor) {
+    createSolidColorBindGroup(color) {
         //solid color uniform
         const solidColorBuffer = this.device.createBuffer({
             label: 'solid color buffer',
@@ -346,7 +346,7 @@ export class WebGpuEngine {
             usage: GPUBufferUsage.UNIFORM,
             mappedAtCreation: true,
         });
-        new Float32Array(solidColorBuffer.getMappedRange()).set(fillColor);
+        new Float32Array(solidColorBuffer.getMappedRange()).set(color);
         solidColorBuffer.unmap();
 
 
