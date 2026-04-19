@@ -37,7 +37,7 @@ export class InputManager {
      * Single click action (pointer pressed and quickly released without moving)
      * @param {PointerData} pointer 
      */
-    click(pointer) {
+    click(pointer, state) {
         throw "click not implemented";
     }
 
@@ -45,7 +45,7 @@ export class InputManager {
      * Double click action (pointer clicked twice quickly)
      * @param {PointerData} pointer 
      */
-    doubleClick(pointer) {
+    doubleClick(pointer, state) {
         throw "doubleClick not implemented";
     }
 
@@ -53,7 +53,7 @@ export class InputManager {
      * Alternative click action (e.g. right mouse button)
      * @param {PointerData} pointer 
      */
-    alternativeClick(pointer) {
+    alternativeClick(pointer, state) {
         throw "alternativeClick not implemented";
     }
 
@@ -61,8 +61,17 @@ export class InputManager {
      * Pointer moved over canvas without contact (e.g. mouse hover)
      * @param {PointerData} data 
      */;
-    hover(pointer) {
+    hover(pointer, state) {
         throw "hover not implemented";
+    }
+
+    /**
+     * Mouse wheel action
+     * @param {number} factor 
+     * @param {{x: number, y: number}} position normalized position on screen (0,1)
+     */;
+    wheel(factor, {x, y}, state) {
+        throw "wheel not implemented";
     }
 
     /**
@@ -70,7 +79,7 @@ export class InputManager {
      * @param {PointerData} pointer 
      * @returns {Manipulation} A manipulation object that manages further inputs or null.
      */
-    beginManipulation(pointer) {
+    beginManipulation(pointer, state) {
         
         throw "beginManipulation not implemented";
     }
@@ -80,7 +89,7 @@ export class InputManager {
      * @param {KeyboardData} keyData 
      * @returns Return UserChange for CanvasManager to execute, or true to inform CM that input has been handled. Return null or false to make it try another input handler.
      */
-    handleKey(keyData) {
+    handleKey(keyData, state) {
 
         for (let action of this.keyboardActions) {
             if (keyData.keyWatcher.checkKeyboardShortcut(action.keyboardShortcut)) {
@@ -153,7 +162,7 @@ export class Manipulation {
      * Occurs everytime a user moves pointer over the canvas
      * @param {GestureData} data 
      */
-    update(data) {
+    update(data, state) {
         throw "Manipulation.update not implemented"
     }
     
@@ -161,14 +170,14 @@ export class Manipulation {
      * Occurs whenever the manipulation is finished (e.g. pointer is lifted).
      * @returns Return a UserChange that will be executed by CanvasManager
      */
-    complete() {
+    complete(state) {
         throw "Manipulation.complete not implemented"
     }
 
     /**
      * Manipulation canceled - restore everything to initial values
      */
-    cancel() {
+    cancel(state) {
         throw "Manipulation.cancel not implemented"
     }
 
@@ -177,7 +186,7 @@ export class Manipulation {
      * @param {KeyboardData} keyData 
      * @returns Return UserChange for CanvasManager to execute, or true to inform CM that input has been handled. Return null or false to make it try another input handler.
      */
-    handleKey(keyData) {
+    handleKey(keyData, state) {
 
         for (let action of this.keyboardActions) {
             if (keyData.keyWatcher.checkKeyboardShortcut(action.keyboardShortcut)) {
@@ -190,34 +199,3 @@ export class Manipulation {
     }
 }
 
-export class ScrollManipulation extends Manipulation {
-
-    scrollX = 0;
-    scrollY = 0;
-    /**
-     * Occurs everytime a user moves pointer over the canvas
-     * @param {GestureData} data 
-     */
-    update(data) {
-        this.scrollX = data.lastX - data.x+ this.scrollX;
-        this.scrollY = data.lastY - data.y+ this.scrollY;
-        this.cm.scrollBy(this.scrollX, this.scrollY);
-
-        this.cm.redraw();
-    }
-
-        /**
-     * Occurs whenever the manipulation is finished (e.g. pointer is lifted).
-     * @returns Return a UserChange that will be executed by CanvasManager
-     */
-    complete() {
-        // Nothing
-    }
-
-    /**
-     * Manipulation canceled - restore everything to initial values
-     */
-    cancel() {
-        // Nothing
-    }
-}

@@ -1,12 +1,11 @@
 
-import { InputManager, Manipulation } from "../InputManager.js";
-import { ViewportInputManager, ScrollManipulation } from "../ViewportInputManager.js";
+import { InputManager, Manipulation } from "./InputManager.js";
 
 
 /**
  * For tests
  */
-export class TestInputManager extends InputManager {
+export class ViewportInputManager extends InputManager {
 
     constructor() {
         super();
@@ -21,14 +20,7 @@ export class TestInputManager extends InputManager {
      * @param {PointerData} pointer 
      */
     click(pointer, state) {
-        if (pointer.consecutiveClickCount == 0) {
-            state.click = {x: pointer.x, y: pointer.y};
-            state.redraw();
-        } else {
-            console.log(pointer.consecutiveClickCount)
-            state.dbClick = {x: pointer.x, y: pointer.y};
-            state.redraw();
-        }
+        
     }
 
     /**
@@ -36,8 +28,7 @@ export class TestInputManager extends InputManager {
      * @param {PointerData} pointer 
      */
     alternativeClick(pointer, state) {
-        state.altClick = {x: pointer.x, y: pointer.y};
-        state.redraw();
+        
     }
 
     /**
@@ -45,8 +36,7 @@ export class TestInputManager extends InputManager {
      * @param {PointerData} data 
      */;
     hover(pointer, state) {
-        state.mouse = {x: pointer.x, y: pointer.y};
-        state.redraw();
+        
     }
 
     /**
@@ -68,44 +58,42 @@ export class TestInputManager extends InputManager {
         if (pointer.button == 1) {
             return new ScrollManipulation();
         }
-        return new TestManipulation(state, pointer);
+        
 
     }
 
 
 }
 
-/**
- * For tests
- */
-export class TestManipulation extends Manipulation {
-    
-    /**
-     * @param {PointerData} pData
-     * @param {CanvasManager} canvas 
-     * @param {object} state
-     */
-    constructor(state, pData) {
-        super();
-        this.state = state;
-        this.state.lines = [{x: pData.pressX, y: pData.pressY}];
-    }
 
+export class ScrollManipulation extends Manipulation {
+
+    scrollX = 0;
+    scrollY = 0;
     /**
-     * 
+     * Occurs everytime a user moves pointer over the canvas
      * @param {GestureData} data 
      */
-    update(pData) {
-        this.state.lines.push({x: pData.x, y: pData.y})
-        this.state.redraw();
+    update(data, state) {
+        this.scrollX = data.lastX - data.x;
+        this.scrollY = data.lastY - data.y;
+        state.scrollBy(this.scrollX, this.scrollY);
+
+        state.redraw();
     }
-    
+
+    /**
+ * Occurs whenever the manipulation is finished (e.g. pointer is lifted).
+ * @returns Return a UserChange that will be executed by CanvasManager
+ */
     complete() {
-
+        // Nothing
     }
 
+    /**
+     * Manipulation canceled - restore everything to initial values
+     */
     cancel() {
-        this.state.lines = null;
-        this.state.redraw();
+        // Nothing
     }
 }

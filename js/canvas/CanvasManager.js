@@ -20,15 +20,16 @@ export class CanvasManager {
         /** @type {CanvasSettings} */
         this.settings = {...(new CanvasSettings()), ...settings};
 
-        /** @type {DrawingManager} */
-        this.drawing = null;
+        /** @type {RenderManager} */
+        this.renderer = null;
 
         this.width = 100;
         this.height = 100;
-        this.viewport = {x: 0, y: 0, w: 100, h: 100};
-        this.zoom = 1;
-        this.minzoom = 0.0001;
-        this.maxzoom = 100000;
+
+        /**
+         * @type {*} the state of the canvas
+         */
+        this.stateManager = null;
 
         /** @type {InputManager} */
         this.inputManager = null;
@@ -92,10 +93,11 @@ export class CanvasManager {
 
                 this.width = w;
                 this.height = h;
-                this.updateViewport(this.viewport.x, this.viewport.y, this.zoom);
+                this.stateManager?.resize(w, h);
 
-                if (this.drawing != null) {
-                    this.drawing.resize(w, h);
+                if (this.renderer != null) {
+                    this.renderer.resize(w, h);
+                    this.renderer.update(this.stateManager);
                 }
             }
         });
@@ -108,6 +110,15 @@ export class CanvasManager {
         }
         
 
+    }
+
+    /**
+     * Sets the state object used to manage the canvas state
+     * @param {*} stateManager 
+     */
+    setStateManager(stateManager) {
+        this.stateManager = stateManager;
+        this.stateManager.setCanvasManager(this);
     }
 
     /**
@@ -124,60 +135,26 @@ export class CanvasManager {
     }
 
     /**
-     * Sets the DrawingManager used to draw contents
-     * @param {DrawingManager} drawingManager 
+     * Sets the RenderManager used to draw contents
+     * @param {RenderManager} renderManager 
      */
-    setDrawingManager(drawingManager) {
-        if (this.drawing != null) {
-            this.drawing.close();
+    setRenderManager(renderManager) {
+        if (this.renderer != null) {
+            this.renderer.close();
         }
 
-        this.drawing = drawingManager;
-        this.drawing.setCanvasManager(this);
-        this.drawing.prepare();
+        this.renderer = renderManager;
+        this.renderer.setCanvasManager(this);
+        this.renderer.prepare();
     }
 
-    /**
-     * 
-     * @param {*} factor 
-     * @param {x:Number, y:Number} origin 
-     */
-    zoomBy(factor, origin) {
-        const screenX = (origin.x - this.viewport.x);
-        const screenY = (origin.y - this.viewport.y);
-
-        let oldzoom = this.zoom;
-        this.zoom = Math.max(this.minzoom,Math.min(this.zoom * factor, this.maxzoom));
-        const realFactor = oldzoom / this.zoom;
-        
-        const scrollX = this.viewport.x - (screenX) * (realFactor - 1);
-        const scrollY = this.viewport.y - (screenY) * (realFactor - 1);
-        
-        this.updateViewport(scrollX, scrollY, this.zoom);
-
-        console.log("zoom: " + this.zoom * 100 + "%");
-    }
-
-    updateViewport(x, y, zoom) {
-        this.viewport.x = x;
-        this.viewport.y = y;
-        this.viewport.w = this.width / zoom;
-        this.viewport.h = this.height / zoom;
-
-        this.drawing?.updateViewport(this.viewport);
-    }
-
-
-    scrollBy(x, y) {
-        this.updateViewport(this.viewport.x + x, this.viewport.y + y, this.zoom);
-    }
 
     /**
      * Informs DrawingManager to redraw the canvas
      */
     redraw(viewport) {
-        if (this.drawing != null) {
-            this.drawing.redraw(viewport);
+        if (this.renderer != null) {
+            this.renderer.update(this.stateManager);
         }
     }
 
@@ -238,7 +215,7 @@ export class CanvasManager {
 
     /**
      * 
-     * @param {WheelEent} event 
+     * @param {WheelEvent} event 
      */
     #pointerwheel(event) {
         event.preventDefault();
@@ -247,20 +224,23 @@ export class CanvasManager {
         let factor = (10 + by) / 10;
 
         const [x, y] = this.#getPointerPosition(event.offsetX, event.offsetY);
-        this.zoomBy(factor, {x: x, y: y});
-        this.redraw();
+        this.inputManager?.wheel(factor, {x: x, y: y}, this.stateManager);
     }
 
     #getPointerPosition(pointerX, pointerY) {
-    const dpr = window.devicePixelRatio;
-    
-    const x = this.viewport.x + ((pointerX * dpr) * (this.viewport.w / this.width));
-    const y = this.viewport.y + ((pointerY * dpr) * (this.viewport.h / this.height));
+        const dpr = window.devicePixelRatio;
 
-        return [
-            x,
-            y
-        ];
+        if (this.stateManager != null) {
+            return this.stateManager.getPointerPosition(pointerX * dpr / this.width, pointerY * dpr / this.height);
+        } else {
+            const x = pointerX * dpr / this.width;
+            const y = pointerY * dpr / this.height;
+
+            return [
+                x,
+                y
+            ];
+        }
     }
 
     /**
@@ -279,12 +259,10 @@ export class CanvasManager {
         //this is to allow capturing for keyboard input
         this.canvasElement.focus({focusVisible: false, preventScroll: true});
 
-        const [x,y] = this.#getPointerPosition(event.offsetX, event.offsetY);
-
-        pointer.x = x;
-        pointer.y = y;
-        pointer.pressX = x;
-        pointer.pressY = y;
+        pointer.x = event.offsetX;
+        pointer.y = event.offsetY;
+        pointer.pressX = event.offsetX;
+        pointer.pressY = event.offsetY;
         pointer.pressed = true;
         pointer.pressTime = Date.now();
         pointer.moving = false;
@@ -300,16 +278,22 @@ export class CanvasManager {
      * @returns 
      */
     #makePointerData(pointer, id) {
+
+        const [currentX, currentY] = this.#getPointerPosition(pointer.x, pointer.y);
+        const [startX, startY] = this.#getPointerPosition(pointer.startX, pointer.startY);
+        const [pressX, pressY] = this.#getPointerPosition(pointer.pressX, pointer.pressY);
+        const [lastX, lastY] = this.#getPointerPosition(pointer.lastX, pointer.lastY);
+
         return {
             id: id,
-            x: pointer.x,
-            y: pointer.y,
-            startX: pointer.startX,
-            startY: pointer.startY,
-            pressX: pointer.pressX,
-            pressY: pointer.pressY,
-            lastX: pointer.lastX,
-            lastY: pointer.lastY,
+            x: currentX,
+            y: currentY,
+            startX: startX,
+            startY: startY,
+            pressX: pressX,
+            pressY: pressY,
+            lastX: lastX,
+            lastY: lastY,
             consecutiveClickCount: pointer.consecutiveClickCount,
             button: pointer.button
         };
@@ -328,11 +312,10 @@ export class CanvasManager {
             this.pointers[event.pointerId] = pointer;
         }
 
-        const [x,y] = this.#getPointerPosition(event.offsetX, event.offsetY);
         pointer.lastX = pointer.x;
         pointer.lastY = pointer.y;
-        pointer.x = x;
-        pointer.y = y;
+        pointer.x = event.offsetX;
+        pointer.y = event.offsetY;
         pointer.lastTime = Date.now();
 
         if (pointer.pressed) {
@@ -345,15 +328,13 @@ export class CanvasManager {
                 //pointer is pressed
                 if (this.currentManipulation != null) {
                     let data = this.#makePointerData(pointer, event.pointerId);
-                    data.startX = pointer.startX;
-                    data.startY = pointer.startY;
-                    this.currentManipulation.update(data);
+                    this.currentManipulation.update(data, this.stateManager);
                 } 
             } else {
 
                 let dis = Math.sqrt((pointer.pressX - pointer.x) ** 2 + (pointer.pressY - pointer.y) ** 2);
 
-                const moveDistance = this.settings.pointerMoveDistance / this.zoom;
+                const moveDistance = this.settings.pointerMoveDistance;
                 // manipulation starts
                 if (dis > moveDistance) {
                     pointer.moving = true;
@@ -362,7 +343,7 @@ export class CanvasManager {
 
                     let data = this.#makePointerData(pointer, event.pointerId);
                     if (this.inputManager != null) {
-                        let manipulation = this.inputManager.beginManipulation(data);
+                        let manipulation = this.inputManager.beginManipulation(data, this.stateManager);
                         if (manipulation != null) {
                             this.currentManipulation = manipulation;
                             manipulation.setCanvasManager(this);
@@ -377,7 +358,7 @@ export class CanvasManager {
                 
                 let data = this.#makePointerData(pointer, event.pointerId);
 
-                this.inputManager.hover(data);
+                this.inputManager.hover(data, this.stateManager);
             }
         }
     }
@@ -395,13 +376,10 @@ export class CanvasManager {
             this.pointers[event.pointerId] = pointer;
         }
 
-        const [x,y] = this.#getPointerPosition(event.offsetX, event.offsetY);
-        pointer.realX = event.offsetX;
-        pointer.realY = event.offsetY;
         pointer.lastX = pointer.x;
         pointer.lastY = pointer.y;
-        pointer.x = x;
-        pointer.y = y;
+        pointer.x = event.offsetX;
+        pointer.y = event.offsetY;
 
         pointer.releaseTime = Date.now();
 
@@ -412,15 +390,15 @@ export class CanvasManager {
 
                 if (dis > this.settings.pointerMoveDistance) { // too far - this is a normal click
                     pointer.consecutiveClickCount = 0;
-                    this.inputManager.click(this.#makePointerData(pointer, event.pointerId));
+                    this.inputManager.click(this.#makePointerData(pointer, event.pointerId), this.stateManager);
                 } else { // two consecutive clicks near each other - doubleclick
                     pointer.consecutiveClickCount++;
-                    this.inputManager.click(this.#makePointerData(pointer, event.pointerId));
+                    this.inputManager.click(this.#makePointerData(pointer, event.pointerId), this.stateManager);
                 }
                 pointer.lastClickTime = Date.now();
             } else { //single click
                 pointer.consecutiveClickCount = 0;
-                this.inputManager.click(this.#makePointerData(pointer, event.pointerId));
+                this.inputManager.click(this.#makePointerData(pointer, event.pointerId), this.stateManager);
                 pointer.lastClickTime = Date.now();
             }
             pointer.lastClickX = pointer.x;
@@ -444,14 +422,14 @@ export class CanvasManager {
                         if (pointer.button == 0) { //primary button
                             primaryButton(pointer, data);
                         } else {
-                            this.inputManager.alternativeClick(this.#makePointerData(pointer, event.pointerId));
+                            this.inputManager.alternativeClick(this.#makePointerData(pointer, event.pointerId), this.stateManager);
                         }
                     } else {
                         /** Time of touch after which it is considered secondary touch */
                         if ((pointer.releaseTime - pointer.pressTime) < this.settings.touchTime) {
                             primaryButton(pointer, data);
                         } else {
-                            this.inputManager.alternativeClick(this.#makePointerData(pointer, event.pointerId));
+                            this.inputManager.alternativeClick(this.#makePointerData(pointer, event.pointerId), this.stateManager);
                         }
                     }
                 }
@@ -493,8 +471,8 @@ export class CanvasManager {
 
         let result;
         if ( //check handleKey of manipulation, then inputmanager, then this CanvasManager
-            (this.currentManipulation != null && (result = this.currentManipulation.handleKey(keyData))) ||
-            (this.inputManager != null && (result = this.inputManager.handleKey(keyData))) ||
+            (this.currentManipulation != null && (result = this.currentManipulation.handleKey(keyData, this.stateManager))) ||
+            (this.inputManager != null && (result = this.inputManager.handleKey(keyData, this.stateManager))) ||
             (result = this.handleKey(keyData))
         ) {
             if (result !== true) {
@@ -550,7 +528,7 @@ export class CanvasManager {
      */
     #contextLost(event) {
         console.log("Drawing context lost");
-        this.drawing?.close();
+        this.renderer?.close();
     }
 
     /**
@@ -559,7 +537,7 @@ export class CanvasManager {
      */
     #contextRestored(event) {
         console.log("Drawing context restored");
-        this.drawing?.prepare();
+        this.renderer?.prepare();
     }
 }
 

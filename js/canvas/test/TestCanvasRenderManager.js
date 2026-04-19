@@ -1,20 +1,16 @@
-//draw
+import { RenderManager } from "../RenderManager.js";
 
-import { DrawingManager } from "../DrawingManager.js";
-
-export class CanvasDrawingManager extends DrawingManager {
+export class TestCanvasRenderManager extends RenderManager {
 
     /**
      * @type {CanvasManager} cm 
      */
     cm;
 
-    constructor (state) {
+    constructor () {
         super();
         /** @type {CanvasRenderingContext2D} */
         this.ctx = null;
-
-        this.state = state;
     }
 
     prepare() {
@@ -37,30 +33,29 @@ export class CanvasDrawingManager extends DrawingManager {
 
         this.cm.canvasElement.width = width;
         this.cm.canvasElement.height = height;
-        
-        this.redraw();
     }
 
-    redraw(viewport) {
+    /**
+     * Notifies the renderer that the state has been changed and it should redraw itself
+     * @param {*} state 
+     */
+    update(state) {
         if (this.ctx == null) {
             this.prepare();
         }
-        if (!viewport) {
-            viewport = this.cm.viewport;
-        }
-        this.draw(this.ctx, viewport);
+        this.draw(this.ctx, state);
     }
 
     /** 
      * Drawing testing implementation - to override
      * @param {CanvasRenderingContext2D} ds
      */
-    draw(ds, viewport) {
+    draw(ds, state) {
 
         ds.resetTransform();
         ds.clearRect(0,0,this.width,this.height);
-        ds.scale(this.width / viewport.w, this.height / viewport.h);
-        ds.translate(-viewport.x, -viewport.y);
+        ds.scale(this.width / state.viewport.w, this.height / state.viewport.h);
+        ds.translate(-state.viewport.x, -state.viewport.y);
 
 
         ds.beginPath();
@@ -75,50 +70,50 @@ export class CanvasDrawingManager extends DrawingManager {
         ds.stroke();
 
         
-        if (this.state.click != null) {
+        if (state.click != null) {
             ds.beginPath();
             ds.fillStyle = "violet";
-            ds.ellipse(this.state.click.x, this.state.click.y, 7, 7, 0, 0, 2*Math.PI, false);
+            ds.ellipse(state.click.x, state.click.y, 7, 7, 0, 0, 2*Math.PI, false);
             ds.fill();
         }
 
-        if (this.state.dbClick != null) {
+        if (state.dbClick != null) {
             ds.beginPath();
             ds.fillStyle = "lime";
-            ds.ellipse(this.state.dbClick.x, this.state.dbClick.y, 7, 7, 0, 0, 2*Math.PI, false);
+            ds.ellipse(state.dbClick.x, state.dbClick.y, 7, 7, 0, 0, 2*Math.PI, false);
             ds.fill();
         }
 
-        if (this.state.altClick != null) {
+        if (state.altClick != null) {
             ds.beginPath();
             ds.fillStyle = "cyan";
-            ds.ellipse(this.state.altClick.x, this.state.altClick.y, 7, 7, 0, 0, 2*Math.PI, false);
+            ds.ellipse(state.altClick.x, state.altClick.y, 7, 7, 0, 0, 2*Math.PI, false);
             ds.fill();
         }
 
-        if (this.state.mouse != null) {
+        if (state.mouse != null) {
             ds.beginPath();
             ds.fillStyle = "green";
-            ds.ellipse(this.state.mouse.x, this.state.mouse.y, 5, 5, 0, 0, 2*Math.PI, false);
+            ds.ellipse(state.mouse.x, state.mouse.y, 5, 5, 0, 0, 2*Math.PI, false);
             ds.fill();
         }
 
         
-        if (this.state.lines != null && this.state.lines.length > 0) {
+        if (state.lines != null && state.lines.length > 0) {
             ds.strokeStyle = "black";
 
             ds.beginPath();
-            ds.moveTo(this.state.lines[0].x, this.state.lines[0].y);
-            for (let i = 1; i < this.state.lines.length; i++) {
-                ds.lineTo(this.state.lines[i].x, this.state.lines[i].y);
+            ds.moveTo(state.lines[0].x, state.lines[0].y);
+            for (let i = 1; i < state.lines.length; i++) {
+                ds.lineTo(state.lines[i].x, state.lines[i].y);
             }
             ds.stroke();
         }
 
-        if (this.state.drag != null) {
+        if (state.drag != null) {
             ds.beginPath();
             ds.fillStyle = "red";
-            ds.ellipse(this.state.drag.x, this.state.drag.y, 5, 5, 0, 0, 2*Math.PI, false);
+            ds.ellipse(state.drag.x, state.drag.y, 5, 5, 0, 0, 2*Math.PI, false);
             ds.fill();
         }
     }

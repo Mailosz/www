@@ -1,9 +1,9 @@
 //draw
 
-import { DrawingManager } from "../DrawingManager.js";
+import { RenderManager } from "../RenderManager.js";
 import { WebglEngine } from "./WebglEngine.js";
 
-export class WebglDrawingManager extends DrawingManager {
+export class WebglRenderManager extends RenderManager {
 
     /**
      * @type {CanvasManager} cm 
@@ -76,11 +76,9 @@ export class WebglDrawingManager extends DrawingManager {
 
         //resize viewport
         if (this.gl != null) this.gl.viewport(0, 0, this.width, this.height);
-        
-        this.redraw();
     }
 
-    redraw() {
+    update() {
         if (this.gl == null) {
             this.prepare();
         }

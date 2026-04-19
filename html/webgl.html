@@ -13,13 +13,13 @@
         </canvas>
     </div>
       <script type="module">
-        import { CanvasManager} from "../js/canvas/main.js";
-        import { WebglDrawingManager } from "../js/canvas/webgl/WebglDrawingManager.js";
+        import { CanvasManager } from "../js/canvas/CanvasManager.js";
+        import { WebglRenderManager } from "../js/canvas/webgl/WebglRenderManager.js";
 
         function initialize() {
             let canvas = document.getElementById('view-canvas');
             let cm = new CanvasManager(canvas);
-            cm.setDrawingManager(new WebglDrawingManager());
+            cm.setRenderManager(new WebglRenderManager());
             //cm.setInputManager(new TestInputManager());
         }
 

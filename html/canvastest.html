@@ -24,15 +24,17 @@
 
 
     <script type="module">
-        import {CanvasManager, CanvasDrawingManager} from "../js/canvas/main.js";
+        import {CanvasManager} from "../js/canvas/CanvasManager.js";
+        import { TestCanvasRenderManager } from "../js/canvas/test/TestCanvasRenderManager.js";
+        import { ViewportStateManager } from "../js/canvas/ViewportStateManager.js";
         import {TestInputManager} from "../js/canvas/test/TestInputManager.js";
 
         function initialize() {
             let canvas = document.getElementById('view-canvas');
             let cm = new CanvasManager(canvas);
-            let state = {};
-            cm.setDrawingManager(new CanvasDrawingManager(state));
-            cm.setInputManager(new TestInputManager(state));
+            cm.setStateManager(new ViewportStateManager());
+            cm.setRenderManager(new TestCanvasRenderManager());
+            cm.setInputManager(new TestInputManager());
         }
 
         initialize();

@@ -1,6 +1,6 @@
 //draw
 
-export class DrawingManager {
+export class RenderManager {
 
     /**
      * @type {CanvasManager} cm 
@@ -12,7 +12,7 @@ export class DrawingManager {
     }
     
     /**
-     * Canvas manager sets itself as context once the DrawingManager is set
+     * Canvas manager sets itself as context once the RenderManager is set
      * @param {CanvasManager} canvasManager 
      */
     setCanvasManager(canvas) {
@@ -28,7 +28,11 @@ export class DrawingManager {
         
     }
 
-    
+    /**
+     * Called by the canvas manager whenever the canvas is resized
+     * @param {number} width in pixels
+     * @param {number} height in pixels
+     */
     resize(width, height) {
         throw "resize not implemented";
     }
@@ -41,14 +45,20 @@ export class DrawingManager {
     }    
 
 
-
-    redraw(viewport) {
-        throw "redraw not implemented";
+    /**
+     * Notifies the renderer that the state has been changed and it should redraw itself
+     * @param {*} state 
+     */
+    update(state) {
+        throw "update not implemented";
     }
 
 
+    /**
+     * For cleaning up resources when the canvas manager is deleted
+     */
     close() {
-        console.log("DrawingManager closed")
+        console.log("RenderManager closed")
     }
 
 }

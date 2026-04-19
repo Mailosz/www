@@ -13,14 +13,17 @@
         </canvas>
     </div>
       <script type="module">
-        import { CanvasManager } from "../js/canvas/main.js";
-        import { WebGpuDrawingManager} from "../js/canvas/webgpu/WebGpuDrawingManager.js";
+        import { CanvasManager } from "../js/canvas/CanvasManager.js";
+        import { WebGpuRenderManager} from "../js/canvas/webgpu/WebGpuRenderManager.js";
+        import { ViewportStateManager } from "../js/canvas/ViewportStateManager.js";
+        import { ViewportInputManager } from "../js/canvas/ViewportInputManager.js";
 
         function initialize() {
             let canvas = document.getElementById('view-canvas');
             let cm = new CanvasManager(canvas);
-            cm.setDrawingManager(new WebGpuDrawingManager());
-            //cm.setInputManager(new TestInputManager());
+            cm.setRenderManager(new WebGpuRenderManager());
+            cm.setStateManager(new ViewportStateManager());
+            cm.setInputManager(new ViewportInputManager());
         }
 
         initialize();
