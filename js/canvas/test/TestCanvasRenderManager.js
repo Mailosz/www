@@ -69,6 +69,12 @@ export class TestCanvasRenderManager extends RenderManager {
         ds.rect(1,1,this.width - 2, this.height - 2);
         ds.stroke();
 
+        if (state.longPress != null) {
+            ds.beginPath();
+            ds.fillStyle = "yellow";
+            ds.ellipse(state.longPress.x, state.longPress.y, 20, 20, 0, 0, 2 * Math.PI, false);
+            ds.fill();
+        }
         
         if (state.click != null) {
             ds.beginPath();

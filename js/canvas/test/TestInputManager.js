@@ -41,6 +41,16 @@ export class TestInputManager extends InputManager {
     }
 
     /**
+     * Occurs when the user keeps pointer (different than mouse) pressed without moving for a certain time
+     * @param {PointerData} pointer 
+     */
+    longPress(pointer, state) {
+        state.longPress = { x: pointer.x, y: pointer.y };
+        state.redraw();
+        return { manipulation: new ScrollManipulation() };
+    }
+
+    /**
      * Pointer moved over canvas without contact (e.g. mouse hover)
      * @param {PointerData} data 
      */;

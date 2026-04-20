@@ -5,7 +5,13 @@ import { GenericUserAction } from "./UserAction.js";
 import { UserChange } from "./UserChange.js";
 
 export class CanvasManager {
-    #canvasResizeObserver
+    
+    #canvasResizeObserver;
+
+    #altClickTimeout;
+
+    #renderSemaphore = false;
+
     /** 
      * @param {HTMLCanvasElement} canvasElement
      * @param {CanvasSettings} settings
@@ -16,6 +22,11 @@ export class CanvasManager {
         }
         this.canvasElement = canvasElement;
         this.canvasElement.tabIndex = "0"; // without tab index canvasElement wouldn't produce keyboard events
+
+        this.debugDiv = document.createElement("div");
+        this.debugDiv.innerText = "XX";
+        this.debugDiv.style.position = "absolute";
+        this.canvasElement.parentElement.insertBefore(this.debugDiv, this.canvasElement);
 
         /** @type {CanvasSettings} */
         this.settings = {...(new CanvasSettings()), ...settings};
@@ -39,6 +50,7 @@ export class CanvasManager {
         this.commitedChangesCount = 0;
 
         this.pointers = {};
+        this.lastClick = null;
 
         // watches which keyboard keys are pressed at the moment
         this.keyWatcher = new KeyWatcher();
@@ -51,7 +63,17 @@ export class CanvasManager {
         this.canvasElement.addEventListener("pointermove", this.#pointermove.bind(this));
         this.canvasElement.addEventListener("pointerup", this.#pointerup.bind(this));
         this.canvasElement.addEventListener("pointercancel", this.#pointercancel.bind(this));
+        this.canvasElement.addEventListener("lostpointercapture", this.#pointercancel.bind(this));
         this.canvasElement.addEventListener("wheel", this.#pointerwheel.bind(this));
+
+        // touch events (disable scroll)
+        this.canvasElement.addEventListener("touchstart", event => {event.preventDefault();}, { passive: false });
+        this.canvasElement.addEventListener("touchmove", event => {
+                if (event.targetTouches.length < 3) {
+                    event.preventDefault();
+                }
+            },{ passive: false });
+
 
         // context lost
         this.canvasElement.addEventListener("contextlost", this.#contextLost.bind(this));
@@ -152,10 +174,17 @@ export class CanvasManager {
     /**
      * Informs DrawingManager to redraw the canvas
      */
-    redraw(viewport) {
-        if (this.renderer != null) {
-            this.renderer.update(this.stateManager);
+    redraw() {
+        if (this.#renderSemaphore) {
+            return;
         }
+        this.#renderSemaphore = true;
+        queueMicrotask(() => {
+            this.#renderSemaphore = false;
+            if (this.renderer != null) {
+                this.renderer.update(this.stateManager);
+            }
+        })
     }
 
     /**
@@ -230,45 +259,17 @@ export class CanvasManager {
     #getPointerPosition(pointerX, pointerY) {
         const dpr = window.devicePixelRatio;
 
-        if (this.stateManager != null) {
-            return this.stateManager.getPointerPosition(pointerX * dpr / this.width, pointerY * dpr / this.height);
-        } else {
-            const x = pointerX * dpr / this.width;
-            const y = pointerY * dpr / this.height;
+        const x = pointerX * dpr / this.width;
+        const y = pointerY * dpr / this.height;
 
+        if (this.stateManager != null) {
+            return this.stateManager.getPointerPosition(x, y);
+        } else {
             return [
                 x,
                 y
             ];
         }
-    }
-
-    /**
-     * 
-     * @param {PointerEvent} event 
-     */
-    #pointerdown(event) {
-        /** @type {PointerInstance} */
-        let pointer = this.pointers[event.pointerId];
-
-        if (pointer == null) {
-            pointer  = new PointerInstance();
-            this.pointers[event.pointerId] = pointer;
-        }
-
-        //this is to allow capturing for keyboard input
-        this.canvasElement.focus({focusVisible: false, preventScroll: true});
-
-        pointer.x = event.offsetX;
-        pointer.y = event.offsetY;
-        pointer.pressX = event.offsetX;
-        pointer.pressY = event.offsetY;
-        pointer.pressed = true;
-        pointer.pressTime = Date.now();
-        pointer.moving = false;
-        pointer.button = event.button;
-
-        this.canvasElement.setPointerCapture(event.pointerId);
     }
 
     /**
@@ -295,8 +296,79 @@ export class CanvasManager {
             lastX: lastX,
             lastY: lastY,
             consecutiveClickCount: pointer.consecutiveClickCount,
+            longPressed: pointer.longPressed,
             button: pointer.button
         };
+    }
+
+
+    /**
+     * 
+     * @param {PointerEvent} event 
+     */
+    #pointerdown(event) {
+        event.preventDefault();
+
+        /** @type {PointerInstance} */
+        let pointer = this.pointers[event.pointerId];
+
+        if (pointer == null) {
+            pointer  = new PointerInstance();
+            this.pointers[event.pointerId] = pointer;
+        }
+
+        this.debugDiv.innerText = "b: " + event.button;
+
+        //this is to allow capturing for keyboard input
+        this.canvasElement.focus({focusVisible: false, preventScroll: true});
+
+        pointer.x = event.offsetX;
+        pointer.y = event.offsetY;
+        pointer.pressX = event.offsetX;
+        pointer.pressY = event.offsetY;
+        pointer.pressed = true;
+        pointer.pressTime = Date.now();
+        pointer.moving = false;
+        pointer.button = event.button;
+        pointer.pressure = event.pressure;
+
+        this.canvasElement.setPointerCapture(event.pointerId);
+
+        // start timer for long touch
+        clearTimeout(this.#altClickTimeout);
+        if (event.pointerType !== "mouse") {
+            this.#altClickTimeout = setTimeout(() => {this.#pointerLongPress(event)}, this.settings.touchTime);
+        }
+    }
+
+    /**
+     * Handle when a pointer is pressed and moved for a certain time without moving (long press)
+     * @param {PointerEvent} event 
+     */
+    #pointerLongPress(event) {
+        let pressedPointer = this.pointers[event.pointerId];
+
+        if (pressedPointer) {
+
+            if (pressedPointer.pressed && !pressedPointer.canceled && !pressedPointer.moving) {
+                pressedPointer.longPressed = true;
+                let result = this.inputManager.longPress(this.#makePointerData(pressedPointer, event.pointerId), this.stateManager);
+                if (result) {
+                    if (result.cancel) {
+                        pressedPointer.canceled = true;
+                    }
+                    if (result.manipulation) {
+                        pressedPointer.moving = true;
+                        pressedPointer.startX = pressedPointer.x;
+                        pressedPointer.startY = pressedPointer.y;
+
+                        this.currentManipulation = result.manipulation;
+                        this.currentManipulation.setCanvasManager(this);
+                    }
+                }
+            }
+
+        }
     }
 
     /**
@@ -304,6 +376,8 @@ export class CanvasManager {
      * @param {PointerEvent} event 
      */
     #pointermove(event) {
+        event.preventDefault();
+
         /** @type {PointerInstance} */
         let pointer = this.pointers[event.pointerId];
 
@@ -318,47 +392,50 @@ export class CanvasManager {
         pointer.y = event.offsetY;
         pointer.lastTime = Date.now();
 
-        if (pointer.pressed) {
-            //sanity check
-            if (event.pressure <= Number.EPSILON) {
-                this.pointers[event.pointerId].pressed = false;
-            }
+        this.debugDiv.innerText = event.pressure + "s";
 
-            if (pointer.moving) {
-                //pointer is pressed
-                if (this.currentManipulation != null) {
-                    let data = this.#makePointerData(pointer, event.pointerId);
-                    this.currentManipulation.update(data, this.stateManager);
-                } 
-            } else {
+        if (!pointer.canceled) {
+            if (pointer.pressed) {
+                if (event.pressure != 0) { // safari returns "0" for pointermove event without pencil
+                    pointer.pressure = event.pressure;
+                }
 
-                let dis = Math.sqrt((pointer.pressX - pointer.x) ** 2 + (pointer.pressY - pointer.y) ** 2);
+                if (pointer.moving) {
+                    //pointer is pressed
+                    if (this.currentManipulation != null) {
+                        let data = this.#makePointerData(pointer, event.pointerId);
+                        this.currentManipulation.update(data, this.stateManager);
+                    } 
+                } else {
 
-                const moveDistance = this.settings.pointerMoveDistance;
-                // manipulation starts
-                if (dis > moveDistance) {
-                    pointer.moving = true;
-                    pointer.startX = pointer.x;
-                    pointer.startY = pointer.y;
+                    let dis = Math.sqrt((pointer.pressX - pointer.x) ** 2 + (pointer.pressY - pointer.y) ** 2);
 
-                    let data = this.#makePointerData(pointer, event.pointerId);
-                    if (this.inputManager != null) {
-                        let manipulation = this.inputManager.beginManipulation(data, this.stateManager);
-                        if (manipulation != null) {
-                            this.currentManipulation = manipulation;
-                            manipulation.setCanvasManager(this);
+                    const moveDistance = this.settings.pointerMoveDistance;
+                    // manipulation starts
+                    if (dis > moveDistance) {
+                        pointer.moving = true;
+                        pointer.startX = pointer.x;
+                        pointer.startY = pointer.y;
+
+                        let data = this.#makePointerData(pointer, event.pointerId);
+                        if (this.inputManager != null) {
+                            let manipulation = this.inputManager.beginManipulation(data, this.stateManager);
+                            if (manipulation != null) {
+                                this.currentManipulation = manipulation;
+                                manipulation.setCanvasManager(this);
+                            }
                         }
                     }
                 }
-            }
 
 
-        } else { // pointer is hovering
-            if (this.inputManager != null) {
-                
-                let data = this.#makePointerData(pointer, event.pointerId);
+            } else { // pointer is hovering
+                if (this.inputManager != null) {
+                    
+                    let data = this.#makePointerData(pointer, event.pointerId);
 
-                this.inputManager.hover(data, this.stateManager);
+                    this.inputManager.hover(data, this.stateManager);
+                }
             }
         }
     }
@@ -368,13 +445,15 @@ export class CanvasManager {
      * @param {PointerEvent} event 
      */
     #pointerup(event) {
+        event.preventDefault();
+
         /** @type {PointerInstance} */
         let pointer = this.pointers[event.pointerId];
 
         if (pointer == null) {
-            pointer  = new PointerInstance();
+            pointer = new PointerInstance();
             this.pointers[event.pointerId] = pointer;
-        }
+        } 
 
         pointer.lastX = pointer.x;
         pointer.lastY = pointer.y;
@@ -385,8 +464,8 @@ export class CanvasManager {
 
         let primaryButton = (pointer) => {
             // double click
-            if (pointer.lastClickTime != null && (pointer.releaseTime - pointer.lastClickTime) < this.settings.dbClickTime) { 
-                let dis = Math.sqrt((pointer.pressX - pointer.lastClickX) ** 2 + (pointer.pressY - pointer.lastClickY) ** 2);
+            if (this.lastClick != null && (pointer.releaseTime - this.lastClick.time) < this.settings.dbClickTime) { 
+                let dis = Math.sqrt((pointer.pressX - this.lastClick.x) ** 2 + (pointer.pressY - this.lastClick.y) ** 2);
 
                 if (dis > this.settings.pointerMoveDistance) { // too far - this is a normal click
                     pointer.consecutiveClickCount = 0;
@@ -395,17 +474,21 @@ export class CanvasManager {
                     pointer.consecutiveClickCount++;
                     this.inputManager.click(this.#makePointerData(pointer, event.pointerId), this.stateManager);
                 }
-                pointer.lastClickTime = Date.now();
             } else { //single click
                 pointer.consecutiveClickCount = 0;
                 this.inputManager.click(this.#makePointerData(pointer, event.pointerId), this.stateManager);
-                pointer.lastClickTime = Date.now();
             }
+            this.lastClick = {
+                x: pointer.x,
+                y: pointer.y,
+                time: Date.now()
+            };
+
             pointer.lastClickX = pointer.x;
             pointer.lastClickY = pointer.y;
         }
 
-        if (pointer.pressed) {
+        if (pointer.pressed && !pointer.canceled) {
             if (pointer.moving) { // end of manipulation
                 if (this.currentManipulation != null) {
                     let change = this.currentManipulation.complete();
@@ -440,6 +523,7 @@ export class CanvasManager {
         
 
         this.canvasElement.releasePointerCapture(event.pointerId);
+        delete this.pointers[event.pointerId];
     }
 
     #pointercancel(event) {
@@ -447,7 +531,7 @@ export class CanvasManager {
         let pointer = this.pointers[event.pointerId];
 
         if (pointer == null) {
-            pointer  = new PointerInstance();
+            pointer = new PointerInstance();
             this.pointers[event.pointerId] = pointer;
         }
 
@@ -460,6 +544,7 @@ export class CanvasManager {
             this.currentManipulation.cancel();
             this.currentManipulation = null;
         }
+        delete this.pointers[event.pointerId];
     }
 
     #keydown(event) {
@@ -568,9 +653,12 @@ class PointerInstance {
         /** @type {Date} */
         this.releaseTime = null;
         /** @type {Date} */
-        this.lastClickTime = null;
         this.consecutiveClickCount = 0;
+        this.longPressed = false;
         this.button = 0;
+        this.canceled = false;
+
+        this.pressure = 0;
     }
 }
 

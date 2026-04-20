@@ -32,6 +32,15 @@ export class ViewportInputManager extends InputManager {
     }
 
     /**
+     * Occurs when the user keeps pointer (different than mouse) pressed without moving for a certain time
+     * @param {PointerData} pointer 
+     * @returns {cancel: boolean} If cancel is true no more actions will be invoked for this pointer press (e.g. alternativeClick, beginManipulation) 
+     */
+    longPress(pointer, state) {
+
+    }
+
+    /**
      * Pointer moved over canvas without contact (e.g. mouse hover)
      * @param {PointerData} data 
      */;

@@ -68,11 +68,21 @@ export class InputManager {
     /**
      * Mouse wheel action
      * @param {number} factor 
-     * @param {{x: number, y: number}} position normalized position on screen (0,1)
+     * @param {{x: number, y: number}} position
      */;
     wheel(factor, {x, y}, state) {
         throw "wheel not implemented";
     }
+
+    /**
+     * Occurs when the user keeps pointer (different than mouse) pressed without moving for a certain time
+     * @param {PointerData} pointer 
+     * @returns {cancel?: boolean, manipulation?: Manipulation} If cancel is true no more actions will be invoked for this pointer press (e.g. alternativeClick, beginManipulation) 
+     */;
+    longPress(pointer, { x, y }, state) {
+        throw "longPress not implemented";
+    }
+
 
     /**
      * Pointer pressed and moved - manipulation starts
