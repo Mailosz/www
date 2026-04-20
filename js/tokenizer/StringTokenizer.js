@@ -13,6 +13,7 @@ export class StringTokenizer {
 	#values = null;
 	#hasFinished = false;
 	#lastMatcher = null;
+	#untilStates = [];
 	#lists = {};
 
 	/**
@@ -28,6 +29,7 @@ export class StringTokenizer {
 		this.#pos = 0;
 		this.#tokenStart = 0;
 		this.#state = language.states[language.defaultState];
+		this.#untilStates = [];
 		this.#lastMatcher = null;
 		this.#values = language.defaultValues;
 		this.#lists = {};
@@ -90,8 +92,9 @@ export class StringTokenizer {
 
 		// execute state thens
 		this.#setValues(this.#state, {"stateName": () => this.#state.name});
-		
-		const matcher = this.#findMatch(this.#text, this.#pos, this.#state.watchFor);
+
+		const matchers = this.#untilStates.length > 0 ? [...this.#untilStates[this.#untilStates.length - 1].matchers, ...this.#state.watchFor] : this.#state.watchFor;
+		const matcher = this.#findMatch(this.#text, this.#pos, matchers);
 
 		const token = {
 			start: this.#tokenStart, 
@@ -101,7 +104,7 @@ export class StringTokenizer {
 			state: this.#state.name
 		};
 
-		if (matcher === null) {
+		if (matcher === null) { // end of the string
 			this.#hasFinished = true;
 
 			token.end = this.#text.length;
@@ -109,17 +112,30 @@ export class StringTokenizer {
 
 			this.#computeAfters(token, this.#state);
 		} else {
-			this.#tokenStart = matcher.matchedPosition;
-			token.end = this.#tokenStart;
+			if (matcher.target == null) {
+				const until = this.#untilStates.pop();
+				this.#state = this.#lang.states[until.state];
+				token.end = matcher.matchedPosition + matcher.matchedLength;
+				this.#tokenStart = matcher.matchedPosition + matcher.matchedLength;
+			} else {
+				this.#tokenStart = matcher.matchedPosition;
+				token.end = this.#tokenStart;
+				this.#state = this.#lang.states[matcher.target];
+			}
 			token.text = this.#text.substring(token.start, token.end);
+			this.#pos = matcher.matchedPosition + matcher.matchedLength;
 
 			this.#computeAfters(token, this.#state);
 
-			this.#state = this.#lang.states[matcher.target];
-			this.#pos = matcher.matchedPosition + matcher.matchedLength;
-
 			this.#lastMatcher = matcher;
 			this.#setValues(this.#lastMatcher, {"beginContent": () => this.#text.substring(this.#tokenStart, this.#pos)});
+
+			if (this.#state.untils.length > 0) {
+				this.#untilStates.push({
+					state: token.state,
+					matchers: this.#state.untils
+				});
+			}
 
 			if (!this.options.returnEmptyTokens && token.start == token.end) {
 				return this.getNextToken();
@@ -130,6 +146,13 @@ export class StringTokenizer {
 
 	}
 
+	/**
+	 * 
+	 * @param {*} text 
+	 * @param {*} startPos 
+	 * @param {*} matchers 
+	 * @returns 
+	 */
 	#findMatch(text, startPos, matchers) {
 		let pos = startPos;
 

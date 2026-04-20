@@ -14,7 +14,7 @@
 		"init": {
 			"variable-one": false,
 			"variable-two": false,
-			"variable-thre": false,
+			"variable-three": false,
 			"variable-four": false,
 			"variable-five": false,
 		},
@@ -32,14 +32,19 @@
 			"description": "this value can be anything"
 		},
 		/* executed at the end - just before new state is selected */
-		"after": {
-			"by": ["text", "abcd"], // when token content is equal to one of the specified values
+		"after": [{
+			"by": ["text", "text:abcd"], // when token content is equal to one of the specified values
 			"set": {
 				"variable-four": "@tokenContent", /* assigns to the variable the token content - the parsed text from the beginning of a state to its end */
 				"variable-three": "@pop", /* removes a value from the stack */
 				"variable-five": "@dequeue" /* removes a value from the queue */
 			}
-		}
+		},{
+			"by": ["regex:1234"], // when token content matches the given regex
+			"set": {
+				"variable-four": "hardcoded-value" 
+			}
+		}]
 	},
 	/* this is other state's definition  */
 	"other-state": {
@@ -97,6 +102,16 @@
 		
 		"data": {
 			"color": "blue"
+		}
+	},
+	"until-state": {
+		"begin": {
+			"on": "default-state",
+			"by": "goto until"
+		},
+		/* if "until" is present, the previous state is added to the stack, and this state is active until "by" fragment is found */
+		"until": {
+			"by": "goto other"
 		}
 	},
 	"state-parent": {

@@ -93,18 +93,21 @@ export class StringTokenizerLanguage {
 			}
 
 			//definition
-			this.states[name] = {name: name, 
+			this.states[name] = {
+				name: name, 
 				children: [],
 				groupChildren: [],
 				groups: [], 
 				watchFor: [],
+				untils: [],
 				data: {},
 				vars: {},
 				afters: [],
-				computed: null};
+				computed: null
+			};
 
 			if (this.stricterParse) {
-				const allowedStateProperties = ["init", "begin", "set", "after", "default", "data", "group", "parent"];
+				const allowedStateProperties = ["init", "begin", "until", "set", "after", "default", "data", "group", "parent"];
 				for (const property in language[name]) {
 					if (!allowedStateProperties.includes(property)) {
 						throw `Unallowed property "${property}" in state "${name}"`;
@@ -278,6 +281,50 @@ export class StringTokenizerLanguage {
 				});
 			}
 
+			// until 
+			const until = language[name].until;
+			if (until !== undefined) {
+				forElementOrArray(until, (until) => {
+					const conditions = parseWhenConditions(until.when, this.defaultValues, name);
+
+					let matchers;
+					if (until.by !== undefined) {
+						matchers = parseBeginMatchers(until.by, (conditions.length > 0 ? 0.1 : 0), name);
+					} else {
+						throw "Cannot have 'until' without any of 'on'  (state \"" + name + "\")";
+					}
+
+					const setters = parseSetters(until.set, this.defaultValues, name);
+
+					let data = {};
+					if (until.data !== undefined) {
+						data = until.data;
+					}
+
+					let importance;
+					if (until.importance !== undefined) {
+						importance = until.importance;
+					} else {
+						importance = 0;
+					}
+
+					// apply values to matchers
+					for (const matcher of matchers) {
+						matcher.conditions = conditions;
+						matcher.data = data;
+						matcher.setters = setters;
+						matcher.importance = importance;
+						matcher.target = null;
+					}
+					
+					// TODO: check duplicates inside untils
+
+					///
+					this.states[name].untils.push(...matchers);
+
+				});
+			}
+
 			//setting after
 			const afterDefinition = language[name].after;
 			if (afterDefinition !== undefined) {
@@ -342,7 +389,7 @@ export class StringTokenizerLanguage {
 			}
 
 
-			if (state.watchFor.length == 0){
+			if (state.watchFor.length == 0 && state.untils.length == 0) {
 				console.warn("State " + stateName + " has no way out and is not final");
 			} else {
 
