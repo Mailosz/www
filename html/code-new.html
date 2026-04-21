@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codebox</title>
+    <link rel="stylesheet" href="../css/samples.css">
+    <link rel="stylesheet" href="../css/langs/html-lang.css">
+    <script type="module" src="../js/ox/controls/OxCode.js"></script>
+    <style>
+    ::highlight(tagStart) { color: maroon;}
+    ::highlight(tagName) { color: blue;}
+    ::highlight(tagAttrName) { color: darkblue;}
+    ::highlight(tagAttrEqSign) { color: goldenrod;}
+    ::highlight(tagAttrValue) { color: slateblue;}
+    ::highlight(tagEnd) { color: maroon;}
+    ::highlight(closingTagStart) { color: maroon;}
+    ::highlight(closingTagName) { color: blue;}
+    ::highlight(closingTagEnd) { color: maroon;}
+    ::highlight(quotedValue) { color: slateblue;}
+    ::highlight(quotedAttrValueStart) { color: goldenrod;}
+    ::highlight(quotedAttrValueEnd) { color: goldenrod;}
+    ::highlight(singlyQuotedValueStart) { color: goldenrod;}
+    ::highlight(singlyQuotedValueContent) { color: slateblue;}
+    ::highlight(doublyQuotedValueContent) { color: slateblue;}
+    ::highlight(htmlCommentStart) { color: green;}
+    ::highlight(htmlCommentContent) { color: green;}
+    ::highlight(htmlCommentEnd) { color: green;}
+    ::highlight(specialCharStart) { color: violet;}
+    ::highlight(specialCharContent) { color: violet;}
+    ::highlight(specialCharEnd) { color: violet;}
+    ::highlight(specialChar) { color: violet;}
+    ::highlight(cssStyle) { color: darkcyan;}
+    ::highlight(styleAttrPropertyName) { color: darkcyan;}
+    ::highlight(styleAttrPropertySeparator) { color: goldenrod;}
+    ::highlight(styleAttrPropertyValue) { color: darkslateblue;}
+    ::highlight(styleAttrPropertyEnd) { color: goldenrod;}
+    </style>
+</head>
+<body>
+
+    <ox-code contenteditable="true" tokenizer-language="../js/tokenizer/html.json" code-style="../css/langs/html-lang.css" style="height: 200px; resize: both;">
+        &lt;!DOCTYPE html&gt;
+        &lt;html&gt;
+        &lt;!-- To jest komentarz --&gt;
+            &lt;head&gt;
+                &lt;title>Koloryzowanie składni&lt;/title&gt;
+                &lt;meta charset="UTF-8"/&gt;
+                &lt;style&gt;
+                html,body {height: 100%; content: "&lt;br&gt;"} 
+                &lt;/style&gt;
+            &lt;/head&gt;
+            &lt;body style="background-color: rgba(255,255,255,0.5); color: black"&gt;
+                &lt;input abc=&gt;
+                &lt;input type=text autocomplete value="New \"hope \""&gt;
+                &lt;span id='identyf\'ikator'&gt; &amp;amp &amp;lt&lt;/span&gt;
+                &lt;code&gt;
+                    To jest napis &amp;copy;Miłosz.O
+                &lt;/code&gt;
+                &lt;input&gt;&lt;input&gt;&lt;input&gt;&lt;input&gt;
+            &lt;/body&gt;
+        &lt;/html&gt;
+    </ox-code>
+
+
+</body>
+</html>

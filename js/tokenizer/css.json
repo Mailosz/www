@@ -1,12 +1,7 @@
 {
     "default": {
         "begin": [{
-            "on": "declarationEnd"
-        },{
-            "on": "commentEnd",
-            "when": {
-                "previous-state": ""
-            }
+            "on": "blockEnd"
         }],
         "default": true,
         "set": {
@@ -14,73 +9,55 @@
             "quote-type": null
         }
     },
-    "mediaQuery": {
+    "atRule": {
         "begin": {
             "on": ["default", "selector"],
             "by": "@"
         }
     },
-    "mediaQueryInner": {
-        "begin": {
-            "on": ["mediaQuery"],
-            "by": "{"
-        }
-    },
     "selector": {
         "begin": [{
-            "on": ["default", "mediaQueryInner"],
+            "on": ["default"],
             "by": ""
-        },{
-            "on": "commentEnd",
-            "when": {
-                "previous-state": "selector"
-            }
         }]
     },
-    "declarationStart": {
+    "blockStart": {
         "begin": {
-            "on": "selector",
+            "on": ["selector", "atRule"],
             "by": "{"
         }
     },
-    "declaration": {
-
-    },
-    "declarationEnd": {
+    "block": {
         "begin": {
-            "on": ["declaration", "mediaQueryInner", "selector", "default"],
+            "on": ["blockStart", "semicolon"]
+        }
+    },
+    "blockEnd": {
+        "begin": {
+            "on": ["block"],
             "by": "}"
         }
     },
-    "property": {
-        "group": "declaration",
+    "propertyOrSelector": {
         "begin": [{
-            "on": "declarationStart"
-        },{
-            "on": "propertiesSeparator"
-        },{
-            "on": "commentEnd",
-            "when": {
-                "previous-state": "property"
-            }
+            "on": ["block", "semicolon"]
         }]
-    },"propertiesSeparator":{
+    },
+    "semicolon":{
         "begin": {
             "on": ["value", "valueQuoteEnd"],
             "by": ";"
         }
     },
-    "propertyValueSeparator": {
-        "group": "declaration",
+    "colon": {
         "begin": [{
-            "on": "property",
+            "on": "propertyOrSelector",
             "by": ":"
         }]
     },
     "value": {
-        "group": "declaration",
         "begin": [{
-            "on": "propertyValueSeparator"
+            "on": "colon"
         }]
     },
     "valueQuote": {
@@ -126,30 +103,15 @@
     },
     
     "comment": {
+        "until": {
+            "by": "*/"
+        },
         "begin": [{
             "by": "/*",
             "everywhere": true,
             "set": {
                 "previous-state": ""
             }
-        },{
-            "by": "/*",
-            "on": "selector",
-            "set": {
-                "previous-state": "selector"
-            }
-        },{
-            "by": "/*",
-            "on": "property",
-            "set": {
-                "previous-state": "property"
-            }
-        }]
-    }, 
-    "commentEnd": {
-        "begin": [{
-            "by": "*/",
-            "on": "comment"
         }]
     }
 }

@@ -55,11 +55,11 @@
                         builder.tag("div").innerText(both()).forThis((el) => both.listen(value => el.innerText = value)),
                         builder.tag("input").attr("type", "text").on("input", (e) => signalC.set(e.target.value)),
                         builder.tag("div").innerText(signalD()).forThis((el) => signalD.listen(value => el.innerText = value)),
-                        builder.tag("div").bind("innerText", signalD),
+                        builder.tag("div").bindProperty("innerText", signalD),
                         builder.tag("hr"),
-                        builder.tag("div").bind("innerText", signalM),
-                        builder.tag("div").bind("innerText", signalT),
-                        builder.tag("div").bind("innerText", signalT2),
+                        builder.tag("div").bindProperty("innerText", signalM),
+                        builder.tag("div").bindProperty("innerText", signalT),
+                        builder.tag("div").bindProperty("innerText", signalT2),
                     )
                 
             );

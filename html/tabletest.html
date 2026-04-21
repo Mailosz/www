@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table test</title>
+    <script type="module" src="../js/ox/controls/OxTable.js"></script>
+    <style>
+        ox-table {
+            border: 2px solid blue;
+        }
+    </style>
+</head>
+<body>
+    <ox-table>
+        <ox-table-column name="id" header="ID"></ox-table-column>
+        <ox-table-column name="pid" header="Parent ID"></ox-table-column>
+        <ox-table-column name="cid" header="Child ID"></ox-table-column>
+    </ox-table>
+    <script type="module">
+        let table = document.querySelector("ox-table");
+
+        table.updateTable([
+            [1, 0, 2],
+            [2, 0, 3],
+            [3, 1, 4],
+            [4, 1, 5],
+            [5, 2, 6],
+            [6, 2, 7]
+        ]);
+
+    </script>
+</body>
+</html>
