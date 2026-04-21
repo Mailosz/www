@@ -28,7 +28,8 @@
     ::file-selector-button:hover,
     input[type=radio]:enabled:hover,input[type=checkbox]:enabled:hover,
     input[type=range]:hover,
-    input[type=range]:active {
+    input[type=range]:active,
+    summary:hover {
         filter: brightness(1.1);
     }
 
@@ -38,7 +39,8 @@
     input[type=submit]:active, 
     input[type=reset]:active, 
     ::file-selector-button:active,
-    input[type=radio]:enabled:active,input[type=checkbox]:enabled:active {
+    input[type=radio]:enabled:active,input[type=checkbox]:enabled:active,
+    summary:active {
         filter: brightness(0.9);
     }
 
@@ -364,7 +366,7 @@ details {
     border: var(--border-width, 1px) solid var(--border-color, #666);
     border-radius: var(--border-radius);
     padding: 0.5em 1em;
-    background-color: var(--control-background, #eee);
+    background-color: var(--page-color, #eee);
     box-sizing: border-box;
     transition: height 100ms ease-in-out;
 }
@@ -374,8 +376,12 @@ summary::marker {
 }
 
 summary {
+    background-color: var(--control-background, #eee);
     cursor: pointer;
     font-weight: 500;
+    padding: 0.5em 1em;
+    margin: -0.5em -1em;
+    user-select: auto;
 }
 
 details:open>summary {

@@ -33,11 +33,11 @@
 
     <main id="the-document">
         <button onclick="lightdark();">Light/dark</button>
-        <ox-outline for="section"></ox-outline>
+        
         <section>
         <h1>Title of the document</h1>
         <p>Quick introduction to the theme of the document. Some more introduction. And finally the final of an introduction.</p>
-        <ox-code contenteditable="true" compact>Test code</ox-code>
+        <ox-outline for="section"></ox-outline>
         <h2>Code</h2>
         <code-example editable="true" autorun>
             &lt;!DOCTYPE html&gt;
@@ -73,6 +73,8 @@
         <h2>Some text</h2>
         <p>This is a <mark>text about something</mark> very important. <mark class="green">This is also a text.</mark> This is a text about something very important. <mark class="red">Oh no, it's repeating!</mark> This is also a text. <mark class="orange">This</mark> is a text about <mark class="gray">something very important. Oh well.</mark> This is a text about something very important. This text is still very important. This too. This not. <mark class="blue">This is a text about something very important.</mark> <mark class="yellow">This is a text about something very important.</mark></p>
         <p>This is <i>some italic text</i>, and <b>some bold one</b>, and now <u>an underline</u>.</p>
+        <p>Maybe even <code>some code</code> here and there?</p>
+        <p>Let's <del>delete something</del> and then <ins>insert something else.</ins></p>
         <p></p>
         <blockquote>
             This is some very nice block quote. This is some very nice block quote. This is some very nice block quote. This is some very nice block quote. 
@@ -249,9 +251,12 @@
     <div class="wide">
         <img src="../res/backgrounds/Las.jpg" style="display: block; width: 100%;">
     </div>
+    <p><lorem-ipsum></lorem-ipsum></p>
     <p><lorem-ipsum></lorem-ipsum><p>
-        <p><lorem-ipsum></lorem-ipsum><p>
-        <p><lorem-ipsum></lorem-ipsum><p>
+    <p><lorem-ipsum></lorem-ipsum><p>
+    <footer>
+        <p>This is a footer.</p>
+    </footer>
     </main>
 </body>
 </html>
