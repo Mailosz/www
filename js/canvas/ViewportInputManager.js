@@ -64,11 +64,7 @@ export class ViewportInputManager extends InputManager {
      * @returns {Manipulation} A manipulation object that manages further inputs or null.
      */
     beginManipulation(pointer, state) {
-        if (pointer.button == 1) {
-            return new ScrollManipulation();
-        }
-        
-
+        return new ScrollManipulation();
     }
 
 
