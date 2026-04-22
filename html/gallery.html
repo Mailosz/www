@@ -13,6 +13,24 @@
         <img src="../res/backgrounds/Zbocze.jpg" alt="C">
         <img src="../res/backgrounds/Śnieg.jpg" alt="D">
         <button onclick="console.log('test')">Test</button>
+        <button onclick="console.log('test 2')" style="width: 50px; height: 20px;">Test 2</button>
     </ox-gallery>
+    <script type="module">
+        import {Builder} from "../js/ox/Builder.js";
+
+        let gallery = document.querySelector("ox-gallery");
+        
+        let builder = new Builder(document);
+
+        console.log(gallery.children);
+        setTimeout(() => {
+            gallery.append(builder.tag("img").attr("src", "../res/backgrounds/Las.jpg").build());
+            gallery.insertBefore(builder.tag("button").innerText("src").build(), gallery.firstChild);
+            gallery.append(builder.tag("img").attr("src", "../res/backgrounds/Las.jpg").build());
+            gallery.append(builder.tag("img").attr("src", "../res/backgrounds/Las.jpg").build());
+            gallery.append(builder.tag("img").attr("src", "../res/backgrounds/Las.jpg").build());
+        }, 1000);
+        
+    </script>
 </body>
 </html>

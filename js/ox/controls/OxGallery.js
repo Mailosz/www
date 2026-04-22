@@ -51,7 +51,6 @@ const css = /*css*/`
         z-index: 10;
         background-color: rgba(0,0,0,0.3);
         backdrop-filter: blur(2px) contrast(0.8);
-        transition: background-color 200ms ease, backdrop-filter 200ms ease;
     }
     slot {
         border: 2px solid red;
@@ -93,22 +92,37 @@ export class OxGallery extends OxCustomElementBase {
         this.shadowRoot.append(document.createElement("div"));
         this.shadowRoot.firstElementChild.id = "gallery";
 
+        new MutationObserver((records) => {
+            queueMicrotask(() => {
+                this.shadowRoot.firstElementChild.innerHTML = "";
+                for (const child of this.children) {
+                    this.addItem(child);
+                }
+                console.log("updated");
+            });
+        }).observe(this, { childList: true });
+
         for (const child of this.children) {
-            const wrapper = this.shadowRoot.ownerDocument.createElement("div");
-            wrapper.classList.add("wrapper");
-            
-            const item = this.shadowRoot.ownerDocument.createElement("div");
-            item.part = "item";
-            item.classList.add("item");
-            
-            const slot = this.shadowRoot.ownerDocument.createElement("slot");
-            slot.inert = true;
-            slot.assign(child);
-            item.appendChild(slot);
-            wrapper.appendChild(item);
-            this.shadowRoot.firstElementChild.appendChild(wrapper);
-            wrapper.onclick = (event) => {this.itemClicked(event, wrapper, item, slot, child)};
+            this.addItem(child);
         }
+    }
+
+    addItem(child) {
+        const wrapper = this.shadowRoot.ownerDocument.createElement("div");
+        wrapper.classList.add("wrapper");
+
+        const item = this.shadowRoot.ownerDocument.createElement("div");
+        item.part = "item";
+        item.classList.add("item");
+
+        const slot = this.shadowRoot.ownerDocument.createElement("slot");
+        slot.inert = true;
+        slot.assign(child);
+        item.appendChild(slot);
+        wrapper.appendChild(item);
+        wrapper.onclick = (event) => { this.itemClicked(event, wrapper, item, slot, child) };
+
+        return this.shadowRoot.firstElementChild.appendChild(wrapper);
     }
 
     itemClicked(event, wrapper, item, slot, child) {
