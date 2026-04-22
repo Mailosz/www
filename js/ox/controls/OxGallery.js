@@ -98,7 +98,6 @@ export class OxGallery extends OxCustomElementBase {
                 for (const child of this.children) {
                     this.addItem(child);
                 }
-                console.log("updated");
             });
         }).observe(this, { childList: true });
 
