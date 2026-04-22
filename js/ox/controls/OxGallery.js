@@ -29,6 +29,7 @@ const css = /*css*/`
             transition: scale 200ms;
             width: 100%;
             height: 100%;
+            user-select: none;
 
             &:hover {
                 scale: 1.05;
@@ -51,9 +52,8 @@ const css = /*css*/`
         z-index: 10;
         background-color: rgba(0,0,0,0.3);
         backdrop-filter: blur(2px) contrast(0.8);
-    }
-    slot {
-        border: 2px solid red;
+        transition: background-color 300ms ease;
+        view-transition-name: none;
     }
 
     ::slotted(*) {
@@ -61,7 +61,6 @@ const css = /*css*/`
         object-position: center;
         width: 100%;
         height: 100%;
-        transition: height 500ms ease;
     }
 
     .focused ::slotted(*) {
@@ -78,7 +77,6 @@ const css = /*css*/`
 
 export class OxGallery extends OxCustomElementBase {
     static { this.registerCustomElement("ox-gallery"); }
-
 
 
     constructor() {
@@ -127,11 +125,15 @@ export class OxGallery extends OxCustomElementBase {
     itemClicked(event, wrapper, item, slot, child) {
         if (wrapper.classList.contains("focused")) {
             if (event.target === item) {
-                wrapper.classList.remove("focused");
+                this.shadowRoot.ownerDocument.startViewTransition(() => {
+                    wrapper.classList.remove("focused");
+                });
                 slot.inert = true;
             }
         } else {
-            wrapper.classList.add("focused");
+            this.shadowRoot.ownerDocument.startViewTransition(() => {
+                wrapper.classList.add("focused");
+            });
             slot.inert = false;
         }
     }
