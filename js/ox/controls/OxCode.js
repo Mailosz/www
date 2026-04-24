@@ -175,13 +175,13 @@ export class OxCode extends OxCustomElementBase {
 
         const builder = new Builder(this.ownerDocument);
 
+        let firstLine;
+
         this.shadowRoot.appendChild(builder.tag("div").children(
             builder.tag("div").id("code-box").children(
-                builder.tag("div").children(
-                    // builder.tag("span").innerText("a"),
-                    // builder.tag("span").innerText("b"),
+                (firstLine = builder.tag("div").children(
                     builder.tag("br")
-                )
+                ))
             ),
             builder.tag("link").attr("rel", "stylesheet").attr("href", this.getAttribute("code-style") || ""),
         ).build());
@@ -192,7 +192,9 @@ export class OxCode extends OxCustomElementBase {
         this.#codeBox.addEventListener("beforeinput", (event) => { this.#handleBeforeInput(event); });
         this.ownerDocument.addEventListener("selectionchange", (event) => { this.#handleSelectionChange(event); });
         
-        //this.replaceText(this.textContent, this.#codeBox);
+        const range = this.ownerDocument.createRange();
+        range.setStart(firstLine.build(), 0);
+        this.replaceText(this.textContent, range);
     }
 
     /**
@@ -201,51 +203,39 @@ export class OxCode extends OxCustomElementBase {
      * @param {Range} range 
      */
     replaceText(text, range) {
+
+        // TODO: handle range starting and/or ending beyond the codebox
+
+        let startNode, startOffset;
+        if (range.startContainer !== this.#codeBox && this.#codeBox.contains(range.startContainer)) {
+            startNode = range.startContainer;
+            startOffset = range.startOffset;
+
+        } else {
+            startNode = this.#codeBox.firstChild;
+            startOffset = 0;
+        }
+
+        let textNode = this.#splitContainer(startNode, startOffset);
+
         if (!range.collapsed) {
-            this.#removeRange(range);
-        }
-
-        const startNode = range.startContainer;
-        const startOffset = range.startOffset;
-        let textNode;
-        if (range.startContainer.nodeType == Node.TEXT_NODE) {
-            const rest = range.startContainer.splitText(range.startOffset);
-            textNode = range.startContainer;
-        } else if (range.startContainer.nodeType == Node.ELEMENT_NODE) {
-            if (range.startContainer.nodeName == "DIV") {
-                if (range.startContainer.firstChild == null || range.startContainer.lastChild.nodeName != "BR") {
-                    // something's not right, the div should always have at least a <br> in it
-                    throw "DIV must have exactly one <br> at the end";
-                } else if (range.startContainer.firstChild == range.startContainer.lastChild || range.startOffset == 0) {
-                    const span = this.ownerDocument.createElement("span");
-                    textNode = this.ownerDocument.createTextNode("");
-                    span.appendChild(textNode);
-                    range.startContainer.insertBefore(span, range.startContainer.lastChild);
-
-                } else {
-                    //TODO: untested, should never happen
-                    const span = range.startContainer.childNodes[range.startOffset - 1];
-                    if (span.firstChild === null) {
-                        textNode = this.ownerDocument.createTextNode("");
-                        span.appendChild(textNode);
-                    } else {
-                        textNode = span.lastChild;
-                    }
-                }
-            } else if (range.startContainer.nodeName == "SPAN") {
-                if (range.startContainer.firstChild == null || range.startOffset == 0) {
-                    textNode = this.ownerDocument.createTextNode("");
-                    range.startContainer.insertBefore(textNode, range.startContainer.firstChild);
-                } else {
-                    textNode = range.startContainer.childNodes[range.startOffset - 1];
-                }
-            } else if (range.startContainer.nodeName == "SPAN") {
-                throw "Node should be DIV or SPAN"
+            let endNode;
+            if (range.endContainer !== this.#codeBox && this.#codeBox.contains(range.endContainer)) {
+                endNode = this.#splitContainer(range.endContainer, range.endOffset);
+            } else {
+                endNode = this.#splitContainer(this.#codeBox.lastChild, this.#codeBox.lastChild.childNodes.length - 1);
             }
+
+            textNode = this.#removeNodes(textNode, endNode);
         }
+
+
+
 
         //append text
-        textNode = this.#appendText(text, textNode);
+        if (text) {
+            textNode = this.#appendText(text, textNode);
+        }
 
         const endOffset = textNode.textContent.length;
         if (endOffset === 0) { // set the range to the
@@ -262,9 +252,145 @@ export class OxCode extends OxCustomElementBase {
         return range;
     }
 
-    #removeRange(range) {
-        // TODO: handle range starting and/or ending beyond the codebox
+    /**
+     * Splits the text node if needed, and return the node immediately before the split point
+     * @param {Node} container 
+     * @param {number} offset 
+     * @returns {Text}
+     */
+    #splitContainer(container, offset) {
+        let textNode;
+        if (container.nodeType == Node.TEXT_NODE) {
+            const rest = container.splitText(offset);
+            textNode = container;
+        } else if (container.nodeType == Node.ELEMENT_NODE) {
+            if (container.nodeName == "DIV") {
+                if (container.firstChild == null || container.lastChild.nodeName != "BR") {
+                    // something's not right, the div should always have at least a <br> in it
+                    throw "DIV must have exactly one <br> at the end";
+                } else if (container.firstChild == container.lastChild || offset == 0) {
+                    const span = this.ownerDocument.createElement("span");
+                    textNode = this.ownerDocument.createTextNode("");
+                    span.appendChild(textNode);
+                    container.insertBefore(span, container.lastChild);
+                } else {
+                    //TODO: untested, should never happen
+                    const span = container.childNodes[offset - 1];
+                    if (span.firstChild === null) {
+                        textNode = this.ownerDocument.createTextNode("");
+                        span.appendChild(textNode);
+                    } else {
+                        textNode = span.lastChild;
+                    }
+                }
+            } else if (container.nodeName == "SPAN") {
+                if (container.firstChild == null || offset == 0) {
+                    textNode = this.ownerDocument.createTextNode("");
+                    container.insertBefore(textNode, container.firstChild);
+                } else {
+                    textNode = container.childNodes[offset - 1];
+                }
+            } else if (container.nodeName == "SPAN") {
+                throw "Node should be DIV or SPAN"
+            }
+        }
+        return textNode;
+    }
 
+    /**
+     * Removes everything between the two nodes, including the endNode, but not including the startNode
+     * @param {Text} startNode 
+     * @param {Text} endNode 
+     * @returns 
+     */
+    #removeNodes(startNode, endNode) {
+        if (startNode === endNode) {
+            return startNode;
+        }
+        
+        let current = endNode;
+
+        do {
+            const node = current;
+            if (current.previousSibling) {
+                current = current.previousSibling;
+                node.remove();
+                continue;
+            } else {
+                current = current.parentNode;
+                node.remove();
+                let span = current;
+
+                if (current.previousSibling) {
+                    current = current.previousSibling;
+                    if (!span.hasChildNodes()) {
+                        span.remove();
+                    }
+
+                    // remove empty spans andif didn't reach start of the line continue the loop
+                    if ((function () {
+                        while (current.hasChildNodes()) {
+                            span = current;
+                            if (current.previousSibling) {
+                                current = current.previousSibling;
+                                span.remove();
+                            } else {
+                                // if reached start of the line do not end loop step early so
+                                return false;
+                            }
+                        }
+                        return true;
+                    })()) {
+                        //non empty SPAN, start with the last child
+                        current = current.lastChild;
+                        continue;
+                    }
+                    //
+                    //
+                    //
+                } 
+                //reached end of the line
+                current = current.parentNode; // current is DIV
+                if (!span.hasChildNodes()) {
+                    span.remove();
+                }
+                if (current.previousSibling) {
+                    let div = current;
+                    current = current.previousSibling;
+                    div.remove();
+                    // move down
+                    if (current.lastChild.previousSibling) { 
+                        current = current.lastChild.previousSibling;
+                    }
+                    else {
+                        // empty line, without any spans, just a <br>
+                        const span = this.ownerDocument.createElement("span");
+                        const textNode = this.ownerDocument.createTextNode("");
+                        span.appendChild(textNode);
+                        current.insertBefore(span, current.lastChild);
+                        current = span;
+                    }
+
+                    // move everything left from the removed line
+                    let elem = div.lastChild.previousSibling;
+                    while (elem) {
+                        const prev = elem.previousSibling;
+                        current.parentElement.insertBefore(elem, current.nextSibling);
+                        elem = prev;
+                    }
+
+                    //go down to text node
+                    current = current.lastChild;
+
+                } else {
+                    // this means that startNode is outside the codebox
+                    throw "Reached the start of the codebox";
+                }
+
+            }
+        } while (current !== startNode);
+
+        return startNode;
     }
 
     /**
@@ -370,8 +496,12 @@ export class OxCode extends OxCustomElementBase {
                 const data = event.data ?? event.dataTransfer.getData("text/plain");
                 return collapseRange(this.replaceText(data, range), false);
             });
+        } else if (event.inputType == "deleteContentBackward") {
+            this.#forSelectionRanges((range) => {
+                return collapseRange(this.replaceText("", range), false);
+            });
         } else {
-            console.log("Not intercepted inputType", event.inputType, data, ranges);
+            console.log("Not intercepted inputType", event.inputType, event);
         }
     }
 
