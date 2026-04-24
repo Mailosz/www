@@ -202,50 +202,63 @@ export class OxCode extends OxCustomElementBase {
      */
     replaceText(text, range) {
         if (!range.collapsed) {
-            // TODO: write own delete method
-            // range.deleteContents();
+            this.#removeRange(range);
         }
 
         const startNode = range.startContainer;
         const startOffset = range.startOffset;
-        let node;
+        let textNode;
         if (range.startContainer.nodeType == Node.TEXT_NODE) {
             const rest = range.startContainer.splitText(range.startOffset);
-            node = this.#appendText(text, range.startContainer);
+            textNode = range.startContainer;
         } else if (range.startContainer.nodeType == Node.ELEMENT_NODE) {
             if (range.startContainer.nodeName == "DIV") {
-                const span = this.ownerDocument.createElement("span");
-                const textNode = this.ownerDocument.createTextNode("");
-                span.appendChild(textNode);
-                range.startContainer.insertBefore(span, range.startContainer.lastChild);
-                node = this.#appendText(text, textNode);
+                if (range.startContainer.firstChild == null || range.startContainer.lastChild.nodeName != "BR") {
+                    // something's not right, the div should always have at least a <br> in it
+                    throw "DIV must have exactly one <br> at the end";
+                } else if (range.startContainer.firstChild == range.startContainer.lastChild || range.startOffset == 0) {
+                    const span = this.ownerDocument.createElement("span");
+                    textNode = this.ownerDocument.createTextNode("");
+                    span.appendChild(textNode);
+                    range.startContainer.insertBefore(span, range.startContainer.lastChild);
+
+                } else {
+                    //TODO: untested, should never happen
+                    textNode = range.startContainer.childNodes[range.startOffset - 1];
+                }
             } else if (range.startContainer.nodeName == "SPAN") {
                 if (range.startContainer.firstChild == null || range.startOffset == 0) {
-                    const textNode = this.ownerDocument.createTextNode("");
+                    textNode = this.ownerDocument.createTextNode("");
                     range.startContainer.insertBefore(textNode, range.startContainer.firstChild);
-                    node = this.#appendText(text, textNode);
                 } else {
-                    const textNode = range.startContainer.childNodes[range.startOffset - 1];
-                    node = this.#appendText(text, textNode);
+                    textNode = range.startContainer.childNodes[range.startOffset - 1];
                 }
             } else if (range.startContainer.nodeName == "SPAN") {
                 throw "Node should be DIV or SPAN"
             }
         }
 
-        const endOffset = node.textContent.length;
+        //append text
+        textNode = this.#appendText(text, textNode);
+
+        const endOffset = textNode.textContent.length;
         if (endOffset === 0) { // set the range to the
             range.setStart(startNode, startOffset);
-            range.setEnd(node, endOffset);
-            node.parentElement.normalize();
+            range.setEnd(textNode, endOffset);
+            textNode.parentElement.normalize();
 
         } else {
-            node.normalize();
+            textNode.normalize();
             range.setStart(startNode, startOffset);
-            range.setEnd(node, endOffset);
+            range.setEnd(textNode, endOffset);
         }
 
         return range;
+    }
+
+    #removeRange(range) {
+        // TODO: handle range starting and/or ending beyond the codebox
+
     }
 
     /**
