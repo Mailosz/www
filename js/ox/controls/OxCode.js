@@ -2,6 +2,24 @@ import { StringTokenizer, StringTokenizerLanguageService} from "../../tokenizer/
 import { OxCustomElementBase } from "./OxCustomElementBase.js";
 import { Builder } from "../Builder.js";
 
+const whitespaceCharacters = new Set([
+    ' ',
+    '\n',
+    '\t',
+    '\r',
+    '\f',
+    '\v',
+    '\u00a0',
+    '\u1680',
+    '\u2000',
+    '\u200a',
+    '\u2028',
+    '\u2029',
+    '\u202f',
+    '\u205f',
+    '\u3000',
+    '\ufeff'
+]);
 
 const template = /*html*/`
 <div id="container">
@@ -193,7 +211,22 @@ export class OxCode extends OxCustomElementBase {
         
         const range = this.ownerDocument.createRange();
         range.setStart(firstLine.build(), 0);
-        this.replaceText(this.textContent, range);
+        this.replaceText(this.#prepareCode(this.textContent), range);
+    }
+
+    #prepareCode(text) {
+
+        let firstLineBreak = text.indexOf("\n");
+        if (firstLineBreak !== -1 && (function (until) {
+            for (let i = 0; i < until; i++) {
+                if (!isWhitespace(text[i])) return false;
+            }
+            return true;
+        })(firstLineBreak)) {
+            text = text.substring(firstLineBreak + 1);
+        }
+
+        return text;
     }
 
     /**
@@ -722,4 +755,8 @@ export class OxCode extends OxCustomElementBase {
 function collapseRange(range, toStart) {
     range.collapse(toStart);
     return range;
+}
+
+function isWhitespace(c) {
+    return whitespaceCharacters.has(c);
 }
