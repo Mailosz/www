@@ -188,7 +188,6 @@ export class OxCode extends OxCustomElementBase {
 
         this.#codeBox = this.shadowRoot.querySelector("#code-box");
 
-        this.#codeBox.addEventListener("input", (event) => { this.#handleAfterInput(event); });
         this.#codeBox.addEventListener("beforeinput", (event) => { this.#handleBeforeInput(event); });
         this.ownerDocument.addEventListener("selectionchange", (event) => { this.#handleSelectionChange(event); });
         
@@ -228,8 +227,6 @@ export class OxCode extends OxCustomElementBase {
 
             textNode = this.#removeNodes(textNode, endNode);
         }
-
-
 
 
         //append text
@@ -476,7 +473,7 @@ export class OxCode extends OxCustomElementBase {
      * @param {InputEvent} event 
      */
     #handleBeforeInput(event) {
-        console.log("INPUT: ", event.inputType, event);
+        console.log("beforeinput: ", event.inputType, event);
         event.preventDefault();
 
         if (event.inputType == "historyUndo") {
@@ -502,16 +499,22 @@ export class OxCode extends OxCustomElementBase {
             });
         } else {
             console.log("Not intercepted inputType", event.inputType, event);
+            return;
         }
+
+        queueMicrotask(() => {
+            this.#handleAfterInput(event);
+        });
     }
 
     #handleAfterInput(event) {
         console.log("Input", event);
         clearTimeout(this.#tokenizationTimeout);
         this.textContent = this.#codeBox.textContent; // sync content to light DOM
-        // this.#presentCode(); // re-present code to update line counters
+
         this.#tokenizationTimeout = setTimeout(() => { this.#tokenizeCode(); }, this.tokenizationDelay);
 
+        this.dispatchEvent(new Event("input", {bubbles: true, composed: true}));
     }
 
     #handleSelectionChange(event) {
@@ -590,39 +593,26 @@ export class OxCode extends OxCustomElementBase {
         if (!this.tokenizerLanguage) return;
         const tokenizer = new StringTokenizer(this.tokenizerLanguage);
 
-        
-        tokenizer.resetText(this.textContent);
 
-        // let selection = this.#getSelection();
 
-        // let range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
-        
-        this.#codeBox.innerHTML = "";
-        let currentSpan = this.#codeBox.firstElementChild;
-        let currentIndex = 0;
-        while (!tokenizer.isFinished()) {
-            let token = tokenizer.getNextToken();
-
-            if (currentSpan != null) {
-                if (currentSpan.textContent === token.text) {
-                    currentSpan.className = token.state;
-                    currentSpan = currentSpan.nextElementSibling;
-                    currentIndex++;
-                    continue;
-                } else {
-                    while (this.#codeBox.lastChild != currentSpan) {
-                        this.#codeBox.removeChild(this.#codeBox.lastChild);
-                    }
-                    currentSpan = null;
+        for (let div of this.#codeBox.children) {
+            tokenizer.resetText(div.textContent);
+            let currentSpan = div.firstChild;
+            while (!tokenizer.isFinished()) {
+                const token = tokenizer.getNextToken();
+                if (currentSpan === div.lastChild) {
+                    currentSpan = this.ownerDocument.createElement("span");
+                    div.insertBefore(currentSpan, div.lastChild);
                 }
-            } 
+                currentSpan.textContent = token.text;
+                currentSpan.className = token.state;
+                currentSpan = currentSpan.nextSibling;
+            }
 
-            const tokenSpan = this.ownerDocument.createElement("span");
-            tokenSpan.textContent = token.text;
-            tokenSpan.classList.add(token.state);
-            this.#codeBox.appendChild(tokenSpan);
+            while (currentSpan !== div.lastChild) {
+                div.removeChild(div.lastChild.previousSibling);
+            }
         }
-        // console.log("Tokenization complete", CSS.highlights);
     }
 
 }
