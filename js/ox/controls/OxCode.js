@@ -192,7 +192,7 @@ export class OxCode extends OxCustomElementBase {
         this.#codeBox.addEventListener("beforeinput", (event) => { this.#handleBeforeInput(event); });
         this.ownerDocument.addEventListener("selectionchange", (event) => { this.#handleSelectionChange(event); });
         
-        //this.insertText(this.textContent);
+        //this.replaceText(this.textContent, this.#codeBox);
     }
 
     /**
@@ -200,12 +200,14 @@ export class OxCode extends OxCustomElementBase {
      * @param {string} text 
      * @param {Range} range 
      */
-    insertText(text, range) {
+    replaceText(text, range) {
         if (!range.collapsed) {
             // TODO: write own delete method
             // range.deleteContents();
         }
 
+        const startNode = range.startContainer;
+        const startOffset = range.startOffset;
         let node;
         if (range.startContainer.nodeType == Node.TEXT_NODE) {
             const rest = range.startContainer.splitText(range.startOffset);
@@ -217,21 +219,30 @@ export class OxCode extends OxCustomElementBase {
                 span.appendChild(textNode);
                 range.startContainer.insertBefore(span, range.startContainer.lastChild);
                 node = this.#appendText(text, textNode);
-            } else {
-                throw "Node should be DIV"
+            } else if (range.startContainer.nodeName == "SPAN") {
+                if (range.startContainer.firstChild == null || range.startOffset == 0) {
+                    const textNode = this.ownerDocument.createTextNode("");
+                    range.startContainer.insertBefore(textNode, range.startContainer.firstChild);
+                    node = this.#appendText(text, textNode);
+                } else {
+                    const textNode = range.startContainer.childNodes[range.startOffset - 1];
+                    node = this.#appendText(text, textNode);
+                }
+            } else if (range.startContainer.nodeName == "SPAN") {
+                throw "Node should be DIV or SPAN"
             }
         }
 
-        const offset = node.textContent.length;
-        if (offset === 0) { // set the range to the
-            range.setStart(node, offset);
-            range.setEnd(node, offset);
+        const endOffset = node.textContent.length;
+        if (endOffset === 0) { // set the range to the
+            range.setStart(startNode, startOffset);
+            range.setEnd(node, endOffset);
             node.parentElement.normalize();
 
         } else {
             node.normalize();
-            range.setStart(node, offset);
-            range.setEnd(node, offset);
+            range.setStart(startNode, startOffset);
+            range.setEnd(node, endOffset);
         }
 
         return range;
@@ -281,13 +292,13 @@ export class OxCode extends OxCustomElementBase {
             const span = node.parentNode;
             const newSpan = this.ownerDocument.createElement("span");
 
-            let current = node;
+            let current = node.nextSibling;
             while (current) {
-                const prev = current.previousSibling;
+                const next = current.nextSibling;
                 newSpan.appendChild(current);
-                current = prev;
+                current = next;
             }
-            span.parentNode.insertBefore(newSpan, span);
+            span.parentNode.insertBefore(newSpan, span.nextSibling);
         } else {
             if (node.parentNode.nextSibling.nodeName == "BR") {
                 node.parentNode.parentNode.insertBefore(this.ownerDocument.createElement("span"), node.parentNode.nextSibling);
@@ -302,15 +313,15 @@ export class OxCode extends OxCustomElementBase {
         const div = node.parentNode.parentNode;
         const createdLine = this.ownerDocument.createElement("div");
 
-        let current = node.parentNode;
+        let current = node.parentNode.nextSibling;
         while (current) {
-            const prev = current.previousSibling;
+            const next = current.nextSibling;
             createdLine.appendChild(current);
-            current = prev;
+            current = next;
         }
 
-        createdLine.appendChild(this.ownerDocument.createElement("br"));
-        div.parentElement.insertBefore(createdLine, div);
+        node.parentNode.parentNode.appendChild(this.ownerDocument.createElement("br"));
+        div.parentElement.insertBefore(createdLine, div.nextSibling);
 
         return newNode;
     }
@@ -329,15 +340,16 @@ export class OxCode extends OxCustomElementBase {
             
         } else if (event.inputType == "insertParagraph" || event.inputType == "insertLineBreak") {
             this.#forSelectionRanges((range) => {
-                return this.insertText("\ntest", range);
+                return collapseRange(this.replaceText("\n", range), false);
             });
         } else if (event.inputType == "insertText") {
             this.#forSelectionRanges((range) => {
-                return this.insertText(event.data, range);
+                return collapseRange(this.replaceText(event.data, range), false);
             });
         } else if (event.inputType == "insertFromPaste") {
             this.#forSelectionRanges((range) => {
-                return this.insertText(event.dataTransfer.getData("text"), range);
+                const data = event.data ?? event.dataTransfer.getData("text/plain");
+                return collapseRange(this.replaceText(data, range), false);
             });
         } else {
             console.log("Not intercepted inputType", event.inputType, data, ranges);
@@ -464,4 +476,15 @@ export class OxCode extends OxCustomElementBase {
         // console.log("Tokenization complete", CSS.highlights);
     }
 
+}
+
+/**
+ * 
+ * @param {Range} range 
+ * @param {boolean} toEnd 
+ * @returns {Range} collapsed range
+ */
+function collapseRange(range, toStart) {
+    range.collapse(toStart);
+    return range;
 }
