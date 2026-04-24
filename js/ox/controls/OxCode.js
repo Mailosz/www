@@ -224,7 +224,13 @@ export class OxCode extends OxCustomElementBase {
 
                 } else {
                     //TODO: untested, should never happen
-                    textNode = range.startContainer.childNodes[range.startOffset - 1];
+                    const span = range.startContainer.childNodes[range.startOffset - 1];
+                    if (span.firstChild === null) {
+                        textNode = this.ownerDocument.createTextNode("");
+                        span.appendChild(textNode);
+                    } else {
+                        textNode = span.lastChild;
+                    }
                 }
             } else if (range.startContainer.nodeName == "SPAN") {
                 if (range.startContainer.firstChild == null || range.startOffset == 0) {
