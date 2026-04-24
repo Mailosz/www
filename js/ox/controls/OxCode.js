@@ -593,8 +593,20 @@ export class OxCode extends OxCustomElementBase {
         if (!this.tokenizerLanguage) return;
         const tokenizer = new StringTokenizer(this.tokenizerLanguage);
 
+        //save ranges
+        const selection = this.#getSelection();
+        const ranges = this.#getRanges(selection).map((range) => {
+            let startDiv, startOffset, endDiv, endOffset;
+            if (range.startContainer !== this.#codeBox && this.#codeBox.contains(range.startContainer)) {
+                ({ container: startDiv, offset: startOffset } = this.#countDivOffset(range.startContainer, range.startOffset));
+            }
+            if (range.endContainer !== this.#codeBox && this.#codeBox.contains(range.endContainer)) {
+                ({ container: endDiv, offset: endOffset } = this.#countDivOffset(range.endContainer, range.endOffset));
+            }
+            return { range, startDiv, startOffset, endDiv, endOffset };
+        });
 
-
+        //tokenization
         for (let div of this.#codeBox.children) {
             tokenizer.resetText(div.textContent);
             let currentSpan = div.firstChild;
@@ -613,9 +625,93 @@ export class OxCode extends OxCustomElementBase {
                 div.removeChild(div.lastChild.previousSibling);
             }
         }
+
+        //restore selection
+        selection.empty();
+        ranges.map(r => {
+            const newRange = this.ownerDocument.createRange();
+            if (r.startDiv) {
+                const {container, offset} = this.#getRangeOffset(r.startDiv, r.startOffset);
+                newRange.setStart(container, offset);
+            } else {
+                newRange.setStart(r.range.startContainer, r.range.startOffset);
+            }
+            if (r.endDiv) {
+                const { container, offset } = this.#getRangeOffset(r.endDiv, r.endOffset);
+                newRange.setEnd(container, offset);
+            } else {
+                newRange.setEnd(r.range.endContainer, r.range.endOffset);
+            }
+            return newRange;
+        }).forEach(range => selection.addRange(range))
+    }
+
+    /**
+     * 
+     * @param {Node} container
+     * @param {number} offset
+     */
+    #countDivOffset(container, offset) {
+
+        let currentOffset;
+        if (container.nodeType === Node.TEXT_NODE) {
+            currentOffset = offset;
+            while (container.previousSibling) {
+                currentOffset += container.previousSibling.textContent.length;
+                container = container.previousSibling;
+            }
+            container = container.parentNode;
+        } else if (container.nodeType === Node.ELEMENT_NODE) {
+            currentOffset = 0;
+            if (container.nodeName === "SPAN") {
+                let node = container.firstChild;
+                for (let i = 0; i < offset; i++) {
+                    currentOffset += node.textContent.length;
+                    node = node.nextSibling;
+                }
+            } else if (container.nodeName === "DIV") {
+                let span = container.firstChild;
+                for (let i = 0; i < offset; i++) {
+                    currentOffset += span.textContent.length;
+                    span = span.nextSibling;
+                }
+                return { container, offset: currentOffset };
+            } else {
+                throw "Node should be DIV or SPAN, is: " + container.nodeName;
+            }
+        } else {
+            throw "Unexpected node type: " + container.nodeType;
+        }
+        
+        let span = container;
+        container = container.parentNode;
+        while (span.previousSibling) {
+            span = span.previousSibling;
+            currentOffset += span.textContent.length;
+        }
+        return { container, offset: currentOffset };
+    }
+
+    #getRangeOffset(div, offset) {
+
+        const iterator = document.createNodeIterator(div, NodeFilter.SHOW_TEXT);
+
+        while (iterator.nextNode()) {
+            const node = iterator.referenceNode;
+            if (node.textContent.length >= offset) {
+                return { container: node, offset };
+            } else {
+                offset -= node.textContent.length;
+            }
+        }
+
+        return { container: div.lastChild, offset: div.lastChild.textContent.length };
+
     }
 
 }
+
+
 
 /**
  * 
