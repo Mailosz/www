@@ -1,4 +1,4 @@
-import {StringTokenizer, StringTokenizerLanguageService} from "../../tokenizer/StringTokenizer.js";
+import { StringTokenizer, StringTokenizerLanguageService} from "../../tokenizer/StringTokenizer.js";
 import { OxCustomElementBase } from "./OxCustomElementBase.js";
 import { Builder } from "../Builder.js";
 
@@ -109,10 +109,12 @@ const style = /*css*/`
         }
 `;
 
+
+
 export class OxCode extends OxCustomElementBase {
+    static observedAttributes = ["tokenizer-language", "code-style", "editable", "tokenizer-delay"];
     static { this.registerCustomElement("ox-code"); }
 
-    static observedAttributes = ["tokenizer-language", "code-style", "contenteditable", "tokenizer-delay"];
 
     tokenizerLanguage = null;
     tokenizationDelay = 1000;
@@ -133,14 +135,14 @@ export class OxCode extends OxCustomElementBase {
             }
             StringTokenizerLanguageService.getLanguageAsync(newValue).then((language) => {
                 this.tokenizerLanguage = language;
-                this.#tokenizeCode();
+                // this.#tokenizeCode();
             });
 
         });
 
-        this.customAttributes["contenteditable"].listen((newValue) => {
+        this.customAttributes["editable"].listen((newValue) => {
 
-            this.shadowRoot.querySelector("#code-box").contentEditable = newValue === "" || newValue === "true";
+            this.shadowRoot.querySelector("#code-box").contentEditable = newValue? "plaintext-only" : "false";
 
         });
 
@@ -175,25 +177,175 @@ export class OxCode extends OxCustomElementBase {
 
         this.shadowRoot.appendChild(builder.tag("div").children(
             builder.tag("div").id("code-box").children(
-                builder.tag("slot")
+                builder.tag("div").children(
+                    // builder.tag("span").innerText("a"),
+                    // builder.tag("span").innerText("b"),
+                    builder.tag("br")
+                )
             ),
             builder.tag("link").attr("rel", "stylesheet").attr("href", this.getAttribute("code-style") || ""),
         ).build());
 
         this.#codeBox = this.shadowRoot.querySelector("#code-box");
 
-        this.#codeBox.addEventListener("input", (event) => { this.#handleInput(event); });
+        this.#codeBox.addEventListener("input", (event) => { this.#handleAfterInput(event); });
         this.#codeBox.addEventListener("beforeinput", (event) => { this.#handleBeforeInput(event); });
         this.ownerDocument.addEventListener("selectionchange", (event) => { this.#handleSelectionChange(event); });
-        // this.#presentCode();
+        
+        //this.insertText(this.textContent);
     }
 
+    /**
+     * 
+     * @param {string} text 
+     * @param {Range} range 
+     */
+    insertText(text, range) {
+        if (!range.collapsed) {
+            // TODO: write own delete method
+            // range.deleteContents();
+        }
+
+        let node;
+        if (range.startContainer.nodeType == Node.TEXT_NODE) {
+            const rest = range.startContainer.splitText(range.startOffset);
+            node = this.#appendText(text, range.startContainer);
+        } else if (range.startContainer.nodeType == Node.ELEMENT_NODE) {
+            if (range.startContainer.nodeName == "DIV") {
+                const span = this.ownerDocument.createElement("span");
+                const textNode = this.ownerDocument.createTextNode("");
+                span.appendChild(textNode);
+                range.startContainer.insertBefore(span, range.startContainer.lastChild);
+                node = this.#appendText(text, textNode);
+            } else {
+                throw "Node should be DIV"
+            }
+        }
+
+        const offset = node.textContent.length;
+        if (offset === 0) { // set the range to the
+            range.setStart(node, offset);
+            range.setEnd(node, offset);
+            node.parentElement.normalize();
+
+        } else {
+            node.normalize();
+            range.setStart(node, offset);
+            range.setEnd(node, offset);
+        }
+
+        return range;
+    }
+
+    /**
+     * Appends text to a specified node
+     * @param {string} text 
+     * @param {Text} node
+     * @param {number} index
+     */
+    #appendText(text, node) {
+
+        let start = 0;
+        let end;
+        while ((end = text.indexOf("\n", start)) !== -1) {
+            if (start != end) {
+                const line = text.substring(start, end);
+                this.#insertSingleLineText(line, node);
+            }
+            node = this.#insertLineBreak(node);
+            start = end + 1;
+        }
+
+        if (start < text.length) {
+            this.#insertSingleLineText(text.substring(start), node);
+        }
+        return node;
+    }
+
+    /**
+     * 
+     * @param {string} text 
+     * @param {Text} node
+     */
+    #insertSingleLineText(line, node) {
+        node.textContent += line;
+    }
+
+    /**
+     * 
+     * @param {string} text 
+     * @param {Text} node
+     */
+    #insertLineBreak(node) {
+        if (node.nextSibling != null) { // need to split span
+            const span = node.parentNode;
+            const newSpan = this.ownerDocument.createElement("span");
+
+            let current = node;
+            while (current) {
+                const prev = current.previousSibling;
+                newSpan.appendChild(current);
+                current = prev;
+            }
+            span.parentNode.insertBefore(newSpan, span);
+        } else {
+            if (node.parentNode.nextSibling.nodeName == "BR") {
+                node.parentNode.parentNode.insertBefore(this.ownerDocument.createElement("span"), node.parentNode.nextSibling);
+            }
+        }
+
+        // create new empty text node to append to
+        const newNode = this.ownerDocument.createTextNode("");
+        node.parentNode.nextSibling.insertBefore(newNode, node.parentNode.nextSibling.firstChild);
+
+        //create new line and add everything up to the node to it
+        const div = node.parentNode.parentNode;
+        const createdLine = this.ownerDocument.createElement("div");
+
+        let current = node.parentNode;
+        while (current) {
+            const prev = current.previousSibling;
+            createdLine.appendChild(current);
+            current = prev;
+        }
+
+        createdLine.appendChild(this.ownerDocument.createElement("br"));
+        div.parentElement.insertBefore(createdLine, div);
+
+        return newNode;
+    }
+
+    /**
+     * 
+     * @param {InputEvent} event 
+     */
     #handleBeforeInput(event) {
-        console.log("Before input detected");
+        console.log("INPUT: ", event.inputType, event);
+        event.preventDefault();
+
+        if (event.inputType == "historyUndo") {
+            
+        } else if (event.inputType == "historyRedo") {
+            
+        } else if (event.inputType == "insertParagraph" || event.inputType == "insertLineBreak") {
+            this.#forSelectionRanges((range) => {
+                return this.insertText("\ntest", range);
+            });
+        } else if (event.inputType == "insertText") {
+            this.#forSelectionRanges((range) => {
+                return this.insertText(event.data, range);
+            });
+        } else if (event.inputType == "insertFromPaste") {
+            this.#forSelectionRanges((range) => {
+                return this.insertText(event.dataTransfer.getData("text"), range);
+            });
+        } else {
+            console.log("Not intercepted inputType", event.inputType, data, ranges);
+        }
     }
 
-    #handleInput(event) {
-        console.log("Input detected");
+    #handleAfterInput(event) {
+        console.log("Input", event);
         clearTimeout(this.#tokenizationTimeout);
         this.textContent = this.#codeBox.textContent; // sync content to light DOM
         // this.#presentCode(); // re-present code to update line counters
@@ -202,11 +354,75 @@ export class OxCode extends OxCustomElementBase {
     }
 
     #handleSelectionChange(event) {
-        console.log("Selection change detected", this.#getSelection());
+
+        console.log("Selection", this.#getRanges(this.#getSelection()).map((range) => this.#toLiveRange(range)));
     }
 
+    /**
+     * 
+     * @returns {Selection}
+     */
     #getSelection() {
-        return "getSelection" in this.shadowRoot ? this.shadowRoot.getSelection() : this.ownerDocument.getSelection();
+        let selection;
+        if (this.shadowRoot.getSelection) { // selection handling incosistency between chrome and firefox - check safari
+            selection = this.shadowRoot.getSelection();
+        } else {
+            selection = this.ownerDocument.getSelection();
+        }
+        return selection;
+    }
+
+    /**
+     * Handles inconsistencies between browsers in selection handling in shadow DOM
+     * @param {Selection} selection 
+     * @returns {function(number): Range}
+     */
+    #getSelectionRangeFunction(selection) {
+
+        let getRange;
+        if (selection.getComposedRanges) { // right way but only works in safari
+            const composedRanges = selection.getComposedRanges({ shadowRoots: [this.shadowRoot] });
+            getRange = (i) => composedRanges[i];
+        } else {
+            getRange = (i) => selection.getRangeAt(i);
+        }
+        return getRange;
+    }
+
+    /**
+     * 
+     */
+    #getRanges(selection) {
+        this.#getSelectionRangeFunction(selection);
+        let ranges = [];
+        for (let i = 0; i < selection.rangeCount; i++) {
+            ranges.push(this.#getSelectionRangeFunction(selection)(i));
+        }
+        return ranges;
+    }
+
+    /**
+     * Creates live Range from any AbstractRange
+     * @param {AbstractRange} range 
+     * @returns {Range}
+     */
+    #toLiveRange(range) {
+        let realRange = this.shadowRoot.ownerDocument.createRange();
+        realRange.setStart(range.startContainer, range.startOffset);
+        realRange.setEnd(range.endContainer, range.endOffset);
+        return realRange;
+    }
+
+
+    #forSelectionRanges(fn) {
+
+        const selection = this.#getSelection();
+
+        const ranges = this.#getRanges(selection).map((range) => this.#toLiveRange(range)).map(fn);
+
+        selection.empty();
+        ranges.filter((range) => range != null).forEach((range) => selection.addRange(range));
+
     }
 
     #tokenizeCode() {
@@ -216,10 +432,29 @@ export class OxCode extends OxCustomElementBase {
         
         tokenizer.resetText(this.textContent);
 
+        // let selection = this.#getSelection();
+
+        // let range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
         
         this.#codeBox.innerHTML = "";
+        let currentSpan = this.#codeBox.firstElementChild;
+        let currentIndex = 0;
         while (!tokenizer.isFinished()) {
             let token = tokenizer.getNextToken();
+
+            if (currentSpan != null) {
+                if (currentSpan.textContent === token.text) {
+                    currentSpan.className = token.state;
+                    currentSpan = currentSpan.nextElementSibling;
+                    currentIndex++;
+                    continue;
+                } else {
+                    while (this.#codeBox.lastChild != currentSpan) {
+                        this.#codeBox.removeChild(this.#codeBox.lastChild);
+                    }
+                    currentSpan = null;
+                }
+            } 
 
             const tokenSpan = this.ownerDocument.createElement("span");
             tokenSpan.textContent = token.text;
