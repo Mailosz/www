@@ -212,6 +212,8 @@ export class OxCode extends OxCustomElementBase {
         const range = this.ownerDocument.createRange();
         range.setStart(firstLine.build(), 0);
         this.replaceText(this.#prepareCode(this.textContent), range);
+
+        this.#tokenizationTimeout = setTimeout(() => { this.#tokenizeCode(); }, this.tokenizationDelay);
     }
 
     #prepareCode(text) {
@@ -224,6 +226,16 @@ export class OxCode extends OxCustomElementBase {
             return true;
         })(firstLineBreak)) {
             text = text.substring(firstLineBreak + 1);
+        }
+
+        let lastLineBreak = text.lastIndexOf("\n");
+        if (lastLineBreak !== -1 && (function (from) {
+            for (let i = from + 1; i < text.length; i++) {
+                if (!isWhitespace(text[i])) return false;
+            }
+            return true;
+        })(lastLineBreak)) {
+            text = text.substring(0, lastLineBreak);
         }
 
         return text;
