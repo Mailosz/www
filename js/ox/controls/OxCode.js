@@ -299,19 +299,23 @@ export class OxCode extends OxCustomElementBase {
      */
     #splitContainer(container, offset) {
         let textNode;
-        if (container.nodeType == Node.TEXT_NODE) {
+        if (container.nodeType === Node.TEXT_NODE) {
             const rest = container.splitText(offset);
             textNode = container;
-        } else if (container.nodeType == Node.ELEMENT_NODE) {
-            if (container.nodeName == "DIV") {
+        } else if (container.nodeType === Node.ELEMENT_NODE) {
+            if (container.nodeName === "DIV") {
                 if (container.firstChild == null || container.lastChild.nodeName != "BR") {
                     // something's not right, the div should always have at least a <br> in it
                     throw "DIV must have exactly one <br> at the end";
-                } else if (container.firstChild == container.lastChild || offset == 0) {
+                } else if (container.firstChild == container.lastChild) {
                     const span = this.ownerDocument.createElement("span");
                     textNode = this.ownerDocument.createTextNode("");
                     span.appendChild(textNode);
                     container.insertBefore(span, container.lastChild);
+                } else if (offset === 0) {
+                    const span = container.firstChild;
+                    textNode = this.ownerDocument.createTextNode("");
+                    span.insertBefore(textNode, span.firstChild);
                 } else {
                     //TODO: untested, should never happen
                     const span = container.childNodes[offset - 1];
@@ -322,15 +326,27 @@ export class OxCode extends OxCustomElementBase {
                         textNode = span.lastChild;
                     }
                 }
-            } else if (container.nodeName == "SPAN") {
+            } else if (container.nodeName === "SPAN") {
                 if (container.firstChild == null || offset == 0) {
                     textNode = this.ownerDocument.createTextNode("");
                     container.insertBefore(textNode, container.firstChild);
                 } else {
                     textNode = container.childNodes[offset - 1];
                 }
-            } else if (container.nodeName == "SPAN") {
-                throw "Node should be DIV or SPAN"
+            } else if (container.nodeName === "BR") { // happens in Firefox
+                let span = container.previousSibling;
+                if (span == null) {
+                    span = this.ownerDocument.createElement("span");
+                    container.parentNode.insertBefore(span, container);
+                    return textNode;
+                }
+                textNode = span.lastChild;
+                if (textNode == null) {
+                    textNode = this.ownerDocument.createTextNode("");
+                    span.appendChild(textNode);
+                }
+            } else {
+                throw "Node should be DIV or SPAN (or BR)"
             }
         }
         return textNode;
@@ -545,6 +561,18 @@ export class OxCode extends OxCustomElementBase {
             });
         } else if (event.inputType == "deleteContentBackward") {
             this.#forSelectionRanges((range) => {
+                if (range.collapsed) {
+                    const {container, offset} = moveCaretBackwards(range.startContainer, range.startOffset);
+                    range.setStart(container, offset);
+                }
+                return collapseRange(this.replaceText("", range), false);
+            });
+        } else if (event.inputType == "deleteContentForward") {
+            this.#forSelectionRanges((range) => {
+                if (range.collapsed) {
+                    const { container, offset } = moveCaretForwards(range.endContainer, range.endOffset);
+                    range.setEnd(container, offset);
+                }
                 return collapseRange(this.replaceText("", range), false);
             });
         } else {
@@ -778,4 +806,69 @@ function collapseRange(range, toStart) {
 
 function isWhitespace(c) {
     return whitespaceCharacters.has(c);
+}
+
+function moveCaretBackwards(container, offset) {
+    if (offset > 0) {
+        if (container.nodeType === Node.TEXT_NODE) {
+            return { container, offset: offset - 1 };
+        } else {
+            let child = container.childNodes[offset - 1];
+            return moveCaretBackwards(child, getNodeLength(child));
+        }
+    } else {
+        if (container.previousSibling) {
+            return moveCaretBackwards(container.previousSibling, getNodeLength(container.previousSibling));
+        } else {
+            if (container.parentNode.nodeName === "DIV") { 
+                if (container.parentNode.previousSibling) {
+                    // in case of div move up is considered one step
+                    return { container: container.parentNode.previousSibling, offset: getNodeLength(container.parentNode.previousSibling) - 1 };
+                } else {
+                    return { container: container.parentNode, offset: 0 };
+                }
+            } else {
+                return moveCaretBackwards(container.parentNode, 0);
+            }
+        }
+    }
+}
+
+function moveCaretForwards(container, offset) {
+    if (offset < getNodeLength(container)) {
+        if (container.nodeType === Node.TEXT_NODE) {
+            return { container, offset: offset + 1 };
+        } else {
+            let child = container.childNodes[offset];
+            return moveCaretForwards(child, 0);
+        }
+    } else {
+        if (container.nextSibling) {
+            return moveCaretForwards(container.nextSibling, 0);
+        } else {
+            if (container.parentNode.nodeName === "DIV") {
+                if (container.parentNode.nextSibling) {
+                    // in case of div move down is considered one step
+                    return { container: container.parentNode.nextSibling, offset: 0 };
+                } else {
+                    return { container: container.parentNode, offset: getNodeLength(container.parentNode) - 1 };
+                }
+            } else {
+                return moveCaretForwards(container.parentNode, getNodeLength(container.parentNode));
+            }
+        }
+    }
+}
+
+/**
+ * 
+ * @param {Node} node 
+ * @returns {number} Character count for text node and children count for element nodes
+ */
+function getNodeLength(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+        return node.nodeValue.length;
+    } else {
+        return node.childNodes.length;   
+    }
 }
