@@ -4,7 +4,6 @@ import { Builder } from "../Builder.js";
 
 const whitespaceCharacters = new Set([
     ' ',
-    '\n',
     '\t',
     '\r',
     '\f',
@@ -248,14 +247,12 @@ export class OxCode extends OxCustomElementBase {
      */
     replaceText(text, range) {
 
-        // TODO: handle range starting and/or ending beyond the codebox
-
         let startNode, startOffset;
         if (range.startContainer !== this.#codeBox && this.#codeBox.contains(range.startContainer)) {
             startNode = range.startContainer;
             startOffset = range.startOffset;
 
-        } else {
+        } else { // range starts outside the codebox
             startNode = this.#codeBox.firstChild;
             startOffset = 0;
         }
@@ -266,7 +263,7 @@ export class OxCode extends OxCustomElementBase {
             let endNode;
             if (range.endContainer !== this.#codeBox && this.#codeBox.contains(range.endContainer)) {
                 endNode = this.#splitContainer(range.endContainer, range.endOffset);
-            } else {
+            } else { // range ends outside the codebox
                 endNode = this.#splitContainer(this.#codeBox.lastChild, this.#codeBox.lastChild.childNodes.length - 1);
             }
 
@@ -371,9 +368,9 @@ export class OxCode extends OxCustomElementBase {
 
                     // remove empty spans andif didn't reach start of the line continue the loop
                     if ((function () {
-                        while (current.hasChildNodes()) {
-                            span = current;
+                        while (!current.hasChildNodes()) {
                             if (current.previousSibling) {
+                                span = current;
                                 current = current.previousSibling;
                                 span.remove();
                             } else {
@@ -442,7 +439,6 @@ export class OxCode extends OxCustomElementBase {
      * @param {number} index
      */
     #appendText(text, node) {
-
         let start = 0;
         let end;
         while ((end = text.indexOf("\n", start)) !== -1) {
@@ -511,6 +507,15 @@ export class OxCode extends OxCustomElementBase {
         div.parentElement.insertBefore(createdLine, div.nextSibling);
 
         return newNode;
+    }
+
+    #countWhitespaces(text, startIndex = 0) {
+        for (let i = startIndex; i < text.length; i++) {
+            if (!isWhitespace(text[i])) {
+                return i - startIndex;
+            }
+        }
+        return 0;
     }
 
     /**
@@ -667,7 +672,9 @@ export class OxCode extends OxCustomElementBase {
             }
 
             while (currentSpan !== div.lastChild) {
-                div.removeChild(div.lastChild.previousSibling);
+                let next = currentSpan.nextSibling;
+                div.removeChild(currentSpan);
+                currentSpan = next;
             }
         }
 
