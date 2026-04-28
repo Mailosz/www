@@ -18,6 +18,7 @@ export class OxTable extends OxCustomElementBase {
 
         this.attachShadow({ mode: "open" });
         this.shadowRoot.append(document.createElement("table"));
+        this.#getTableElement().part = "table";
     }
 
     createTableDefinition() {

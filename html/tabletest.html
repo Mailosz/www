@@ -8,6 +8,20 @@
     <style>
         ox-table {
             border: 2px solid blue;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+
+        }
+
+        ox-table::part(table) {
+            border: 1px solid green;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        ox-table::part(cell) {
+            border: 1px solid red;
         }
     </style>
 </head>
