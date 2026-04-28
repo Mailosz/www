@@ -82,51 +82,101 @@ hr {
     border: 1px solid #999;
 }
 
-/* MARK */
+/* TEXT */
+
+mark, code, ins, del {
+    border-radius: 0.2em;
+    outline-width: 0.1em;
+    outline-style: solid;
+    outline-color: var(--highlight-color, transparent);
+    background-color: var(--highlight-color, transparent);
+    padding-left: 0.2em;
+    padding-right: 0.2em;
+}
 
 mark {
-    outline: 2px solid var(--weak-accent-color, yellow);
-    background-color: var(--weak-accent-color, yellow);
+    --highlight-color: var(--weak-accent-color, yellow);
     color: var(--stronger-accent-color, black);
-    border-radius: 2px;
 }
 
 mark.green {
-    outline-color: lightgreen;
-    background-color: lightgreen;
+    --highlight-color: lightgreen;
     color: darkgreen;
 }
 
 mark.red {
-    outline-color: #f88;
-    background-color: #f88;
+    --highlight-color: #f88;
     color: #800;
 }
 
 mark.yellow {
-    outline-color: #ffa;
-    background-color: #ffa;
+    --highlight-color: #ffa;
     color: #440;
 }
 
 mark.orange {
-    outline-color: #fa7;
-    background-color: #fa7;
+    --highlight-color: #fa7;
     color: #883500;
 }
 
 mark.blue {
-    outline-color: lightblue;
-    background-color: lightblue;
+    --highlight-color: lightblue;
     color: darkblue;
 }
 
 
 mark.gray {
-    outline-color: var(--emphasized-background, #ddd);;
-    background-color: var(--emphasized-background, #ddd);;
+    --highlight-color: var(--emphasized-background, #ddd);;
     color: black;
 }
+
+
+code {
+    font-family: monospace;
+    color: black;
+    --highlight-color: rgba(127,127,127,0.2);
+}
+
+ins {
+
+    color: #0a0;
+    --highlight-color: rgba(0, 192, 0, 0.1);
+    text-decoration: underline;
+
+    &::before {
+        content: "+";
+    }
+}
+
+del {
+    color: #d00;
+    --highlight-color: rgba(192, 0, 0, 0.1);
+
+    &::before {
+        content: "×";
+    }
+}
+
+del::before, ins::before {
+    vertical-align: top;
+    margin-inline-end: 0.2em;
+    text-decoration: none;
+    display: inline-block;
+}
+
+ins, u, a {
+    text-underline-offset: 0.2em;
+}
+
+kbd {
+    font-family: monospace;
+    border: 1px solid #999;
+    border-radius: 0.2em;
+    background-color: #eee;
+    padding: 0.1em 0.4em;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+}
+
 
 /* blocks */
 
@@ -134,13 +184,7 @@ img {
     display: block;
 }
 
-main>img, section>img, article>img, figure>img, aside>img {
-    margin: 0;
-    width: 100%;
-    object-fit: contain;
-    object-position: center;
-    min-height: 4em;
-}
+
 
 figure {
     clear: both;
@@ -153,8 +197,6 @@ aside {
 }
 
 p {
-    margin-top: 1em;
-    margin-bottom: 1em;
     text-align: justify;
     text-justify: newspaper;
 }

@@ -132,3 +132,19 @@ figcaption, blockquote {
 aside {
     padding: 0;
 }
+
+/* ELEMENTS */
+details,
+p {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+:is(main, section, article, figure, aside)>img,
+:is(main, section, article, figure, aside)>video {
+    margin: 0;
+    width: 100%;
+    object-fit: contain;
+    object-position: center;
+    min-height: 4em;
+}
