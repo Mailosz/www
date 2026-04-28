@@ -26,15 +26,15 @@ main {
     line-height: 1.5;
 }
 
+::selection {
+    background-color: color-mix(var(--secondary-color, #88f), transparent);
+}
+
 :target {
-    outline: 0.1em;
-    outline-offset: 0;
-    outline-color: rgba(from var(--secondary-color,orange) r g b / 0.2);
-    outline-style: solid;
-    border-radius: 1px;
-    background-color: rgba(from var(--secondary-color,orange) r g b / 0.2);
-    border: 0.1em dotted var(--secondary-color,orange);
-    display: inline-block;
+    border-inline-start: 10px solid var(--secondary-color, #88f);
+    padding-left: 10px;
+    background-image: linear-gradient(to right, color-mix(var(--secondary-color, #88f) 20%, transparent) 0, transparent 50%);
+    translate: -20px 0;
 }
 
 /* headers */
@@ -105,7 +105,7 @@ mark.green {
 }
 
 mark.red {
-    --highlight-color: #f88;
+    --highlight-color: #fbb;
     color: #800;
 }
 
@@ -127,13 +127,13 @@ mark.blue {
 
 mark.gray {
     --highlight-color: var(--emphasized-background, #ddd);;
-    color: black;
+    color: var(--text-color, black);
 }
 
 
 code {
     font-family: monospace;
-    color: black;
+    color: var(--text-color, black);
     --highlight-color: rgba(127,127,127,0.2);
 }
 
@@ -173,6 +173,7 @@ kbd {
     border: 1px solid #999;
     border-radius: 0.2em;
     background-color: #eee;
+    color: #333;
     padding: 0.1em 0.4em;
     box-shadow: 0 2px 0 rgba(0,0,0,0.2);
 }
