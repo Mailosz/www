@@ -12,4 +12,8 @@ export class CanvasSettings {
      * Time after which a touch is considered a secondary click
      */
     touchTime = 500;
+    /**
+     * Turns debugging information on
+     */
+    debug = false;
 }

@@ -23,13 +23,12 @@ export class CanvasManager {
         this.canvasElement = canvasElement;
         this.canvasElement.tabIndex = "0"; // without tab index canvasElement wouldn't produce keyboard events
 
-        this.debugDiv = document.createElement("div");
-        this.debugDiv.innerText = "XX";
-        this.debugDiv.style.position = "absolute";
-        this.canvasElement.parentElement.insertBefore(this.debugDiv, this.canvasElement);
-
         /** @type {CanvasSettings} */
         this.settings = {...(new CanvasSettings()), ...settings};
+
+        if (this.settings.debug) {
+            this.#turnDebugOn();
+        }
 
         /** @type {RenderManager} */
         this.renderer = null;
@@ -134,6 +133,34 @@ export class CanvasManager {
 
     }
 
+    #turnDebugOn() {
+        this.debugDiv = document.createElement("div");
+        this.debugDiv.innerText = "XX";
+        this.debugDiv.style.whiteSpace = "pre";
+        this.debugDiv.style.backgroundColor = "rgba(255, 255, 255, 0.7)";
+        this.debugDiv.style.position = "absolute";
+        this.canvasElement.parentElement.insertBefore(this.debugDiv, this.canvasElement);
+
+        this.canvasElement.addEventListener("pointerdown", (event) => {
+            this.debugDiv.innerText = `id: ${event.pointerId}\ntype: ${event.pointerType}\nbutton: ${event.button}\npressure: ${event.pressure}\nrender time: ${this.renderTime?.toFixed(4)}ms`;
+        });
+        this.canvasElement.addEventListener("pointermove", (event) => {
+            this.debugDiv.innerText = `id: ${event.pointerId}\ntype: ${event.pointerType}\nbutton: ${event.button}\npressure: ${event.pressure}\nrender time: ${this.renderTime?.toFixed(4)}ms`;
+        });
+
+
+        const redraw = this.#redraw;
+        this.#redraw = new Proxy(redraw, {
+            apply: (target, thisArg, args) => {
+                const start = performance.now();
+                const result = Reflect.apply(target, thisArg, args);
+                const end = performance.now();
+                this.renderTime = end - start;
+                return result;
+            }
+        });
+    }
+
     /**
      * Sets the state object used to manage the canvas state
      * @param {*} stateManager 
@@ -174,17 +201,29 @@ export class CanvasManager {
     /**
      * Informs DrawingManager to redraw the canvas
      */
+    #needsRedraw = false;
+    #redrawScheduled = false;
     redraw() {
-        if (this.#renderSemaphore) {
-            return;
+        this.#needsRedraw = true;
+
+        if (!this.#redrawScheduled) {
+            this.#redrawScheduled = true;
+
+            requestAnimationFrame(() => {
+                this.#redrawScheduled = false;
+
+                if (this.#needsRedraw) {
+                    this.#needsRedraw = false;
+                    this.#redraw();   // your real drawing function
+                }
+            });
         }
-        this.#renderSemaphore = true;
-        queueMicrotask(() => {
-            this.#renderSemaphore = false;
-            if (this.renderer != null) {
-                this.renderer.update(this.stateManager);
-            }
-        })
+    }
+
+    #redraw = () => {
+        if (this.renderer != null) {
+            this.renderer.update(this.stateManager);
+        }
     }
 
     /**
@@ -317,8 +356,6 @@ export class CanvasManager {
             this.pointers[event.pointerId] = pointer;
         }
 
-        this.debugDiv.innerText = "b: " + event.button;
-
         //this is to allow capturing for keyboard input
         this.canvasElement.focus({focusVisible: false, preventScroll: true});
 
@@ -391,8 +428,6 @@ export class CanvasManager {
         pointer.x = event.offsetX;
         pointer.y = event.offsetY;
         pointer.lastTime = Date.now();
-
-        this.debugDiv.innerText = event.pressure + "s";
 
         if (!pointer.canceled) {
             if (pointer.pressed) {

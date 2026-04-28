@@ -31,7 +31,7 @@
 
         function initialize() {
             let canvas = document.getElementById('view-canvas');
-            let cm = new CanvasManager(canvas);
+            let cm = new CanvasManager(canvas, {debug: true});
             cm.setStateManager(new ViewportStateManager());
             cm.setRenderManager(new TestCanvasRenderManager());
             cm.setInputManager(new TestInputManager());

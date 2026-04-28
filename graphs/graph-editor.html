@@ -28,6 +28,7 @@
 </head>
 <body>
     <div id="toolbox">
+        <input type="number" id="nodes-count" value="100" min="0">
         <button id="generate-points">Generuj punkty</button>
         <button id="delete-points">Usuń wszystko</button>
         <button id="delete-edges">Usuń połączenia</button>
@@ -59,7 +60,7 @@
 
         function initialize() {
             let canvas = document.getElementById('view-canvas');
-            cm = new GraphsCanvasManager(canvas, new Graph());
+            cm = new GraphsCanvasManager(canvas, new Graph(), {debug: true});
             cm.setInputManager(new GraphsInputManager());
         }
 
@@ -86,7 +87,10 @@
 
         document.getElementById("generate-points").addEventListener("click", (event) => {
 
-            for (let i = 0; i < 100; i++) {
+            let count = parseInt(document.getElementById("nodes-count").value) ?? 100;
+
+
+            for (let i = 0; i < count; i++) {
 
                 let x = Math.random() * (1000 - 20) + 10;
                 let y = Math.random() * (1000 - 20) + 10;
