@@ -16,7 +16,12 @@ export class GraphsDrawingManager extends CanvasRenderManager {
      * @param {Object} state
      */
     draw(ds, state) {
-        ds.clearRect(0, 0, ds.canvas.width, ds.canvas.height);
+
+
+        ds.resetTransform();
+        ds.clearRect(0, 0, this.width, this.height);
+        ds.scale(this.width / state.viewport.w, this.height / state.viewport.h);
+        ds.translate(-state.viewport.x, -state.viewport.y);
 
 
         if (state.graph != null) {

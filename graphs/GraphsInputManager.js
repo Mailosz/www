@@ -109,7 +109,7 @@ export class GraphsInputManager extends ViewportInputManager {
             return new NodeMoveManipulation(this.cm, state.graph, state.selectedIndex);
         }
 
-        return null;
+        return super.beginManipulation(pointer, state);
     }
 
 }
