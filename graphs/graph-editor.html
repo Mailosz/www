@@ -49,10 +49,10 @@
 
 
     <script type="module">
-        import {CanvasManager} from "../js/canvas/main.js";
-        import {GraphsCanvasManager, Graph} from "../graphs/GraphsCanvasManager.js";
-        import {GraphsInputManager} from "../graphs/GraphsInputManager.js";
-        import {connectAllNodes} from "../graphs/ConnectNodes.js";
+        import {CanvasManager} from "../js/canvas/CanvasManager.js";
+        import {GraphsCanvasManager, Graph} from "./GraphsCanvasManager.js";
+        import {GraphsInputManager} from "./GraphsInputManager.js";
+        import {connectAllNodes} from "./ConnectNodes.js";
 
         /** @type {CanvasManager} */
         let cm;
@@ -80,7 +80,7 @@
                 cm.graph = new Graph(nodes);
             }
 
-            cm.drawing.redraw();
+            cm.redraw();
         });
 
 
@@ -88,38 +88,39 @@
 
             for (let i = 0; i < 100; i++) {
 
-                let x = Math.random() * (cm.drawing.width - 20) + 10;
-                let y = Math.random() * (cm.drawing.height - 20) + 10;
+                let x = Math.random() * (1000 - 20) + 10;
+                let y = Math.random() * (1000 - 20) + 10;
 
-                cm.graph.createNode(x, y);
-                cm.drawing.redraw();
-
+                cm.getState().graph.createNode(x, y);
+                
             }
+            
+            cm.redraw();
         });
 
         document.getElementById("delete-points").addEventListener("click", (event) => {
-            cm.graph.nodes = [];
-            cm.graph.edges = [];
+            cm.getState().graph.nodes = [];
+            cm.getState().graph.edges = [];
 
-            cm.drawing.redraw();
+            cm.redraw();
         });
 
-        document.getElementById("delete-edges").addEventListener("click", (event) => {removeAllEdges(); cm.drawing.redraw();});
+        document.getElementById("delete-edges").addEventListener("click", (event) => {removeAllEdges(); cm.redraw();});
 
         function removeAllEdges() {
-            for (let node of cm.graph.nodes) {
+            for (let node of cm.getState().graph.nodes) {
                 node.edges = [];
             }
 
-            cm.graph.edges = [];
+            cm.getState().graph.edges = [];
         }
 
         document.getElementById("connect-points").addEventListener("click", (event) => {
             console.time("connect-points");
-            connectAllNodes(cm.graph);
+            connectAllNodes(cm.getState().graph);
             console.timeEnd("connect-points");
 
-            cm.drawing.redraw();
+            cm.redraw();
 
         });
 
@@ -127,8 +128,8 @@
             
 
             let i = 0;
-            for (let node of cm.graph.nodes) {
-                let direction = (Math.PI * 2 / cm.graph.nodes.length) * i;
+            for (let node of cm.getState().graph.nodes) {
+                let direction = (Math.PI * 2 / cm.getState().graph.nodes.length) * i;
                 i++;
 
                 let size = Math.min(cm.drawing.width, cm.drawing.height) / 2 - 10;
@@ -140,7 +141,7 @@
                 node.y = y;
             };
 
-            cm.drawing.redraw();
+            cm.redraw();
 
         });
 
@@ -172,14 +173,14 @@
                 connectAllNodes();
                 console.timeEnd("connect-points");
 
-                cm.drawing.redraw();
+                cm.redraw();
             }
             if (event.key == "n") {
 
-                cm.drawing.redraw();
+                cm.redraw();
             }
             if (event.key == "r") {
-                cm.drawing.redraw();
+                cm.redraw();
             }
         })
     </script>

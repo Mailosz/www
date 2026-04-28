@@ -491,7 +491,7 @@ export class CanvasManager {
         if (pointer.pressed && !pointer.canceled) {
             if (pointer.moving) { // end of manipulation
                 if (this.currentManipulation != null) {
-                    let change = this.currentManipulation.complete();
+                    let change = this.currentManipulation.complete(this.stateManager);
                     this.currentManipulation = null;
                     if (change != null) {
                         this.commitChange(change);
@@ -541,7 +541,7 @@ export class CanvasManager {
         pointer.releaseTime = Date.now();
 
         if (this.currentManipulation != null) {
-            this.currentManipulation.cancel();
+            this.currentManipulation.cancel(this.stateManager);
             this.currentManipulation = null;
         }
         delete this.pointers[event.pointerId];

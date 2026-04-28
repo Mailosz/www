@@ -83,6 +83,10 @@ export class InputManager {
         throw "longPress not implemented";
     }
 
+    pointerCancelled() {
+        
+    }
+
 
     /**
      * Pointer pressed and moved - manipulation starts

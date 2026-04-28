@@ -1,41 +1,28 @@
 //draw
 
 import { Graph } from "./Graphs.js";
-import { CanvasDrawingManager } from "../js/canvas/test/CanvasDrawingManager.js";
+import { CanvasRenderManager } from "../js/canvas/CanvasRenderManager.js";
 
 
-export class GraphsDrawingManager extends CanvasDrawingManager {
+export class GraphsDrawingManager extends CanvasRenderManager {
 
     constructor () {
         super();
-
-        this.mouse = null;
-        this.click = null;
-
-        this.zoom = 1;
-        this.selectedIndex = -1;
     }
 
-    prepare() {
-        super.prepare();
-    }
-
-    // zoomBy(factor, origin) {
-    //     this.zoom = Math.max(0.0001,Math.min(this.zoom * factor, 10000));
-    //     console.log("zoom: " + this.zoom * 100 + "%");
-    // }
 
     /** 
      * @param {CanvasRenderingContext2D} ds
+     * @param {Object} state
      */
-    draw(ds) {
+    draw(ds, state) {
         ds.clearRect(0, 0, ds.canvas.width, ds.canvas.height);
 
 
-        if (this.cm.graph != null) {
+        if (state.graph != null) {
             ds.strokeStyle = "black";
             ds.beginPath();
-            for (let edge of this.cm.graph.edges) {
+            for (let edge of state.graph.edges) {
                 ds.moveTo(edge.n1.x, edge.n1.y);
                 ds.lineTo(edge.n2.x, edge.n2.y);
             }
@@ -44,11 +31,11 @@ export class GraphsDrawingManager extends CanvasDrawingManager {
     
             
             let index = 0;
-            for (let node of this.cm.graph.nodes) {
+            for (let node of state.graph.nodes) {
                 ds.beginPath();
                 ds.ellipse(node.x, node.y, 10, 10, 0, 0, 2*Math.PI, false);
     
-                if (this.selectedIndex === index) {
+                if (state.selectedIndex === index) {
                     ds.fillStyle = "red";
                 } else {
                     ds.fillStyle = "blue";
@@ -61,31 +48,31 @@ export class GraphsDrawingManager extends CanvasDrawingManager {
 
 
 
-        if (this.click != null) {
+        if (state.click != null) {
             ds.beginPath();
             ds.fillStyle = "violet";
-            ds.ellipse(this.click.x, this.click.y, 7, 7, 0, 0, 2*Math.PI, false);
+            ds.ellipse(state.click.x, state.click.y, 7, 7, 0, 0, 2*Math.PI, false);
             ds.fill();
         }
 
-        if (this.dbClick != null) {
+        if (state.dbClick != null) {
             ds.beginPath();
             ds.fillStyle = "lime";
-            ds.ellipse(this.dbClick.x, this.dbClick.y, 7, 7, 0, 0, 2*Math.PI, false);
+            ds.ellipse(state.dbClick.x, state.dbClick.y, 7, 7, 0, 0, 2*Math.PI, false);
             ds.fill();
         }
 
-        if (this.altClick != null) {
+        if (state.altClick != null) {
             ds.beginPath();
             ds.fillStyle = "cyan";
-            ds.ellipse(this.altClick.x, this.altClick.y, 7, 7, 0, 0, 2*Math.PI, false);
+            ds.ellipse(state.altClick.x, state.altClick.y, 7, 7, 0, 0, 2*Math.PI, false);
             ds.fill();
         }
 
-        if (this.mouse != null) {
+        if (state.mouse != null) {
             ds.beginPath();
             ds.fillStyle = "green";
-            ds.ellipse(this.mouse.x, this.mouse.y, 5, 5, 0, 0, 2*Math.PI, false);
+            ds.ellipse(state.mouse.x, state.mouse.y, 5, 5, 0, 0, 2*Math.PI, false);
             ds.fill();
         }
     }

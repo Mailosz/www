@@ -1,17 +1,25 @@
 import { Graph} from "./Graphs.js";
 import { CanvasManager } from "../js/canvas/CanvasManager.js";
 import { GraphsDrawingManager } from "./GraphsDrawingManager.js";
+import { GraphsInputManager } from "./GraphsInputManager.js";
+import { GraphsStateManager } from "./GraphsStateManager.js";
 
 export { Graph };
 
 export class GraphsCanvasManager extends CanvasManager {
     /** 
      * @param {HTMLCanvasElement} canvasElement
-     * @param {DrawingManager} drawing
-     * @param {Graph} drawing
+     * @param {Graph} graph
+     * @param {Object} settings
      */
-    constructor(canvasElement, graph) {
-        super(canvasElement, new GraphsDrawingManager());
-        this.graph = graph;
+    constructor(canvasElement, graph, settings) {
+        super(canvasElement, settings);
+        this.setRenderManager(new GraphsDrawingManager());
+        this.setInputManager(new GraphsInputManager());
+        this.setStateManager(new GraphsStateManager(graph));
+    }
+
+    getState() {
+        return this.stateManager;
     }
 }

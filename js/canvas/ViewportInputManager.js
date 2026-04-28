@@ -88,9 +88,9 @@ export class ScrollManipulation extends Manipulation {
     }
 
     /**
- * Occurs whenever the manipulation is finished (e.g. pointer is lifted).
- * @returns Return a UserChange that will be executed by CanvasManager
- */
+     * Occurs whenever the manipulation is finished (e.g. pointer is lifted).
+     * @returns Return a UserChange that will be executed by CanvasManager
+     */
     complete() {
         // Nothing
     }

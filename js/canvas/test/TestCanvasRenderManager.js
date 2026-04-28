@@ -1,6 +1,6 @@
-import { RenderManager } from "../RenderManager.js";
+import { CanvasRenderManager } from "../CanvasRenderManager.js";
 
-export class TestCanvasRenderManager extends RenderManager {
+export class TestCanvasRenderManager extends CanvasRenderManager {
 
     /**
      * @type {CanvasManager} cm 
@@ -9,42 +9,8 @@ export class TestCanvasRenderManager extends RenderManager {
 
     constructor () {
         super();
-        /** @type {CanvasRenderingContext2D} */
-        this.ctx = null;
     }
 
-    prepare() {
-
-        this.width = this.cm.canvasElement.width;
-        this.height = this.cm.canvasElement.height;
-
-        /** @type {CanvasRenderingContext2D} */
-        this.ctx = this.cm.canvasElement.getContext("2d");
-    }
-
-    /**
-     * Drawing viewport has been changed
-     * @param {Number} w width of the viewport
-     * @param {Number} h height of the viewport
-     */
-    resize(width, height) {
-        this.width = width;
-        this.height = height;
-
-        this.cm.canvasElement.width = width;
-        this.cm.canvasElement.height = height;
-    }
-
-    /**
-     * Notifies the renderer that the state has been changed and it should redraw itself
-     * @param {*} state 
-     */
-    update(state) {
-        if (this.ctx == null) {
-            this.prepare();
-        }
-        this.draw(this.ctx, state);
-    }
 
     /** 
      * Drawing testing implementation - to override

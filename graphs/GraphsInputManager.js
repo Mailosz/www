@@ -1,44 +1,38 @@
 import { CanvasManager } from "../js/canvas/CanvasManager.js";
 import { PopupMenu } from "../js/ui/PopupMenu.js";
-import { InputManager, Manipulation } from "../js/canvas/InputManager.js";
+import { ViewportInputManager } from "../js/canvas/ViewportInputManager.js";
+import { Manipulation } from "../js/canvas/InputManager.js";
 
-export class GraphsInputManager extends InputManager {
+export class GraphsInputManager extends ViewportInputManager {
 
 
     constructor() {
         super();
-        this.interaction = null;
         /** @type {CanvasManager} */
         this.cm = null;
     }
 
-    /**
-     * Canvas manager sets itself as context once the InputManager is set
-     * @param {CanvasManager} canvasManager 
-     */
-    setCanvasManager(canvasManager) {
-        this.cm = canvasManager;
-    }
 
     /**
      * Single click action (pointer pressed and quickly released without moving)
      * @param {PointerData} pointer 
+     * @param {GraphsStateManager} state
      */
-    click(pointer) {
+    click(pointer, state) {
 
-        let sel = this.#getNode(pointer.pressX, pointer.pressY);
+        let sel = state.getNodeIndex(pointer.pressX, pointer.pressY);
 
-        if (sel >= 0 && this.cm.drawing.selectedIndex >= 0 && this.cm.drawing.selectedIndex != sel) {
+        if (sel >= 0 && state.selectedIndex >= 0 && state.selectedIndex != sel) {
             //TODO: check if node exists and add or delete
-            let n1 = this.cm.graph.nodes[this.cm.drawing.selectedIndex];
-            let n2 = this.cm.graph.nodes[sel];
+            let n1 = state.graph.nodes[state.selectedIndex];
+            let n2 = state.graph.nodes[sel];
 
             let add = true;
             let index = 0;
-            for (let edge of this.cm.graph.edges) {
+            for (let edge of state.graph.edges) {
                 if (edge.n1 == n1 && edge.n2 == n2 || edge.n1 == n2 && edge.n2 == n1) {
 
-                    this.cm.graph.removeEdge(index)
+                    state.graph.removeEdge(index)
 
                     add = false;
                     break;
@@ -47,14 +41,14 @@ export class GraphsInputManager extends InputManager {
             }
 
             if (add) {
-                this.cm.graph.createEdge(n1, n2);
+                state.graph.createEdge(n1, n2);
             }
 
         }
 
-        this.cm.drawing.selectedIndex = sel;
+        state.selectedIndex = sel;
         if (sel >= 0) {
-            console.log(this.cm.graph.nodes[sel].id);
+            console.log(state.graph.nodes[sel].id);
         }
 
         this.cm.redraw();
@@ -63,16 +57,17 @@ export class GraphsInputManager extends InputManager {
     /**
      * Double click action (pointer clicked twice quickly)
      * @param {PointerData} pointer 
+     * @param {GraphsStateManager} state
      */
-    doubleClick(pointer) {
+    doubleClick(pointer, state) {
 
-        if (this.cm.drawing.selectedIndex >= 0) {
+        if (state.selectedIndex >= 0) {
 
-            this.cm.graph.nodes.splice(this.cm.drawing.selectedIndex, 1);
-            this.cm.drawing.selectedIndex = -1;
+            state.graph.nodes.splice(state.selectedIndex, 1);
+            state.selectedIndex = -1;
         } else {
-            this.cm.graph.createNode(pointer.pressX, pointer.pressY);
-            this.cm.drawing.selectedIndex = this.cm.graph.nodes.length - 1;
+            state.graph.createNode(pointer.pressX, pointer.pressY);
+            state.selectedIndex = state.graph.nodes.length - 1;
         }
         this.cm.redraw();
     }
@@ -80,9 +75,10 @@ export class GraphsInputManager extends InputManager {
     /**
      * Alternative click action (e.g. right mouse button)
      * @param {PointerData} pointer 
+     * @param {GraphsStateManager} state
      */
-    alternativeClick(pointer) {
-        this.cm.drawing.selectedIndex = -1;
+    alternativeClick(pointer, state) {
+        state.selectedIndex = -1;
         this.cm.redraw();
 
     }
@@ -90,42 +86,31 @@ export class GraphsInputManager extends InputManager {
     /**
      * Pointer moved over canvas without contact (e.g. mouse hover)
      * @param {PointerData} data 
+     * @param {GraphsStateManager} state
      */;
-    hover(pointer) {
-        this.cm.drawing.mouse = {x: pointer.x, y: pointer.y};
+    hover(pointer, state) {
+        state.mouse = {x: pointer.x, y: pointer.y};
         this.cm.redraw();
     }
 
     /**
      * Pointer pressed and moved - manipulation starts
      * @param {PointerData} pointer 
+     * @param {GraphsStateManager} state
      * @returns {Manipulation} A manipulation object that manages further inputs or null.
      */
-    beginManipulation(pointer) {
+    beginManipulation(pointer, state) {
         
         let drawing = this.cm.drawing;
         
-        this.cm.drawing.selectedIndex = this.#getNode(pointer.pressX, pointer.pressY);
+        state.selectedIndex = state.getNodeIndex(pointer.pressX, pointer.pressY);
 
-        if (drawing.selectedIndex >= 0) {
-            return new NodeMoveManipulation(this.cm, drawing.selectedIndex);
+        if (state.selectedIndex >= 0) {
+            return new NodeMoveManipulation(this.cm, state.graph, state.selectedIndex);
         }
 
         return null;
     }
-
-    #getNode(x, y) {
-        let index = 0;
-        for (let node of this.cm.graph.nodes) {
-            let dis = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
-            if (dis < 10) {
-                return index;
-            }
-            index++;
-        }
-        return -1;
-    }
-
 
 }
 
@@ -134,36 +119,37 @@ export class NodeMoveManipulation extends Manipulation {
     /**
      * 
      * @param {CanvasManager} canvas 
+     * @param {Graph} graph
      * @param {Number} index 
      */
-    constructor(canvas, index) {
+    constructor(canvas, graph, index) {
         super(canvas);
         this.index = index;
 
-        this.startX = canvas.graph.nodes[index].x;
-        this.startY = canvas.graph.nodes[index].y;
+        this.startX = graph.nodes[index].x;
+        this.startY = graph.nodes[index].y;
     }
 
     /**
      * 
      * @param {GestureData} data 
      */
-    update(data) {
+    update(data, state) {
         if (this.index !== null) {
-            let selNode = this.cm.graph.nodes[this.cm.drawing.selectedIndex]; 
+            let selNode = state.graph.nodes[state.selectedIndex]; 
             selNode.x = this.startX + data.lastX - data.pressX;
             selNode.y = this.startY + data.lastY - data.pressY;
         }
         this.cm.redraw();
     }
     
-    complete() {
-        this.cm.drawing.selectedIndex = -1;
+    complete(state) {
+        state.selectedIndex = -1;
     }
 
-    cancel() {
+    cancel(state) {
         if (this.index !== null) {
-            let selNode = this.nodes[this.cm.drawing.selectedIndex]; 
+            let selNode = this.nodes[state.selectedIndex]; 
             selNode.x = this.startX;
             selNode.y = this.startY;
         }
