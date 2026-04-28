@@ -67,7 +67,7 @@
 
         document.getElementById("save-button").addEventListener("click", (event) => {
 
-            localStorage.setItem("saved-nodes", JSON.stringify(cm.graph.save()));
+            localStorage.setItem("saved-nodes", JSON.stringify(cm.getState().graph.save()));
 
         });
 
@@ -77,7 +77,7 @@
 
             if (nodes != null) {
                 nodes = JSON.parse(nodes);
-                cm.graph = new Graph(nodes);
+                cm.getState().graph = new Graph(nodes);
             }
 
             cm.redraw();
@@ -94,7 +94,7 @@
                 cm.getState().graph.createNode(x, y);
                 
             }
-            
+
             cm.redraw();
         });
 
@@ -132,10 +132,10 @@
                 let direction = (Math.PI * 2 / cm.getState().graph.nodes.length) * i;
                 i++;
 
-                let size = Math.min(cm.drawing.width, cm.drawing.height) / 2 - 10;
+                let size = Math.min(cm.stateManager.viewport.w, cm.stateManager.viewport.h) / 2 - 10;
 
-                let x = cm.drawing.width / 2 + Math.sin(direction) * size;
-                let y = cm.drawing.height / 2 + Math.cos(direction) * size
+                let x = cm.stateManager.viewport.w / 2 + Math.sin(direction) * size;
+                let y = cm.stateManager.viewport.h / 2 + Math.cos(direction) * size
 
                 node.x = x;
                 node.y = y;
