@@ -45,7 +45,12 @@ export class OxChoose extends OxCustomElementBase {
         if (!isNaN(index)) {
             slot.assign(this.children[index]);
         } else if (this.customAttributes.multiple() === undefined) {
-            slot.assign(this.querySelector(queryOrIndex));
+            const element = this.querySelector(queryOrIndex);
+            if (element) {
+                slot.assign(element);
+            } else {
+                slot.assign();
+            }
         } else {
             slot.assign(...this.querySelectorAll(queryOrIndex));
         }
