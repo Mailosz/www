@@ -67,6 +67,13 @@ export function computed(computeFn) {
         listeners.push(listener);
     }
 
+    signal.removeListener = function removeListener(listener) {
+        const index = listeners.indexOf(listener);
+        if (index !== -1) {
+            listeners.splice(index, 1);
+        }
+    }
+
 
     return signal;
 
