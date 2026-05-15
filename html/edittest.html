@@ -58,14 +58,14 @@
                 let range = sel.getRangeAt(0);
 
                 let anyBold = false;
-                forNodesInRange(range, (node) => {
+                forRange(range, (node) => {
                     if (node.nodeType === Node.ELEMENT_NODE) {
                         const computedStyle = getComputedStyle(node);
                         if (computedStyle.fontWeight === "bold" || computedStyle.fontWeight >= 700) {
                             anyBold = true;
                         }
                     }
-                });
+                }, () => {});
 
                 const boldButton = document.getElementById("bold-button");
                 if (anyBold) {
@@ -142,35 +142,57 @@
          * @param {function(Node)} callback The function to call for every node in the range
          */
         function forNodesInRange(range, callback) {
+
+            forRange(range, callback, (node, startOffset, endOffset) => {
+
+                if (startOffset === 0 && endOffset === node.textContent.length) {
+                    callback(node);
+                    return;
+                } else  {
+                    if(endOffset < node.textContent.length) {
+                        let afterNode = document.createTextNode(node.textContent.substring(endOffset));
+                        node.parentElement.insertBefore(afterNode, node.nextSibling);
+                        node.textContent = node.textContent.substring(0, endOffset);
+                    } 
+                    if (startOffset > 0) {
+                        let beforeNode = document.createTextNode(node.textContent.substring(0, startOffset));
+                        node.parentElement.insertBefore(beforeNode, node);
+                        node.textContent = node.textContent.substring(startOffset);
+                        range.setStart(node, 0);
+                        range.setEnd(node, node.textContent.length);
+                    }
+                    callback(node);
+                }
+                
+            });
+        }
+
+        /**
+         * Calls functions for every node in range. 
+         * @param {Range} range The range to iterate over
+         * @param {function(Element)} elementCallback The function to call for every element node in the range
+         * @param {function(Node, startOffset, endOffset)} textCallback The function to call for every partially selected text node in range
+         */
+        function forRange(range, elementCallback, textCallback) {
             let startContainer = range.startContainer;
             let startOffset = range.startOffset;
 
             let endContainer = range.endContainer;
             let endOffset = range.endOffset;
 
+            const commonAncestor = range.commonAncestorContainer;
+
             //
             if (startContainer.nodeType === Node.TEXT_NODE) {
-                if (startContainer === range.commonAncestorContainer) { // special case - selection inside a single node
+                if (startContainer === commonAncestor) { // special case - selection inside a single node
                     if (startOffset === 0 && endOffset === startContainer.textContent.length) {
-                        // if the whole node is selected, return the top-most element
-                        while (startContainer.parentElement !== null && startContainer.parentElement.firstChild === startContainer && startContainer.parentElement.lastChild === startContainer) {
+                        // if the whole node is selected, return the container element
+                        if (startContainer.parentElement !== null && startContainer.parentElement.firstChild === startContainer && startContainer.parentElement.lastChild === startContainer) {
                             startContainer = startContainer.parentElement;
                         }
-                        callback(startContainer);
+                        elementCallback(startContainer);
                     } else {
-                        if (endOffset < endContainer.textContent.length) {
-                            let newNode = document.createTextNode(endContainer.textContent.substring(endOffset));
-                            endContainer.parentElement.insertBefore(newNode, endContainer.nextSibling);
-                            endContainer.textContent = endContainer.textContent.substring(0, endOffset);
-                        }
-
-                        if (startOffset > 0) {
-                            let newNode = document.createTextNode(startContainer.textContent.substring(0,startOffset));
-                            startContainer.parentElement.insertBefore(newNode, startContainer);
-                            startContainer.textContent = startContainer.textContent.substring(startOffset);
-                            
-                        }
-                        callback(startContainer);
+                        textCallback(startContainer, startOffset, endOffset);
                     }
                     return;
                 } else {
@@ -179,20 +201,22 @@
                         startContainer = startContainer.parentElement;
                     } else {
                         if (startOffset < startContainer.textContent.length) {
-                            let newNode = document.createTextNode(startContainer.textContent.substring(0, startOffset));
-                            startContainer.parentElement.insertBefore(newNode, startContainer);
-                            startContainer.textContent = startContainer.textContent.substring(startOffset);
-                            callback(startContainer);
+                            const nextSibling = startContainer.nextSibling;
+                            const parent = startContainer.parentElement;
+                            textCallback(startContainer, startOffset, startContainer.textContent.length);
+                            startContainer = parent;
+                            startOffset = nextSibling ? Array.prototype.indexOf.call(parent.childNodes, nextSibling) : parent.childNodes.length;
+                        } else {
+                            startOffset = Array.prototype.indexOf.call(startContainer.parentElement.childNodes, startContainer) + 1;
+                            startContainer = startContainer.parentElement;
                         }
-                        startOffset = Array.prototype.indexOf.call(startContainer.parentElement.childNodes, startContainer) + 1;
-                        startContainer = startContainer.parentElement;
                     }
                 }
             }
 
             //
 
-            while (startContainer !== range.commonAncestorContainer) {
+            while (startContainer !== commonAncestor) {
 
                 if (startOffset === 0) {
                     startOffset = Array.prototype.indexOf.call(startContainer.parentElement.childNodes, startContainer);
@@ -200,7 +224,7 @@
                 } else {
                     for (let i = startOffset; i < startContainer.childNodes.length; i++) {
                         let node = startContainer.childNodes[i];
-                        callback(node);
+                        elementCallback(node);
                     }
                     startOffset = Array.prototype.indexOf.call(startContainer.parentElement.childNodes, startContainer) + 1;
                     startContainer = startContainer.parentElement;
@@ -215,12 +239,11 @@
                     endContainer = endContainer.parentElement;
                 } else {
                     if (endOffset > 0) {
-                        let newNode = document.createTextNode(endContainer.textContent.substring(0, endOffset));
-                        endContainer.parentElement.insertBefore(newNode, endContainer);
-                        endContainer.textContent = endContainer.textContent.substring(endOffset);
-                        callback(newNode);
-                        endOffset = Array.prototype.indexOf.call(endContainer.parentElement.childNodes, newNode);
-                        endContainer = endContainer.parentElement;
+                        const offset = Array.prototype.indexOf.call(endContainer.parentElement.childNodes, endContainer);
+                        const parent = endContainer.parentElement;
+                        textCallback(endContainer, 0, endOffset);
+                        endOffset = offset;
+                        endContainer = parent;
                     } else {
                         endOffset = Array.prototype.indexOf.call(endContainer.parentElement.childNodes, endContainer);
                         endContainer = endContainer.parentElement;
@@ -230,7 +253,7 @@
 
             //
 
-            while (endContainer !== range.commonAncestorContainer) {
+            while (endContainer !== commonAncestor) {
 
                 if (!endContainer.hasChildNodes() || endContainer.childNodes.length === endOffset) {
                     endOffset = Array.prototype.indexOf.call(endContainer.parentElement.childNodes, endContainer) + 1;
@@ -238,7 +261,7 @@
                 } else {
                     for (let i = endOffset - 1; i >= 0; i--) {
                         let node = endContainer.childNodes[i];
-                        callback(node);
+                        elementCallback(node);
                     }
                     endOffset = Array.prototype.indexOf.call(endContainer.parentElement.childNodes, endContainer);
                     endContainer = endContainer.parentElement;
@@ -249,7 +272,7 @@
             // select between start and end
             for (let i = startOffset; i < endOffset; i++) {
                 let node = startContainer.childNodes[i];
-                callback(node);
+                elementCallback(node);
             }
         }
 
