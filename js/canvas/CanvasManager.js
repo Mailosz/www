@@ -214,7 +214,7 @@ export class CanvasManager {
 
                 if (this.#needsRedraw) {
                     this.#needsRedraw = false;
-                    this.#redraw();   // your real drawing function
+                    this.#redraw();   
                 }
             });
         }
@@ -435,12 +435,32 @@ export class CanvasManager {
                     pointer.pressure = event.pressure;
                 }
 
+                let handleMove = () => {
+                    let data = this.#makePointerData(pointer, event.pointerId);
+                    if (this.inputManager != null) {
+                        let result = this.inputManager.move(data, this.stateManager);
+                        if (result != null) {
+                            if (result.cancel) {
+                                pointer.canceled = true;
+                            }
+                            if (result.manipulation) {
+                                this.currentManipulation = result.manipulation;
+                                this.currentManipulation.setCanvasManager(this);
+                            }
+                        }
+                    }
+                }
+               
+
                 if (pointer.moving) {
                     //pointer is pressed
                     if (this.currentManipulation != null) {
                         let data = this.#makePointerData(pointer, event.pointerId);
                         this.currentManipulation.update(data, this.stateManager);
-                    } 
+                    } else {
+                        handleMove();
+                    }
+                    
                 } else {
 
                     let dis = Math.sqrt((pointer.pressX - pointer.x) ** 2 + (pointer.pressY - pointer.y) ** 2);
@@ -452,17 +472,9 @@ export class CanvasManager {
                         pointer.startX = pointer.x;
                         pointer.startY = pointer.y;
 
-                        let data = this.#makePointerData(pointer, event.pointerId);
-                        if (this.inputManager != null) {
-                            let manipulation = this.inputManager.beginManipulation(data, this.stateManager);
-                            if (manipulation != null) {
-                                this.currentManipulation = manipulation;
-                                manipulation.setCanvasManager(this);
-                            }
-                        }
+                        handleMove();
                     }
                 }
-
 
             } else { // pointer is hovering
                 if (this.inputManager != null) {

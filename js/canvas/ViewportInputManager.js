@@ -61,10 +61,10 @@ export class ViewportInputManager extends InputManager {
     /**
      * Pointer pressed and moved - manipulation starts
      * @param {PointerData} pointer 
-     * @returns {Manipulation} A manipulation object that manages further inputs or null.
+     * @returns {{cancel: boolean, manipulation: Manipulation}?} A manipulation object that manages further inputs or null.
      */
-    beginManipulation(pointer, state) {
-        return new ScrollManipulation();
+    move(pointer, state) {
+        return { manipulation: new ScrollManipulation() };
     }
 
 

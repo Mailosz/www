@@ -74,11 +74,11 @@ export class TestInputManager extends InputManager {
      * @param {PointerData} pointer 
      * @returns {Manipulation} A manipulation object that manages further inputs or null.
      */
-    beginManipulation(pointer, state) {
+    move(pointer, state) {
         if (pointer.button == 1) {
-            return new ScrollManipulation();
+            return { manipulation: new ScrollManipulation() };
         }
-        return new TestManipulation(state, pointer);
+        return { manipulation: new TestManipulation(state, pointer) };
 
     }
 
