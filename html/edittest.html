@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor</title>
+    <style>
+
+        body {
+            line-height: 2;
+        }
+
+        main * {
+            margin: 5px;
+            padding: 5px;
+            border: 1px solid transparent;
+            outline: 3px solid #eee;
+            border-radius: 4px;
+
+            &:hover:not(:has(:hover)) {
+                background-color: lightgreen;
+            }
+        }
+
+        .selected {
+            outline-color: lightcoral;
+        }
+
+        ::highlight(selection) {
+            background-color: lightblue;
+            color: red;
+        }
+
+        .boldize {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body onselectionchange="selectionChange();">
+    <button onclick="showSelection();">Select</button>
+    <button onclick="boldize(event);" id="bold-button">b</button>
+    <main>
+        <div><span><b class="selected">Text 1</b><span>Text 2</span></span><span>Text 3</span><span><span>Abc</span><span>Def</span></span></div>
+
+    </main>
+
+
+    <script>
+        let selChangeTimeout = null;
+        function selectionChange() {
+            clearTimeout(selChangeTimeout);
+            selChangeTimeout = setTimeout(() => {
+                
+                let sel = window.getSelection();
+                if (sel.rangeCount === 0) {
+                    return;
+                }
+                let range = sel.getRangeAt(0);
+
+                let anyBold = false;
+                forNodesInRange(range, (node) => {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        const computedStyle = getComputedStyle(node);
+                        if (computedStyle.fontWeight === "bold" || computedStyle.fontWeight >= 700) {
+                            anyBold = true;
+                        }
+                    }
+                });
+
+                const boldButton = document.getElementById("bold-button");
+                if (anyBold) {
+                    boldButton.classList.remove("boldize");
+                } else {
+                    boldButton.classList.add("boldize");
+                }
+
+            }, 200);
+
+
+        }
+
+        function boldize(event) {
+            if (event.currentTarget.classList.contains("boldize")) {
+                let sel = window.getSelection();
+                if (sel.rangeCount === 0) {
+                    return;
+                }
+                let range = sel.getRangeAt(0);
+
+                forNodesInRange(range, (node) => {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        node.style.fontWeight = "bold";
+                    } else {
+                        let span = document.createElement("span");
+                        node.replaceWith(span);
+                        span.insertBefore(node, null);
+                        span.style.fontWeight = "bold";
+                    }
+                });
+            } else {
+                let sel = window.getSelection();
+                if (sel.rangeCount === 0) {
+                    return;
+                }
+                let range = sel.getRangeAt(0);
+
+                forNodesInRange(range, (node) => {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        node.style.fontWeight = "normal";
+                    } else {
+                        let span = document.createElement("span");
+                        node.replaceWith(span);
+                        span.insertBefore(node, null);
+                        span.style.fontWeight = "normal";
+                    }
+                });
+            }
+
+        }
+
+        function showSelection() {
+            document.querySelectorAll(".selected").forEach(el => el.classList.remove("selected"));
+            CSS.highlights.clear();
+            CSS.highlights.set("selection", new Highlight());
+
+            let sel = window.getSelection();
+            if (sel.rangeCount === 0) {
+                return;
+            }
+            let range = sel.getRangeAt(0);
+            
+            forNodesInRange(range, selectNode);
+            // let list = [];
+            // forNodesInRange(range, (node) => list.push(node));
+            // list.forEach(node => selectNode(node));
+        
+        }
+
+        /**
+         * Calls the specified function for every top-most node in the range. Only returns nodes that are completely selected. Splits text nodes if needed.
+         * @param {Range} range The range to iterate over
+         * @param {function(Node)} callback The function to call for every node in the range
+         */
+        function forNodesInRange(range, callback) {
+            let startContainer = range.startContainer;
+            let startOffset = range.startOffset;
+
+            let endContainer = range.endContainer;
+            let endOffset = range.endOffset;
+
+            //
+            if (startContainer.nodeType === Node.TEXT_NODE) {
+                if (startContainer === range.commonAncestorContainer) { // special case - selection inside a single node
+                    if (startOffset === 0 && endOffset === startContainer.textContent.length) {
+                        // if the whole node is selected, return the top-most element
+                        while (startContainer.parentElement !== null && startContainer.parentElement.firstChild === startContainer && startContainer.parentElement.lastChild === startContainer) {
+                            startContainer = startContainer.parentElement;
+                        }
+                        callback(startContainer);
+                    } else {
+                        if (endOffset < endContainer.textContent.length) {
+                            let newNode = document.createTextNode(endContainer.textContent.substring(endOffset));
+                            endContainer.parentElement.insertBefore(newNode, endContainer.nextSibling);
+                            endContainer.textContent = endContainer.textContent.substring(0, endOffset);
+                        }
+
+                        if (startOffset > 0) {
+                            let newNode = document.createTextNode(startContainer.textContent.substring(0,startOffset));
+                            startContainer.parentElement.insertBefore(newNode, startContainer);
+                            startContainer.textContent = startContainer.textContent.substring(startOffset);
+                            
+                        }
+                        callback(startContainer);
+                    }
+                    return;
+                } else {
+                    if (startOffset === 0) {
+                        startOffset = Array.prototype.indexOf.call(startContainer.parentElement.childNodes, startContainer);
+                        startContainer = startContainer.parentElement;
+                    } else {
+                        if (startOffset < startContainer.textContent.length) {
+                            let newNode = document.createTextNode(startContainer.textContent.substring(0, startOffset));
+                            startContainer.parentElement.insertBefore(newNode, startContainer);
+                            startContainer.textContent = startContainer.textContent.substring(startOffset);
+                            callback(startContainer);
+                        }
+                        startOffset = Array.prototype.indexOf.call(startContainer.parentElement.childNodes, startContainer) + 1;
+                        startContainer = startContainer.parentElement;
+                    }
+                }
+            }
+
+            //
+
+            while (startContainer !== range.commonAncestorContainer) {
+
+                if (startOffset === 0) {
+                    startOffset = Array.prototype.indexOf.call(startContainer.parentElement.childNodes, startContainer);
+                    startContainer = startContainer.parentElement;
+                } else {
+                    for (let i = startOffset; i < startContainer.childNodes.length; i++) {
+                        let node = startContainer.childNodes[i];
+                        callback(node);
+                    }
+                    startOffset = Array.prototype.indexOf.call(startContainer.parentElement.childNodes, startContainer) + 1;
+                    startContainer = startContainer.parentElement;
+
+                }
+            }
+
+            //
+            if (endContainer.nodeType === Node.TEXT_NODE) {
+                if (endOffset === endContainer.textContent.length) {
+                    endOffset = Array.prototype.indexOf.call(endContainer.parentElement.childNodes, endContainer) + 1;
+                    endContainer = endContainer.parentElement;
+                } else {
+                    if (endOffset > 0) {
+                        let newNode = document.createTextNode(endContainer.textContent.substring(0, endOffset));
+                        endContainer.parentElement.insertBefore(newNode, endContainer);
+                        endContainer.textContent = endContainer.textContent.substring(endOffset);
+                        callback(newNode);
+                        endOffset = Array.prototype.indexOf.call(endContainer.parentElement.childNodes, newNode);
+                        endContainer = endContainer.parentElement;
+                    } else {
+                        endOffset = Array.prototype.indexOf.call(endContainer.parentElement.childNodes, endContainer);
+                        endContainer = endContainer.parentElement;
+                    }
+                }
+            }
+
+            //
+
+            while (endContainer !== range.commonAncestorContainer) {
+
+                if (!endContainer.hasChildNodes() || endContainer.childNodes.length === endOffset) {
+                    endOffset = Array.prototype.indexOf.call(endContainer.parentElement.childNodes, endContainer) + 1;
+                    endContainer = endContainer.parentElement;
+                } else {
+                    for (let i = endOffset - 1; i >= 0; i--) {
+                        let node = endContainer.childNodes[i];
+                        callback(node);
+                    }
+                    endOffset = Array.prototype.indexOf.call(endContainer.parentElement.childNodes, endContainer);
+                    endContainer = endContainer.parentElement;
+
+                }
+            }
+
+            // select between start and end
+            for (let i = startOffset; i < endOffset; i++) {
+                let node = startContainer.childNodes[i];
+                callback(node);
+            }
+        }
+
+        function selectNode(node) {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                node.classList.add("selected");
+            } else {
+                let span = document.createElement("span");
+                node.replaceWith(span);
+                span.insertBefore(node, null);
+                span.classList.add("selected");
+                // let highlight = CSS.highlights.get("selection");
+                // let range = document.createRange();
+                // range.selectNode(node);
+                // highlight.add(range);
+            }
+        }
+
+    </script>
+</body>
+</html>
