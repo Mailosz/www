@@ -97,6 +97,7 @@
                         span.style.fontWeight = "bold";
                     }
                 });
+                event.currentTarget.classList.remove("boldize");
             } else {
                 let sel = window.getSelection();
                 if (sel.rangeCount === 0) {
@@ -114,6 +115,7 @@
                         span.style.fontWeight = "normal";
                     }
                 });
+                event.currentTarget.classList.add("boldize");
             }
 
         }
@@ -270,10 +272,15 @@
             }
 
             // select between start and end
-            for (let i = startOffset; i < endOffset; i++) {
-                let node = startContainer.childNodes[i];
-                elementCallback(node);
+            if (startOffset === 0 && endOffset === startContainer.childNodes.length) {
+                elementCallback(startContainer);
+            } else {
+                for (let i = startOffset; i < endOffset; i++) {
+                    let node = startContainer.childNodes[i];
+                    elementCallback(node);
+                }
             }
+
         }
 
         function selectNode(node) {
