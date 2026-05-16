@@ -1,4 +1,4 @@
-import { DocBuilder } from "../utils/DocBuilder.js";
+import { DocBuilder } from "../ox/utils/Builder.js";
 
 
 export class DataField extends HTMLElement {
@@ -26,25 +26,25 @@ export class DataField extends HTMLElement {
                 builder.tag("div").attr("contenteditable", "false").class("data-field-listitem").innerHTML("<a>TEST<a>"),
                 builder.tag("div").attr("contenteditable", "false").class("data-field-listitem").innerHTML("VALUE2"),
                 builder.tag("div").attr("contenteditable", "false").class("data-field-listitem").innerHTML("XYZ")
-            ).getTag(),
+            ).build(),
             this.postbox = builder.tag("div").class("data-field-postbox").children(
                 builder.tag("button").innerHTML("X"),
                 builder.tag("button").innerHTML("X"),
                 builder.tag("button").innerHTML("X")
-            ).getTag(),
+            ).build(),
             this.preline = builder.tag("div").class("data-field-footer")
             .children(
                 
-            ).getTag(),
+            ).build(),
             this.preline = builder.tag("div").class("data-field-header")
             .children(
                 
-            ).getTag(),
+            ).build(),
             this.prebox = builder.tag("div").class("data-field-prebox")
             .children(
                 builder.tag("button").innerHTML("X")
-            ).getTag(),
-        ).getTag();
+            ).build(),
+        ).build();
             
         this.shadowRoot.append(builder.tag("style").innerHTML(/*CSS*/`
 
@@ -138,7 +138,7 @@ export class DataField extends HTMLElement {
             }
 
             
-        `).getTag());
+        `).build());
         this.shadowRoot.append(this.container);
             
     }

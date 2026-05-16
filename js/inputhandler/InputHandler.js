@@ -1,5 +1,5 @@
-import { MutationRecorder } from "../utils/MutationRecorder.js";
-import { revertMutationChanges } from "../utils/MutationUndoer.js";
+import { MutationRecorder } from "../ox/utils/MutationRecorder.js";
+import { revertMutationChanges } from "../ox/utils/MutationUndoer.js";
 
 let currentSelection = null;
 let pointerPressed = false;

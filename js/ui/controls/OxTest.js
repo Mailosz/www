@@ -1,5 +1,5 @@
 import { OxCustomElementBase } from "./OxCustomElementBase.js";
-import { Builder } from "../../utils/DocBuilder.js";
+import { Builder } from "../../utils/Builder.js";
 
 export class OxTest extends OxCustomElementBase {
 
@@ -32,7 +32,7 @@ export class OxTest extends OxCustomElementBase {
                 builder.tag("input").bindAttribute("value", this.customAttributes.test).on("input", (event) => { this.setAttribute("other", event.target.value);}),
                 builder.tag("input").bindAttribute("value", this.customAttributes.other),
                 builder.tag("input").bindAttribute("value", this.customAttributes.memo)
-            ).getElement());
+            ).build());
 
     }
 

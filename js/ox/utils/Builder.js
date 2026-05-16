@@ -465,6 +465,14 @@ export class TagBuilder {
      * Get the built HTML element
      * @type {Element}
      */
+    build() {
+        return this.#tag;
+    }
+
+    /**
+     * Get the built HTML element
+     * @type {Element}
+     */
     getElement() {
         return this.#tag;
     }

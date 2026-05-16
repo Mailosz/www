@@ -1,4 +1,4 @@
-import { DocBuilder } from "../../utils/DocBuilder.js";
+import { Builder } from "../../ox/utils/Builder.js";
 import {OxControl} from "./OxControl.js";
 
 
@@ -170,10 +170,10 @@ export class OxGrid extends OxControl {
         this.editable = false;
         this.createShadowRoot(template, style);
         this.contentEditable = true;
-        let db = new DocBuilder(this.ownerDocument);
+        let db = new Builder(this.ownerDocument);
 
-        this.shadowRoot.appendChild(db.button().innerText("+").class("add-row").event("click", () => this.insertRow(null, this.rowCount)).get());
-        this.shadowRoot.appendChild(db.button().innerText("+").class("add-col").event("click", () => this.insertColumn(null, this.columnCount)).get());
+        this.shadowRoot.appendChild(db.button().innerText("+").class("add-row").event("click", () => this.insertRow(null, this.rowCount)).build());
+        this.shadowRoot.appendChild(db.button().innerText("+").class("add-col").event("click", () => this.insertColumn(null, this.columnCount)).build());
 
         if (this.data) {
             this.#data = this.data;

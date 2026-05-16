@@ -1,6 +1,6 @@
 import {OxControl} from "../controls/OxControl.js";
 import {OxCode} from "../controls/OxCode.js";
-import {Builder} from "../../utils/DocBuilder.js";
+import {Builder} from "../../ox/utils/Builder.js";
 import {AutoSizeIframe} from "../controls/AutoSizeIframe.js";
 
 

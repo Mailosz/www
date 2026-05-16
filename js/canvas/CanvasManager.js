@@ -1,4 +1,4 @@
-import { KeyWatcher } from "../utils/KeyWatcher.js";
+import { KeyWatcher } from "../ox/utils/KeyWatcher.js";
 import { InputManager, PointerData } from "./InputManager.js";
 import { CanvasSettings } from "./CanvasSettings.js";
 import { GenericUserAction } from "./UserAction.js";
