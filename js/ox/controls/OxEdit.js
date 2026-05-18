@@ -3,8 +3,47 @@ import { OxCustomElementBase } from './OxCustomElementBase.js';
 import { getSelection, getSelectionRangeFunction, forNodesInRange, splitTextNode } from "../utils/Edit.js";
 import { MutationUndoer } from '../utils/MutationUndoer.js';
 
-export class OxEdit extends OxCustomElementBase {
+const style = /*css*/`
+    .toolbox {
+        display: flex;
+        gap: 4px;
+        overflow: auto;
+        scrollbar-width: thin;
+    }
 
+    .tool {
+        width: 2em;
+        height: 1.75em;
+    }
+
+    .tool.undo::before {
+        content: "↶";
+        font-size: 1.25em;
+    }
+
+    .tool.redo::before {
+        content: "↷";
+        font-size: 1.25em;
+    }
+
+    .tool.bold::before {
+        content: "b";
+        font-weight: 600;
+    }
+
+    .tool.italic::before {
+        content: "i";
+        font-style: italic;
+    }
+
+    .tool.underline::before {
+        content: "u";
+        text-decoration: underline;
+    }
+`;
+
+export class OxEdit extends OxCustomElementBase {
+    static observedAttributes = ["tools"];
     static { this.registerCustomElement("ox-edit"); }
 
     #lastEdit = 0;
@@ -19,11 +58,13 @@ export class OxEdit extends OxCustomElementBase {
     connectedCallback() {
         super.connectedCallback();
         this.contentEditable = "true";
+        this.attachShadowCss(style);
         
         const container = document.createElement('div');
         container.classList.add('container');
         
         const toolbox = document.createElement("div");
+        toolbox.part = "toolbox";
         toolbox.classList.add("toolbox");
         
         toolbox.appendChild(this.#addTool("Undo", "undo", (event) => this.undo()));
@@ -33,11 +74,8 @@ export class OxEdit extends OxCustomElementBase {
         toolbox.appendChild(this.#addTool("Italic", "italic", (event) => this.changeSelectionInlineStyle("font-style", "italic")));
         toolbox.appendChild(this.#addTool("Underline", "underline", (event) => this.changeSelectionInlineStyle("text-decoration", "underline")));
         
-        
         const editarea = document.createElement("div");
         editarea.part = "editarea";
-        
-        
         
         const slot = document.createElement("slot");
         slot.contentEditable = "true";
@@ -93,11 +131,11 @@ export class OxEdit extends OxCustomElementBase {
         }
     }
 
-    #addTool(name, icon, action) { 
+    #addTool(name, className, action) { 
         const button = document.createElement("button");
         button.classList.add("tool");
+        button.classList.add(className);
         button.setAttribute("title", name);
-        button.textContent = name;
         button.addEventListener("click", action);
         return button;
     }
