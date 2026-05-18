@@ -1,6 +1,7 @@
 import { StringTokenizer, StringTokenizerLanguageService} from "../../tokenizer/StringTokenizer.js";
 import { OxCustomElementBase } from "./OxCustomElementBase.js";
-import { Builder } from "../Builder.js";
+import { Builder } from "../utils/Builder.js";
+import { getSelection, getSelectionRangeFunction } from "../utils/Edit.js";
 
 const whitespaceCharacters = new Set([
     ' ',
@@ -605,13 +606,7 @@ export class OxCode extends OxCustomElementBase {
      * @returns {Selection}
      */
     #getSelection() {
-        let selection;
-        if (this.shadowRoot.getSelection) { // selection handling incosistency between chrome and firefox - check safari
-            selection = this.shadowRoot.getSelection();
-        } else {
-            selection = this.ownerDocument.getSelection();
-        }
-        return selection;
+        return getSelection(this);
     }
 
     /**
@@ -620,15 +615,7 @@ export class OxCode extends OxCustomElementBase {
      * @returns {function(number): Range}
      */
     #getSelectionRangeFunction(selection) {
-
-        let getRange;
-        if (selection.getComposedRanges) { // right way but only works in safari
-            const composedRanges = selection.getComposedRanges({ shadowRoots: [this.shadowRoot] });
-            getRange = (i) => composedRanges[i];
-        } else {
-            getRange = (i) => selection.getRangeAt(i);
-        }
-        return getRange;
+        return getSelectionRangeFunction(selection, [this.shadowRoot]);
     }
 
     /**

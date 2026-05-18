@@ -1,4 +1,4 @@
-import { signal } from "../util.js";
+import { signal } from "../utils/Reactive.js";
 
 export class OxCustomElementBase extends HTMLElement {
 

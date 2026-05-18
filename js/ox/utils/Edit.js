@@ -1,33 +1,52 @@
 /**
- * Calls the specified function for every top-most node in the range. Only returns nodes that are completely selected. Splits text nodes if needed.
- * @param {Range} range The range to iterate over
- * @param {function(Node)} callback The function to call for every node in the range
+ * Handles inconsistency between shadowRoot selection handling between browsers
+ * @returns {Selection}
  */
-export function forNodesInRange(range, callback) {
-
-    forRange(range, callback, (node, startOffset, endOffset) => {
-
-        if (startOffset === 0 && endOffset === node.textContent.length) {
-            callback(node);
-            return;
-        } else {
-            if (endOffset < node.textContent.length) {
-                let afterNode = document.createTextNode(node.textContent.substring(endOffset));
-                node.parentElement.insertBefore(afterNode, node.nextSibling);
-                node.textContent = node.textContent.substring(0, endOffset);
-            }
-            if (startOffset > 0) {
-                let beforeNode = document.createTextNode(node.textContent.substring(0, startOffset));
-                node.parentElement.insertBefore(beforeNode, node);
-                node.textContent = node.textContent.substring(startOffset);
-                range.setStart(node, 0);
-                range.setEnd(node, node.textContent.length);
-            }
-            callback(node);
-        }
-
-    });
+export function getSelection(element) {
+    let selection;
+    if (element.shadowRoot?.getSelection) { // selection handling incosistency between chrome and firefox - check safari
+        selection = element.shadowRoot.getSelection();
+    } else {
+        selection = element.ownerDocument.getSelection();
+    }
+    return selection;
 }
+
+/**
+ * Handles inconsistencies between browsers in selection handling in shadow DOM
+ * @param {Selection} selection 
+ * @returns {function(number): Range}
+ */
+export function getSelectionRangeFunction(selection, shadowRoots) {
+
+    let getRange;
+    if (selection.getComposedRanges) { // right way but only works in safari
+        const composedRanges = selection.getComposedRanges({ shadowRoots: shadowRoots });
+        getRange = (i) => composedRanges[i];
+    } else {
+        getRange = (i) => selection.getRangeAt(i);
+    }
+    return getRange;
+}
+
+export function splitTextNode(node, startOffset, endOffset) {
+    if (startOffset === 0 && endOffset === node.textContent.length) {
+        return node;
+    } else {
+        if (endOffset < node.textContent.length) {
+            let afterNode = document.createTextNode(node.textContent.substring(endOffset));
+            node.parentElement.insertBefore(afterNode, node.nextSibling);
+            node.textContent = node.textContent.substring(0, endOffset);
+        }
+        if (startOffset > 0) {
+            let beforeNode = document.createTextNode(node.textContent.substring(0, startOffset));
+            node.parentElement.insertBefore(beforeNode, node);
+            node.textContent = node.textContent.substring(startOffset);
+        }
+        return node;
+    }
+}
+
 
 /**
  * Calls functions for every node in range. 
@@ -35,7 +54,7 @@ export function forNodesInRange(range, callback) {
  * @param {function(Element)} elementCallback The function to call for every element node in the range
  * @param {function(Node, startOffset, endOffset)} textCallback The function to call for every partially selected text node in range
  */
-export function forRange(range, elementCallback, textCallback) {
+export function forNodesInRange(range, elementCallback, textCallback) {
     let startContainer = range.startContainer;
     let startOffset = range.startOffset;
 
